@@ -1395,7 +1395,7 @@ namespace openpeer
         while (true)
         {
           if (!firstAttempt) {
-            boost::thread::yield();       // do not hammer CPU
+            boost::this_thread::sleep(zsLib::Milliseconds(10));       // do not hammer CPU
           }
           firstAttempt = false;
 
