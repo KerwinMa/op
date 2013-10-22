@@ -2282,7 +2282,12 @@ namespace openpeer
         String iPod5String("iPod5,1");
         if (mCameraType == CameraType_Back) {
           if (orientation == webrtc::RotateCapturedFrame_0 || orientation == webrtc::RotateCapturedFrame_180) {
-            if (mMachineName.compare(0, iPod4String.size(), iPod4String) >= 0) {
+            if (mMachineName.compare(0, iPod5String.size(), iPod5String) >= 0) {
+              width = 960;
+              height = 540;
+              maxFramerate = 15;
+              maxBitrate = 500;
+            } else if (mMachineName.compare(0, iPod4String.size(), iPod4String) >= 0) {
               width = 640;
               height = 360;
               maxFramerate = 15;
@@ -2322,7 +2327,12 @@ namespace openpeer
               return -1;
             }
           } else if (orientation == webrtc::RotateCapturedFrame_90 || orientation == webrtc::RotateCapturedFrame_270) {
-            if (mMachineName.compare(0, iPod4String.size(), iPod4String) >= 0) {
+            if (mMachineName.compare(0, iPod5String.size(), iPod5String) >= 0) {
+              width = 540;
+              height = 960;
+              maxFramerate = 15;
+              maxBitrate = 500;
+            } else if (mMachineName.compare(0, iPod4String.size(), iPod4String) >= 0) {
               width = 360;
               height = 640;
               maxFramerate = 15;
