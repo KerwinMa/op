@@ -42,7 +42,7 @@ namespace openpeer { namespace core { namespace test { ZS_DECLARE_SUBSYSTEM(open
 
 namespace openpeer { namespace core { namespace test { ZS_IMPLEMENT_SUBSYSTEM(openpeer_core_test) } } }
 
-//#define OPENPEER_MEDIA_ENGINE_DEBUG_LOG_LEVEL
+#define OPENPEER_MEDIA_ENGINE_DEBUG_LOG_LEVEL
 //#define OPENPEER_MEDIA_ENGINE_ENABLE_TIMER
 
 using namespace std;
@@ -108,9 +108,9 @@ namespace openpeer
       void TestMediaEngine::setLogLevel()
       {
 #ifndef OPENPEER_MEDIA_ENGINE_DEBUG_LOG_LEVEL
-//        ILogger::setLogLevel("openpeer_webrtc", ILogger::Basic);
+        ILogger::setLogLevel("openpeer_webrtc", ILogger::Basic);
 #else
-//        ILogger::setLogLevel("openpeer_webrtc", ILogger::Debug);
+        ILogger::setLogLevel("openpeer_webrtc", ILogger::Debug);
 #endif
       }
       

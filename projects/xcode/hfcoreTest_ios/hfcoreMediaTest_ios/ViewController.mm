@@ -13,7 +13,7 @@
 
 @implementation ViewController
 
--(IBAction)startTest1
+-(IBAction)test1
 {
     openpeer::core::internal::MediaEnginePtr mediaEngineInternal = openpeer::core::internal::IMediaEngineForCallTransport::singleton();
     openpeer::core::test::TestMediaEnginePtr testMediaEngineInternal = boost::dynamic_pointer_cast<openpeer::core::test::TestMediaEngine>(mediaEngineInternal);
@@ -43,7 +43,7 @@
 //    mediaEngine->startRecordVideoCapture(fileNameString, saveToLibrary);
 }
 
--(IBAction)startTest2
+-(IBAction)test2
 {
     openpeer::core::internal::MediaEnginePtr mediaEngineInternal = openpeer::core::internal::IMediaEngineForCallTransport::singleton();
     openpeer::core::test::TestMediaEnginePtr testMediaEngineInternal = boost::dynamic_pointer_cast<openpeer::core::test::TestMediaEngine>(mediaEngineInternal);
@@ -55,7 +55,7 @@
     mediaEngineInternal->forCallTransport().startVideoChannel();
 }
 
--(IBAction)startTest3
+-(IBAction)test3
 {
     openpeer::core::internal::MediaEnginePtr mediaEngineInternal = openpeer::core::internal::IMediaEngineForCallTransport::singleton();
     openpeer::core::test::TestMediaEnginePtr testMediaEngineInternal = boost::dynamic_pointer_cast<openpeer::core::test::TestMediaEngine>(mediaEngineInternal);
@@ -65,7 +65,7 @@
     mediaEngineInternal->forCallTransport().stopVideoChannel();
 }
 
--(IBAction)startTest4
+-(IBAction)test4
 {
     openpeer::core::internal::MediaEnginePtr mediaEngineInternal = openpeer::core::internal::IMediaEngineForCallTransport::singleton();
     openpeer::core::test::TestMediaEnginePtr testMediaEngineInternal = boost::dynamic_pointer_cast<openpeer::core::test::TestMediaEngine>(mediaEngineInternal);
@@ -73,6 +73,20 @@
     
 //    mediaEngine->stopRecordVideoCapture();
     mediaEngine->stopVideoCapture();
+}
+
+-(IBAction)test5
+{
+  openpeer::core::IMediaEnginePtr mediaEngine = openpeer::core::IMediaEngine::singleton();
+  
+  if (mediaEngine->getCameraType() == openpeer::core::IMediaEngine::CameraType_Front)
+    mediaEngine->setCameraType(openpeer::core::IMediaEngine::CameraType_Back);
+  else if (mediaEngine->getCameraType() == openpeer::core::IMediaEngine::CameraType_Back)
+    mediaEngine->setCameraType(openpeer::core::IMediaEngine::CameraType_Front);
+}
+
+-(IBAction)test6
+{
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -102,6 +116,7 @@
   
     openpeer::core::IMediaEnginePtr mediaEngine = openpeer::core::IMediaEngine::singleton();
   
+    mediaEngine->setCameraType(openpeer::core::IMediaEngine::CameraType_Front);
     mediaEngine->setEcEnabled(true);
     mediaEngine->setAgcEnabled(true);
     mediaEngine->setNsEnabled(false);
