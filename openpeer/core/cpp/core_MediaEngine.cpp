@@ -2585,35 +2585,7 @@ namespace openpeer
       webrtc::EcModes MediaEngine::getEcMode()
       {
 #ifdef TARGET_OS_IPHONE
-        String iPadString("iPad");
-        String iPad2String("iPad2");
-        String iPad3String("iPad3");
-        String iPhoneString("iPhone");
-        String iPhone5String("iPhone5");
-        String iPhone4SString("iPhone4,1");
-        String iPodString("iPod");
-        String iPod4String("iPod4,1");
-
-        if (mMachineName.compare(0, iPod4String.size(), iPod4String) >= 0) {
-          return webrtc::kEcAec;
-        } else if (mMachineName.compare(0, iPodString.size(), iPodString) >= 0) {
-          return webrtc::kEcAecm;
-        } else if (mMachineName.compare(0, iPhone5String.size(), iPhone5String) >= 0) {
-          return webrtc::kEcAec;
-        } else if (mMachineName.compare(0, iPhone4SString.size(), iPhone4SString) >= 0) {
-          return webrtc::kEcAec;
-        } else if (mMachineName.compare(0, iPhoneString.size(), iPhoneString) >= 0) {
-          return webrtc::kEcAecm;
-        } else if (mMachineName.compare(0, iPad3String.size(), iPad3String) >= 0) {
-          return webrtc::kEcAec;
-        } else if (mMachineName.compare(0, iPad2String.size(), iPad2String) >= 0) {
-          return webrtc::kEcAec;
-        } else if (mMachineName.compare(0, iPadString.size(), iPadString) >= 0) {
-          return webrtc::kEcAecm;
-        } else {
-          ZS_LOG_ERROR(Detail, log("machine name is not supported"))
-          return webrtc::kEcUnchanged;
-        }
+        return webrtc::kEcAecm;
 #elif defined(__QNX__)
         return webrtc::kEcAec;
 #else
