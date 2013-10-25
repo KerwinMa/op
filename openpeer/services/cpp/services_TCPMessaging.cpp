@@ -359,7 +359,7 @@ namespace openpeer
           mReceivingQueue->Put(buffer.BytePtr(), bytesRead);
 
         } catch(ISocket::Exceptions::Unspecified &error) {
-          ZS_LOG_ERROR(Detail, log("receive error") + string(error.getErrorCode()))
+          ZS_LOG_ERROR(Detail, log("receive error") + ", error=" + string(error.getErrorCode()))
           setError(IHTTP::HTTPStatusCode_Networkconnecttimeouterror, (String("network error: ") + error.getMessage()).c_str());
           cancel();
           return;

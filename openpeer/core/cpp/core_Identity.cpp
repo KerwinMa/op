@@ -508,6 +508,7 @@ namespace openpeer
         try {
           mDelegate->onIdentityStateChanged(mThisWeak.lock(), toState(state));
         } catch (IIdentityDelegateProxy::Exceptions::DelegateGone &) {
+          ZS_LOG_WARNING(Detail, log("delegate gone"))
         }
       }
 
@@ -520,6 +521,7 @@ namespace openpeer
         try {
           mDelegate->onIdentityPendingMessageForInnerBrowserWindowFrame(mThisWeak.lock());
         } catch (IIdentityDelegateProxy::Exceptions::DelegateGone &) {
+          ZS_LOG_WARNING(Detail, log("delegate gone"))
         }
       }
 
@@ -532,6 +534,7 @@ namespace openpeer
         try {
           mDelegate->onIdentityRolodexContactsDownloaded(mThisWeak.lock());
         } catch (IIdentityDelegateProxy::Exceptions::DelegateGone &) {
+          ZS_LOG_WARNING(Detail, log("delegate gone"))
         }
       }
 

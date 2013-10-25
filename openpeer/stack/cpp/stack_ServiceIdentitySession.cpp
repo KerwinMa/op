@@ -962,7 +962,6 @@ namespace openpeer
       //-----------------------------------------------------------------------
       void ServiceIdentitySession::notifyStateChanged()
       {
-        AutoRecursiveLock lock(getLock());
         ZS_LOG_DEBUG(log("notify state changed"))
         IWakeDelegateProxy::create(mThisWeak.lock())->onWake();
       }
