@@ -76,6 +76,7 @@ namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services
 #define OPENPEER_SERVICES_SEQUENCE_COLOUR_MESSAGE_DETAIL     OPENPEER_SERVICES_SEQUENCE_COLOUR_RESET OPENPEER_SERVICES_SEQUENCE_ESCAPE "[1m" OPENPEER_SERVICES_SEQUENCE_ESCAPE "[30m"
 #define OPENPEER_SERVICES_SEQUENCE_COLOUR_MESSAGE_DEBUG      OPENPEER_SERVICES_SEQUENCE_COLOUR_RESET OPENPEER_SERVICES_SEQUENCE_ESCAPE "[30m"
 #define OPENPEER_SERVICES_SEQUENCE_COLOUR_MESSAGE_TRACE      OPENPEER_SERVICES_SEQUENCE_COLOUR_RESET OPENPEER_SERVICES_SEQUENCE_ESCAPE "[34m"
+#define OPENPEER_SERVICES_SEQUENCE_COLOUR_MESSAGE_INSANE     OPENPEER_SERVICES_SEQUENCE_COLOUR_RESET OPENPEER_SERVICES_SEQUENCE_ESCAPE "[36m"
 #define OPENPEER_SERVICES_SEQUENCE_COLOUR_FILENAME           OPENPEER_SERVICES_SEQUENCE_COLOUR_RESET OPENPEER_SERVICES_SEQUENCE_ESCAPE "[32m"
 #define OPENPEER_SERVICES_SEQUENCE_COLOUR_LINENUMBER         OPENPEER_SERVICES_SEQUENCE_COLOUR_RESET OPENPEER_SERVICES_SEQUENCE_ESCAPE "[32m"
 #define OPENPEER_SERVICES_SEQUENCE_COLOUR_FUNCTION           OPENPEER_SERVICES_SEQUENCE_COLOUR_RESET OPENPEER_SERVICES_SEQUENCE_ESCAPE "[36m"
@@ -159,6 +160,7 @@ namespace openpeer
           case Log::Detail:          colorLevel = OPENPEER_SERVICES_SEQUENCE_COLOUR_MESSAGE_DETAIL; break;
           case Log::Debug:           colorLevel = OPENPEER_SERVICES_SEQUENCE_COLOUR_MESSAGE_DEBUG; break;
           case Log::Trace:           colorLevel = OPENPEER_SERVICES_SEQUENCE_COLOUR_MESSAGE_TRACE; break;
+          case Log::Insane:          colorLevel = OPENPEER_SERVICES_SEQUENCE_COLOUR_MESSAGE_INSANE; break;
           case Log::None:            break;
         }
 
@@ -1334,7 +1336,9 @@ namespace openpeer
               if ((command == "log") && (split.size() > 0)) {
                 level = split.front(); split.pop_front();
                 output = true;
-                if (level == "trace") {
+                if (level == "insane") {
+                  ILogger::setLogLevel(Log::Insane);
+                } else if (level == "trace") {
                   ILogger::setLogLevel(Log::Trace);
                 } else if (level == "debug") {
                   ILogger::setLogLevel(Log::Debug);
@@ -1347,7 +1351,9 @@ namespace openpeer
                 } else if (split.size() > 0) {
                   subsystem = level;
                   level = split.front(); split.pop_front();
-                  if (level == "trace") {
+                  if (level == "insane") {
+                    ILogger::setLogLevel(subsystem, Log::Insane);
+                  } else if (level == "trace") {
                     ILogger::setLogLevel(subsystem, Log::Trace);
                   } else if (level == "debug") {
                     ILogger::setLogLevel(subsystem, Log::Debug);

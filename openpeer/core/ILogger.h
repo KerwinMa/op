@@ -61,7 +61,8 @@ namespace openpeer
         Basic,    // most basic logging only
         Detail,
         Debug,
-        Trace     // most detailed log level
+        Trace,
+        Insane    // most detailed log level
       };
 
       static const char *toString(Severity severity);

@@ -537,7 +537,7 @@ namespace openpeer
 
           int result = select(zsLib::INVALID_SOCKET == highestSocket ? 0 : (highestSocket+1), &fdread, &fdwrite, &fdexcep, &timeout);
 
-          ZS_LOG_TRACE(log("curl multi select") + ", result=" + string(result))
+          ZS_LOG_INSANE(log("curl multi select") + ", result=" + string(result))
 
           // select completed, do notifications from select
           {
@@ -870,7 +870,7 @@ namespace openpeer
           return;
         }
 
-        if (ZS_IS_LOGGING(Trace)) {
+        if (ZS_IS_LOGGING(Insane)) {
           curl_easy_setopt(mCurl, CURLOPT_DEBUGFUNCTION, HTTPQuery::debug);
           curl_easy_setopt(mCurl, CURLOPT_DEBUGDATA, (void *)((PTRNUMBER)mID));
 
@@ -1062,17 +1062,27 @@ namespace openpeer
           return 0;
         }
 
+        bool firstHeader = pThis->mHeader.IsEmpty();
+
         pThis->mHeader.Put((BYTE *)ptr, size*nmemb);
 
         if (ZS_IS_LOGGING(Trace)) {
-          ZS_LOG_BASIC(pThis->log("----------------------------HTTP HEADER DATA RECEIVED--------------------------"))
+          if (firstHeader) {
+            ZS_LOG_BASIC(pThis->log("----------------------------HTTP HEADER DATA RECEIVED--------------------------"))
+          }
 
           SecureByteBlock buffer;
-          buffer.CleanNew(size * nmemb + sizeof(char));
+          buffer.CleanNew(size * nmemb);
           memcpy(buffer.BytePtr(), ptr, size * nmemb);
 
-          ZS_LOG_BASIC(pThis->log("HEADER=") + "\n" + ((const char *)(buffer.BytePtr())))
-          ZS_LOG_BASIC(pThis->log("----------------------------HTTP HEADER DATA RECEIVED--------------------------"))
+          ZS_LOG_BASIC(pThis->log("HEADER=") + ((const char *)(buffer.BytePtr())))
+
+          if (buffer.size() > 0) {
+            char letter = (char)(*(buffer.BytePtr()));
+            if ((letter == '\n') || (letter == '\r')) {
+              ZS_LOG_BASIC(pThis->log("----------------------------HTTP HEADER DATA RECEIVED--------------------------"))
+            }
+          }
         }
 
         if ((pThis->mCurl) &&
@@ -1110,7 +1120,7 @@ namespace openpeer
         //pThis->mBody.LazyPut((BYTE *)ptr, size*nmemb);
         pThis->mBody.Put((BYTE *)ptr, size*nmemb);
 
-        if (ZS_IS_LOGGING(Trace)) {
+        if (ZS_IS_LOGGING(Debug)) {
           ZS_LOG_BASIC(pThis->log("-----------------------------HTTP BODY DATA RECEIVED---------------------------"))
 
           SecureByteBlock buffer;
@@ -1163,7 +1173,7 @@ namespace openpeer
 
         PUID id = (PUID)((PTRNUMBER)userdata);
 
-        ZS_LOG_TRACE("HTTPQuery [" + string(id) + "] CURL debug, type=" + typeStr + ", data=" + (CSTR)raw.BytePtr())
+        ZS_LOG_INSANE("HTTPQuery [" + string(id) + "] CURL debug, type=" + typeStr + ", data=" + (CSTR)raw.BytePtr())
 
         return 0;
       }
