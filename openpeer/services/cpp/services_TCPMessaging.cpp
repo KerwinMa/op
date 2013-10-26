@@ -356,6 +356,11 @@ namespace openpeer
             return;
           }
 
+          if (ZS_IS_LOGGING(Insane)) {
+            String rawReceived = IHelper::getDebugString(buffer.BytePtr(), bytesRead);
+            ZS_LOG_INSANE(log("RECEIVED FROM WIRE=") + "\n" + rawReceived)
+          }
+
           mReceivingQueue->Put(buffer.BytePtr(), bytesRead);
 
         } catch(ISocket::Exceptions::Unspecified &error) {
@@ -700,6 +705,10 @@ namespace openpeer
           ULONG sent = mSocket->send(buffer.BytePtr(), size, &wouldBlock);
           outSent = sent;
           if (0 != sent) {
+            if (ZS_IS_LOGGING(Insane)) {
+              String rawSent = IHelper::getDebugString(buffer.BytePtr(), sent);
+              ZS_LOG_INSANE(log("SENT ON WIRE=") + "\n" + rawSent)
+            }
             mSendingQueue->Skip(sent);
           }
 

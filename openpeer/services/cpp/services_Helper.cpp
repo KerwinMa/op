@@ -1134,6 +1134,100 @@ namespace openpeer
         return (*found).second;
       }
 
+      static char convertArray[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+
+      //-----------------------------------------------------------------------
+      String Helper::getDebugString(
+                                    const BYTE *buffer,
+                                    ULONG bufferSizeInBytes,
+                                    ULONG bytesPerGroup,
+                                    ULONG maxLineLength
+                                    )
+      {
+        if (!buffer) return String();
+        if (0 == bufferSizeInBytes) return String();
+
+        ZS_THROW_INVALID_ARGUMENT_IF(bytesPerGroup < 1)
+        ZS_THROW_INVALID_ARGUMENT_IF(maxLineLength < 1)
+
+        // two chars needed, one for new line, one for NUL byte
+        char bufferFillLine[255+2];
+        memset(&(bufferFillLine[0]), 0, sizeof(bufferFillLine));
+
+        char *fillLine = &(bufferFillLine[0]);
+
+        boost::shared_array<char> temp;
+        if (maxLineLength > 255) {
+          temp = boost::shared_array<char>(new char[maxLineLength+2]);
+          memset(temp.get(), 0, sizeof(char)*(maxLineLength+2));
+          fillLine = temp.get();
+        }
+
+        String result;
+        bool firstLine = true;
+
+        // each byte takes two hex digits and one representative character, each group needs one space between each group
+        ULONG charsPerGroup = (bytesPerGroup * 3) + 1;
+
+        ULONG groupsPerLine = maxLineLength / charsPerGroup;
+
+        while (bufferSizeInBytes > 0) {
+
+          const BYTE *start = buffer;
+          ULONG totalBytesWritten = 0;
+
+          char *fill = fillLine;
+
+          for (ULONG groups = 0; (groups < groupsPerLine); ++groups) {
+            ULONG bytesInNextGroup = (bufferSizeInBytes < bytesPerGroup ? bufferSizeInBytes : bytesPerGroup);
+            ULONG bytesMissingInGroup = bytesPerGroup - bytesInNextGroup;
+            for (ULONG pos = 0; pos < bytesInNextGroup; ++pos, ++buffer, ++totalBytesWritten) {
+              BYTE value = *buffer;
+
+              *fill = convertArray[value / 16];
+              ++fill;
+              *fill = convertArray[value % 16];
+              ++fill;
+            }
+
+            if (!firstLine) {
+              for (ULONG pos = 0; pos < bytesMissingInGroup; ++pos) {
+                // no more bytes available in the group thus insert two spaces per byte instead
+                *fill = ' ';
+                ++fill;
+                *fill = ' ';
+                ++fill;
+              }
+            }
+
+            *fill = ' ';
+            ++fill;
+
+            bufferSizeInBytes -= bytesInNextGroup;
+          }
+
+          buffer = start;
+          for (ULONG pos = 0; pos < totalBytesWritten; ++pos, ++buffer) {
+            if (isprint(*buffer)) {
+              *fill = *buffer;
+            } else {
+              *fill = '.';
+            }
+            ++fill;
+          }
+
+          *fill = '\n';
+          ++fill;
+
+          *fill = 0;
+
+          result += fillLine;
+          firstLine = false;
+        }
+
+        return result;
+      }
+
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
@@ -1503,6 +1597,27 @@ namespace openpeer
                                )
     {
       return internal::Helper::get(inResult, index);
+    }
+
+    //-------------------------------------------------------------------------
+    String IHelper::getDebugString(
+                                   const BYTE *buffer,
+                                   ULONG bufferSizeInBytes,
+                                   ULONG bytesPerGroup,
+                                   ULONG maxLineLength
+                                   )
+    {
+      return internal::Helper::getDebugString(buffer, bufferSizeInBytes, bytesPerGroup, maxLineLength);
+    }
+
+    //-------------------------------------------------------------------------
+    String IHelper::getDebugString(
+                                   const SecureByteBlock &buffer,
+                                   ULONG bytesPerGroup,
+                                   ULONG maxLineLength
+                                   )
+    {
+      return internal::Helper::getDebugString(buffer.BytePtr(), buffer.SizeInBytes(), bytesPerGroup, maxLineLength);
     }
   }
 }

@@ -199,6 +199,13 @@ namespace openpeer
                                  const SplitMap &inResult,
                                  Index index
                                  );
+
+        static String getDebugString(
+                                     const BYTE *buffer,
+                                     ULONG bufferSizeInBytes,
+                                     ULONG bytesPerGroup = 4,
+                                     ULONG maxLineLength = 160
+                                     );
       };
     }
   }

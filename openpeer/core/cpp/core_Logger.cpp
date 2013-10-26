@@ -53,6 +53,7 @@ namespace openpeer
           case ILogger::Detail: return zsLib::Log::Detail;
           case ILogger::Debug:  return zsLib::Log::Debug;
           case ILogger::Trace:  return zsLib::Log::Trace;
+          case ILogger::Insane: return zsLib::Log::Insane;
         }
         return Log::None;
       }
@@ -66,6 +67,7 @@ namespace openpeer
           case Log::Detail: return ILogger::Detail;
           case Log::Debug:  return ILogger::Debug;
           case Log::Trace:  return ILogger::Trace;
+          case Log::Insane: return ILogger::Insane;
         }
         return ILogger::None;
       }
