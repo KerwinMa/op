@@ -655,8 +655,6 @@ namespace openpeer
           StreamHeaderPtr header;
           SecureByteBlockPtr buffer = mSendStream->read(&header);
 
-          ZS_LOG_TRACE(log("attempting to send data over TCP") + ", message size=" + string(buffer->SizeInBytes()))
-
           ChannelHeaderPtr channelHeader = ChannelHeader::convert(header);
 
           if (mFramesHaveChannelNumber) {
@@ -667,6 +665,12 @@ namespace openpeer
               return;
             }
             mSendingQueue->PutWord32(channelHeader->mChannelID);
+          }
+
+          if (channelHeader) {
+            ZS_LOG_TRACE(log("queuing data to send data over TCP") + ", message size=" + string(buffer->SizeInBytes()) + ", channel=" + string(channelHeader->mChannelID))
+          } else {
+            ZS_LOG_TRACE(log("queuing data to send data over TCP") + ", message size=" + string(buffer->SizeInBytes()))
           }
 
           mSendingQueue->PutWord32(buffer->SizeInBytes());
