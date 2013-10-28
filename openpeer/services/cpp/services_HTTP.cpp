@@ -1075,7 +1075,10 @@ namespace openpeer
           buffer.CleanNew(size * nmemb);
           memcpy(buffer.BytePtr(), ptr, size * nmemb);
 
-          ZS_LOG_BASIC(pThis->log("HEADER=") + ((const char *)(buffer.BytePtr())))
+          String value = ((CSTR)(buffer.BytePtr()));
+          value.trim();
+
+          ZS_LOG_BASIC(pThis->log("HEADER=") + value)
 
           if (buffer.size() > 0) {
             char letter = (char)(*(buffer.BytePtr()));

@@ -387,11 +387,18 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      void ICESocket::getLocalCandidates(CandidateList &outCandidates)
+      void ICESocket::getLocalCandidates(
+                                         CandidateList &outCandidates,
+                                         String *outLocalCandidateVersion
+                                         )
       {
         AutoRecursiveLock lock(mLock);
 
         outCandidates.clear();
+
+        if (outLocalCandidateVersion) {
+          *outLocalCandidateVersion = string(mLastCandidateCRC);
+        }
 
         for (SocketMap::iterator iter = mSockets.begin(); iter != mSockets.end(); ++iter)
         {
@@ -417,6 +424,13 @@ namespace openpeer
             outCandidates.push_back(localSocket->mRelay);
           }
         }
+      }
+
+      //-----------------------------------------------------------------------
+      String ICESocket::getLocalCandidatesVersion() const
+      {
+        AutoRecursiveLock lock(mLock);
+        return string(mLastCandidateCRC);
       }
 
       //-----------------------------------------------------------------------

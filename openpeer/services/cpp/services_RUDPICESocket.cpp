@@ -39,8 +39,10 @@
 
 #include <algorithm>
 
-namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services) } }
+#define OPENPEER_SERVICES_RUDPSOCKTE_SOCKET_GONE_VERSION "c80a3b104cb84519936b6f5658f96275"
 
+
+namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services) } }
 
 namespace openpeer
 {
@@ -265,14 +267,26 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      void RUDPICESocket::getLocalCandidates(CandidateList &outCandidates)
+      void RUDPICESocket::getLocalCandidates(
+                                             CandidateList &outCandidates,
+                                             String *outLocalCandidateVersion
+                                             )
       {
         outCandidates.clear();
 
         IICESocketPtr socket = getICESocket();
         if (!socket) return;
 
-        socket->getLocalCandidates(outCandidates); // no need to do while inside a lock
+        socket->getLocalCandidates(outCandidates, outLocalCandidateVersion); // no need to do while inside a lock
+      }
+
+      //-----------------------------------------------------------------------
+      String RUDPICESocket::getLocalCandidatesVersion() const
+      {
+        IICESocketPtr socket = getICESocket();
+        if (!socket) return String(OPENPEER_SERVICES_RUDPSOCKTE_SOCKET_GONE_VERSION);
+
+        return socket->getLocalCandidatesVersion();
       }
 
       //-----------------------------------------------------------------------

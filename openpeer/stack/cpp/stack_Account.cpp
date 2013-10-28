@@ -513,8 +513,10 @@ namespace openpeer
 
         if (location == mSelfLocation) {
           if (mSocket) {
+            get(info->mCandidatesFinal) = IRUDPICESocket::RUDPICESocketState_Ready == mSocket->getState();
+
             IICESocket::CandidateList candidates;
-            mSocket->getLocalCandidates(candidates);
+            mSocket->getLocalCandidates(candidates, &(info->mCandidatesVersion));
 
             for (IICESocket::CandidateList::iterator iter = candidates.begin(); iter != candidates.end(); ++iter) {
               IICESocket::Candidate &candidate = (*iter);
@@ -1594,14 +1596,7 @@ namespace openpeer
                 ZS_LOG_DEBUG(log("receiced received a find reply to an existing known peer location") + PeerInfo::toDebugString(peerInfo) + AccountPeerLocation::toDebugString(peerLocation) + ILocation::toDebugString(location))
 
                 if (peerLocation->forAccount().hasReceivedCandidateInformation()) {
-                  ZS_LOG_WARNING(Detail, log("receiving candidate information for the same peer location thus shutting down current location") + PeerInfo::toDebugString(peerInfo) + AccountPeerLocation::toDebugString(peerLocation) + ILocation::toDebugString(location))
-                  peerInfo->mLocations.erase(found);
-                  peerLocation->forAccount().shutdown();
-
-                  notifySubscriptions(location, ILocation::LocationConnectionState_Disconnected);
-
-                  found = peerInfo->mLocations.end();
-                  peerLocation.reset();
+                  ZS_LOG_WARNING(Detail, log("receiving candidate information after final location for the same peer location") + PeerInfo::toDebugString(peerInfo) + AccountPeerLocation::toDebugString(peerLocation) + ILocation::toDebugString(location))
                 }
               }
 
@@ -1653,7 +1648,7 @@ namespace openpeer
                 }
               }
 
-              peerLocation->forAccount().connectLocation(remoteContext, remotePassword, remoteICEUsernameFrag, remoteICEPassword, candidates, IICESocket::ICEControl_Controlling);
+              peerLocation->forAccount().connectLocation(remoteContext, remotePassword, remoteICEUsernameFrag, remoteICEPassword, candidates, findReply->final(), IICESocket::ICEControl_Controlling);
 
               bool locationRemainThatHaveNotReplied = false;
               // scope: check to see if their are remaining locations yet to return their replies

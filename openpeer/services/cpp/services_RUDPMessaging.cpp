@@ -272,20 +272,20 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       void RUDPMessaging::onRDUPChannelStateChanged(
-                                                    IRUDPChannelPtr session,
+                                                    IRUDPChannelPtr channel,
                                                     RUDPChannelStates state
                                                     )
       {
         AutoRecursiveLock lock(mLock);
-        ZS_LOG_DEBUG(log("notified of channel state change"))
+        ZS_LOG_DEBUG(log("notified of channel state change") + ", channel ID=" + string(channel->getID()) + ", state=" + IRUDPChannel::toString(state))
 
-        if (session != mChannel) {
-          ZS_LOG_WARNING(Debug, log("notified of channel state change for obsolete channel thus ignoring"))
+        if (channel != mChannel) {
+          ZS_LOG_WARNING(Debug, log("notified of channel state change for obsolete channel (thus ignoring)") + ", expecting channel=" + (mChannel ? string(mChannel->getID()) : String("(null)")))
           return;
         }
 
         if (isShutdown()) {
-          ZS_LOG_DEBUG(log("notified of channel state change but already shutdown thus ignoring"))
+          ZS_LOG_DEBUG(log("notified of channel state change but already shutdown (thus ignoring)"))
           return;
         }
 
@@ -400,7 +400,7 @@ namespace openpeer
 
         Helper::getDebugValue("graceful shutdown reference", mGracefulShutdownReference ? String("true") : String(), firstTime) +
 
-        Helper::getDebugValue("channel", mChannel ? String("true") : String(), firstTime) +
+        Helper::getDebugValue("channel", mChannel ? string(mChannel->getID()) : String(), firstTime) +
 
         Helper::getDebugValue("next message size (bytes)", 0 != mNextMessageSizeInBytes ? string(mNextMessageSizeInBytes) : String(), firstTime) +
 

@@ -219,7 +219,11 @@ namespace openpeer
 
         virtual void wakeup(Duration minimumTimeCandidatesMustRemainValidWhileNotUsed = Seconds(60*10));
 
-        virtual void getLocalCandidates(CandidateList &outCandidates);
+        virtual void getLocalCandidates(
+                                        CandidateList &outCandidates,
+                                        String *outLocalCandidateVersion = NULL
+                                        );
+        virtual String getLocalCandidatesVersion() const;
 
         virtual IICESocketSessionPtr createSessionFromRemoteCandidates(
                                                                        IICESocketSessionDelegatePtr delegate,

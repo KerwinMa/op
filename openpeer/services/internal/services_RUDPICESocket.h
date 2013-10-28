@@ -172,7 +172,12 @@ namespace openpeer
 
         virtual void wakeup(Duration minimumTimeCandidatesMustRemainValidWhileNotUsed);
 
-        virtual void getLocalCandidates(CandidateList &outCandidates);
+        virtual void getLocalCandidates(
+                                        CandidateList &outCandidates,
+                                        String *outLocalCandidateVersion = NULL
+                                        );
+
+        virtual String getLocalCandidatesVersion() const;
 
         virtual IRUDPICESocketSessionPtr createSessionFromRemoteCandidates(
                                                                            IRUDPICESocketSessionDelegatePtr delegate,

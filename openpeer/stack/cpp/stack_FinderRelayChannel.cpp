@@ -668,7 +668,7 @@ namespace openpeer
           }
           case IFinderConnectionRelayChannel::SessionState_Connected:   break;
           case IFinderConnectionRelayChannel::SessionState_Shutdown:  {
-            ZS_LOG_WARNING(Detail, log("finder connection relay channel shutdown") + ", error=" + string(error) + ", reason" + reason)
+            ZS_LOG_WARNING(Detail, log("finder connection relay channel shutdown") + ", error=" + string(error) + ", reason=" + reason)
             setError(error, reason);
             cancel();
             return false;

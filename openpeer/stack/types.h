@@ -58,6 +58,7 @@ namespace openpeer
     using zsLib::Time;
     using zsLib::Duration;
     using zsLib::String;
+    using zsLib::AutoBool;
     using zsLib::RecursiveLock;
     using zsLib::AutoRecursiveLock;
     typedef boost::shared_ptr<AutoRecursiveLock> AutoRecursiveLockPtr;
@@ -127,6 +128,8 @@ namespace openpeer
       String    mSystem;
       String    mHost;
 
+      AutoBool  mCandidatesFinal;
+      String    mCandidatesVersion;
       CandidateList mCandidates;
 
       bool hasData() const;

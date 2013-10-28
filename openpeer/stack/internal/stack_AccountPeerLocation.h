@@ -113,6 +113,7 @@ namespace openpeer
                                      const char *remoteICEUsernameFrag,
                                      const char *remoteICEPassword,
                                      const CandidateList &candidates,
+                                     bool finalCandidates,
                                      IICESocket::ICEControls control
                                      ) = 0;
 
@@ -213,6 +214,7 @@ namespace openpeer
                                      const char *remoteICEUsernameFrag,
                                      const char *remoteICEPassword,
                                      const CandidateList &candidates,
+                                     bool candidatesFinal,
                                      IICESocket::ICEControls control
                                      );
 
@@ -367,12 +369,14 @@ namespace openpeer
         bool stepSocketSubscription(IRUDPICESocketPtr socket);
         bool stepOutgoingRelayChannel();
         bool stepIncomingRelayChannel();
+        bool stepAnyConnectionPresent();
         bool stepPendingRequests(IRUDPICESocketPtr socket);
+        bool stepRespondLastRequest(IRUDPICESocketPtr socket);  // do not call as a direct step
         bool stepSocketSession();
         bool stepIncomingIdentify();
+        bool stepIdentify();
         bool stepMessaging();
         bool stepMLS();
-        bool stepIdentify();
 
         void setState(AccountStates state);
 
@@ -396,6 +400,7 @@ namespace openpeer
         mutable Time mLastActivity;
 
         PendingRequestList mPendingRequests;
+        PeerLocationFindRequestPtr mLastRequest;
 
         String mRemoteContextID;
         String mRemotePeerSecret;
@@ -410,11 +415,14 @@ namespace openpeer
         IRUDPMessagingPtr mMessaging;
         ITransportStreamReaderPtr mMessagingReceiveStream;
         ITransportStreamWriterPtr mMessagingSendStream;
+        AutoBool mCandidatesFinal;
+        String mLastCandidateVersionSent;
 
         IMessageLayerSecurityChannelPtr mMLSChannel;
         ITransportStreamReaderPtr mMLSReceiveStream;
         ITransportStreamWriterPtr mMLSSendStream;
         String mMLSEncodingPassphrase;
+        AutoBool mMLSDidConnect;
 
         IFinderRelayChannelPtr mOutgoingRelayChannel;
         ITransportStreamReaderPtr mRelayReceiveStream;

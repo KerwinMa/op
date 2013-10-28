@@ -83,6 +83,9 @@ namespace openpeer
           const String &icePassword() const                             {return mICEPassword;}
           void icePassword(const String &val)                           {mICEPassword = val;}
 
+          bool final() const                                            {return mFinal;}
+          void final(bool val)                                          {mFinal = val;}
+
           const String &requestFindProofBundleDigestValue() const       {return mRequestfindProofBundleDigestValue;}
           void requestFindProofBundleDigestValue(const String &secret)  {mRequestfindProofBundleDigestValue = secret;}
 
@@ -107,6 +110,8 @@ namespace openpeer
           String mRequestfindProofBundleDigestValue;
           LocationInfo mLocationInfo;
           RouteList mRoutes;
+
+          bool mFinal;
 
           IPeerFilesPtr mPeerFiles;
         };

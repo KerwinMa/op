@@ -122,7 +122,15 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       // PURPOSE: Gets a local list of offered candidates
-      virtual void getLocalCandidates(CandidateList &outCandidates) = 0;
+      virtual void getLocalCandidates(
+                                      CandidateList &outCandidates,
+                                      String *outLocalCandidateVersion = NULL
+                                      ) = 0;
+
+      //-----------------------------------------------------------------------
+      // PURPOSE: Gets the version string associated to the current set of
+      //          local candidates
+      virtual String getLocalCandidatesVersion() const = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Create a peer to peer connected session when the remote

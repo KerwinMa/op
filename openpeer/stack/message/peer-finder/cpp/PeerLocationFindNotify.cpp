@@ -40,6 +40,7 @@
 
 #include <zsLib/XML.h>
 #include <zsLib/helpers.h>
+#include <zsLib/Numeric.h>
 
 namespace openpeer { namespace stack { namespace message { ZS_DECLARE_SUBSYSTEM(openpeer_stack_message) } } }
 
@@ -53,6 +54,7 @@ namespace openpeer
       {
         typedef zsLib::XML::Exceptions::CheckFailed CheckFailed;
 
+        using zsLib::Numeric;
         using message::internal::MessageHelper;
 
         using namespace stack::internal;
@@ -64,7 +66,8 @@ namespace openpeer
         }
 
         //---------------------------------------------------------------------
-        PeerLocationFindNotify::PeerLocationFindNotify()
+        PeerLocationFindNotify::PeerLocationFindNotify() :
+          mFinal(false)
         {
         }
 
@@ -89,6 +92,12 @@ namespace openpeer
             ret->mICEUsernameFrag = IMessageHelper::getElementTextAndDecode(findProofEl->findFirstChildElementChecked("iceUsernameFrag"));
             ret->mICEPassword = IMessageHelper::getElementTextAndDecode(findProofEl->findFirstChildElementChecked("icePassword"));
 
+            try {
+              ret->mFinal = IMessageHelper::getElementTextAndDecode(findProofEl->findFirstChildElementChecked("final"));
+            } catch (Numeric<bool>::ValueOutOfRange &) {
+              ZS_LOG_WARNING(Detail, "PeerLocationFindNotify [] final value missing")
+            }
+
             ElementPtr locationEl = findProofEl->findFirstChildElement("location");
             if (locationEl) {
               ret->mLocationInfo = internal::MessageHelper::createLocation(locationEl, messageSource, ret->mPeerSecret.hasData() ? ret->mPeerSecret.c_str() : NULL);
@@ -111,25 +120,6 @@ namespace openpeer
               return PeerLocationFindNotifyPtr();
             }
 
-#define WARNING_REMOVE_ROUTES 1
-#define WARNING_REMOVE_ROUTES 2
-
-            ElementPtr routes = root->findFirstChildElement("routes");
-            if (routes)
-            {
-              RouteList routeLst;
-              ElementPtr route = routes->findFirstChildElement("route");
-              while (route)
-              {
-                String id = IMessageHelper::getAttributeID(route);
-                routeLst.push_back(id);
-
-                route = route->getNextSiblingElement();
-              }
-
-              if (routeLst.size() > 0)
-                ret->mRoutes = routeLst;
-            }
           } catch(CheckFailed &) {
             ZS_LOG_WARNING(Detail, "PeerLocationFindNotify [] expected element is missing")
             return PeerLocationFindNotifyPtr();
@@ -218,6 +208,8 @@ namespace openpeer
             findProofEl->adoptAsLastChild(IMessageHelper::createElementWithTextAndJSONEncode("iceUsernameFrag", mICEUsernameFrag));
           }
 
+          findProofEl->adoptAsLastChild(IMessageHelper::createElementWithTextAndJSONEncode("final", mFinal ? "true":"false"));
+
           if (mICEPassword.hasData()) {
             findProofEl->adoptAsLastChild(IMessageHelper::createElementWithTextAndJSONEncode("icePassword", mICEPassword));
           }
@@ -229,21 +221,6 @@ namespace openpeer
           findProofBundleEl->adoptAsLastChild(findProofEl);
           peerFilePrivate->signElement(findProofEl);
           root->adoptAsLastChild(findProofBundleEl);
-
-#define WARNING_REMOVE_ROUTES 1
-#define WARNING_REMOVE_ROUTES 2
-
-          if (hasAttribute(AttributeType_Routes))
-          {
-            ElementPtr routesEl = IMessageHelper::createElement("routes");
-            root->adoptAsLastChild(routesEl);
-
-            for (RouteList::const_iterator it = mRoutes.begin(); it != mRoutes.end(); ++it)
-            {
-              const String &routeID = (*it);
-              routesEl->adoptAsLastChild(IMessageHelper::createElementWithID("route", routeID));
-            }
-          }
 
           return ret;
         }
