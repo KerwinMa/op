@@ -67,6 +67,10 @@ namespace openpeer
                                                     ITransportStreamPtr wireReceiveStream,
                                                     ITransportStreamPtr wireSendStream
                                                     );
+
+        virtual PUID getID() const = 0;
+
+        virtual IFinderRelayChannelSubscriptionPtr subscribe(IFinderRelayChannelDelegatePtr delegate) = 0;
       };
 
       //-----------------------------------------------------------------------
@@ -181,6 +185,9 @@ namespace openpeer
                                                     ITransportStreamPtr wireReceiveStream,
                                                     ITransportStreamPtr wireSendStream
                                                     );
+
+        // (duplicate) virtual PUID getID() const;
+        // (duplicate) virtual IFinderRelayChannelSubscriptionPtr subscribe(IFinderRelayChannelDelegatePtr delegate);
 
         //---------------------------------------------------------------------
         #pragma mark

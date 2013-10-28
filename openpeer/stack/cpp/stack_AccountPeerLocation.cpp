@@ -1168,7 +1168,10 @@ namespace openpeer
           mRelaySendStream.reset();
         }
 
-        mIncomingRelayChannel.reset();
+        if (mIncomingRelayChannel) {
+          mIncomingRelayChannel->cancel();
+          mIncomingRelayChannel.reset();
+        }
         if (mRelayChannelSubscription) {
           mRelayChannelSubscription->cancel();
           mRelayChannelSubscription.reset();

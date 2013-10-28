@@ -477,6 +477,7 @@ namespace openpeer
         channel->getStreams(wireReceiveStream, wireSendStream);
 
         FinderRelayChannelPtr relay = IFinderRelayChannelForFinderConnection::createIncoming(delegate, account, receiveStream, sendStream, wireReceiveStream, wireSendStream);
+        channel->notifyIncomingFinderRelayChannel(relay);
 
         mIncomingChannels.erase(found);
 
@@ -948,11 +949,11 @@ namespace openpeer
             }
           }
 
-          // scope: remove from incoming channels
+          // scope: remove from channels
           {
             ChannelMap::iterator found = mChannels.find(channelNumber);
             if (found != mChannels.end()) {
-              ZS_LOG_DEBUG(log("removing channel from incoming channels"))
+              ZS_LOG_DEBUG(log("removing channel from channels"))
 
               ChannelPtr channel = (*found).second;
 
@@ -993,6 +994,14 @@ namespace openpeer
         }
 
         mRemoveChannels.clear();
+
+        if ((mChannels.size() < 1) &&
+            (mIncomingChannels.size() < 1) &&
+            (mPendingMapRequest.size() < 1)) {
+          ZS_LOG_DEBUG(log("no more need to have finder connection as no channels in use (thus self destruct)"))
+          cancel();
+          return false;
+        }
 
         ZS_LOG_TRACE(log("remove channels completed"))
 
@@ -1387,6 +1396,11 @@ namespace openpeer
 
         mOuterReceiveStream->cancel();
         mOuterSendStream->cancel();
+
+        if (mRelayChannelSubscription) {
+          mRelayChannelSubscription->cancel();
+          mRelayChannelSubscription.reset();
+        }
       }
 
       //-----------------------------------------------------------------------
@@ -1432,6 +1446,41 @@ namespace openpeer
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
       #pragma mark
+      #pragma mark FinderConnection::Channel => IFinderRelayChannelDelegate
+      #pragma mark
+
+      //-----------------------------------------------------------------------
+      void FinderConnection::Channel::onFinderRelayChannelStateChanged(
+                                                                       IFinderRelayChannelPtr channel,
+                                                                       IFinderRelayChannel::SessionStates state
+                                                                       )
+      {
+        ZS_LOG_TRACE(log("finder relay channel state changed") + ", channel ID=" + string(channel->getID()) + ", state=" + IFinderRelayChannel::toString(state))
+
+        switch (state) {
+          case IFinderRelayChannel::SessionState_Pending:
+          case IFinderRelayChannel::SessionState_Connected: {
+            break;
+          }
+          case IFinderRelayChannel::SessionState_Shutdown:  {
+            ZS_LOG_DEBUG(log("finder relay channel is shutdown thus finder channel must shutdown"))
+            cancel();
+            break;
+          }
+        }
+      }
+
+      //-----------------------------------------------------------------------
+      void FinderConnection::Channel::onFinderRelayChannelNeedsContext(IFinderRelayChannelPtr channel)
+      {
+        // IGNORED
+      }
+
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      #pragma mark
       #pragma mark FinderConnection::Channel => ITransportStreamReaderDelegate
       #pragma mark
 
@@ -1460,6 +1509,20 @@ namespace openpeer
         pThis->mThisWeak = pThis;
         pThis->init();
         return pThis;
+      }
+
+      //-----------------------------------------------------------------------
+      void FinderConnection::Channel::notifyIncomingFinderRelayChannel(FinderRelayChannelPtr relayChannel)
+      {
+        if (!relayChannel) {
+          ZS_LOG_ERROR(Detail, log("incoming finder relay channel is missing"))
+          return;
+        }
+
+        ZS_LOG_DEBUG(log("monitoring incoming finder relay channel for shutdown (to ensure related channel gets shutdown too)") + ", finder relay channel=" + string(relayChannel->forConnection().getID()))
+
+        AutoRecursiveLock lock(getLock());
+        mRelayChannelSubscription = relayChannel->forConnection().subscribe(mThisWeak.lock());
       }
 
       //-----------------------------------------------------------------------

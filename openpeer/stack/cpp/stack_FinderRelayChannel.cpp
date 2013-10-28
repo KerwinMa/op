@@ -234,6 +234,7 @@ namespace openpeer
 
         if (mConnectionRelayChannel) {
           mConnectionRelayChannel->cancel();
+          mConnectionRelayChannel.reset();
         }
 
         if (mDefaultSubscription) {
@@ -396,7 +397,7 @@ namespace openpeer
 
         return pThis;
       }
-      
+
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
@@ -563,7 +564,7 @@ namespace openpeer
                Helper::getDebugValue("last reason", mLastErrorReason, firstTime) +
                Helper::getDebugValue("account", mAccount.lock() ? String("true") : String(), firstTime) +
                Helper::getDebugValue("incoming", mIncoming ? String("true") : String(), firstTime) +
-               Helper::getDebugValue("connection relay channel", mConnectionRelayChannel ? String("true") : String(), firstTime) +
+               Helper::getDebugValue("connection relay channel", mConnectionRelayChannel ? string(mConnectionRelayChannel->getID()) : String(), firstTime) +
                IMessageLayerSecurityChannel::toDebugString(mMLSChannel) +
                Helper::getDebugValue("notified needs context", mNotifiedNeedsContext ? String("true") : String(), firstTime) +
                IPeer::toDebugString(mRemotePeer) +

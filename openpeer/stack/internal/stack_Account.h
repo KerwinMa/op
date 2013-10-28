@@ -764,8 +764,10 @@ namespace openpeer
           static String toDebugString(PeerInfoPtr peerInfo, bool includeCommaPrefix = true);
 
           static PeerInfoPtr create();
+          ~PeerInfo();
           void findTimeReset();
           void findTimeScheduleNext();
+          String log(const char *message) const;
           String getDebugValueString(bool includeCommaPrefix = true) const;
 
           AutoPUID mID;

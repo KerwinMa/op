@@ -70,8 +70,8 @@
 
 #define OPENPEER_STACK_PEER_LOCATION_FIND_TIMEOUT_IN_SECONDS (60*2)
 #define OPENPEER_STACK_PEER_LOCATION_FIND_RETRY_IN_SECONDS (30)
-#define OPENPEER_STACK_PEER_LOCATION_INACTIVITY_TIMEOUT_IN_SECONDS (10*60)
-#define OPENPEER_STACK_PEER_LOCATION_KEEP_ALIVE_TIME_IN_SECONDS    (5*60)
+#define OPENPEER_STACK_PEER_LOCATION_INACTIVITY_TIMEOUT_IN_SECONDS (3*60)
+#define OPENPEER_STACK_PEER_LOCATION_KEEP_ALIVE_TIME_IN_SECONDS    (2*60)
 
 #define OPENPEER_STACK_FINDERS_GET_TOTAL_SERVERS_TO_GET (2)
 #define OPENPEER_STACK_FINDERS_GET_TIMEOUT_IN_SECONDS (60)
@@ -2955,6 +2955,22 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
+      Account::PeerInfo::~PeerInfo()
+      {
+        for (RelayInfoMap::iterator iter = mRelayInfos.begin(); iter != mRelayInfos.end(); ++iter)
+        {
+          RelayInfoPtr &relayInfo = (*iter).second;
+
+          ZS_THROW_BAD_STATE_IF(!relayInfo)
+
+          ZS_LOG_DEBUG(log("cancelling incoming relay channel") + relayInfo->getDebugValueString())
+
+          relayInfo->cancel();
+        }
+        mRelayInfos.clear();
+      }
+
+      //-----------------------------------------------------------------------
       void Account::PeerInfo::findTimeReset()
       {
         mNextScheduledFind = zsLib::now();
@@ -2968,6 +2984,12 @@ namespace openpeer
       {
         mLastScheduleFindDuration = mLastScheduleFindDuration * 2;
         mNextScheduledFind = zsLib::now() + mLastScheduleFindDuration;
+      }
+
+      //-----------------------------------------------------------------------
+      String Account::PeerInfo::log(const char *message) const
+      {
+        return String("Account::PeerInfo [") + string(mID) + "] " + message;
       }
 
       //-----------------------------------------------------------------------

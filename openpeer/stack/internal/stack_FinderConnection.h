@@ -34,6 +34,7 @@
 #include <openpeer/stack/internal/types.h>
 #include <openpeer/stack/internal/stack_IFinderConnectionRelayChannel.h>
 #include <openpeer/stack/internal/stack_IFinderConnection.h>
+#include <openpeer/stack/internal/stack_IFinderRelayChannel.h>
 
 #include <openpeer/stack/message/types.h>
 #include <openpeer/stack/message/peer-finder/ChannelMapResult.h>
@@ -292,6 +293,7 @@ namespace openpeer
         class Channel : public Noop,
                         public zsLib::MessageQueueAssociator,
                         public IFinderConnectionRelayChannel,
+                        public IFinderRelayChannelDelegate,
                         public ITransportStreamWriterDelegate,
                         public ITransportStreamReaderDelegate
         {
@@ -361,6 +363,18 @@ namespace openpeer
 
           //-------------------------------------------------------------------
           #pragma mark
+          #pragma mark FinderConnection::Channel => IFinderRelayChannelDelegate
+          #pragma mark
+
+          virtual void onFinderRelayChannelStateChanged(
+                                                        IFinderRelayChannelPtr channel,
+                                                        IFinderRelayChannel::SessionStates state
+                                                        );
+
+          virtual void onFinderRelayChannelNeedsContext(IFinderRelayChannelPtr channel);
+
+          //-------------------------------------------------------------------
+          #pragma mark
           #pragma mark FinderConnection::Channel => ITransportStreamWriterDelegate
           #pragma mark
 
@@ -385,6 +399,8 @@ namespace openpeer
                                      ITransportStreamPtr sendStream,
                                      ULONG channelNumber
                                      );
+
+          void notifyIncomingFinderRelayChannel(FinderRelayChannelPtr relayChannel);
 
           void notifyReceivedWireWriteReady();
 
@@ -447,6 +463,8 @@ namespace openpeer
           AutoBool mOuterStreamNotifiedReady;
 
           ConnectionInfo mConnectionInfo;
+
+          IFinderRelayChannelSubscriptionPtr mRelayChannelSubscription;
         };
 
       protected:
