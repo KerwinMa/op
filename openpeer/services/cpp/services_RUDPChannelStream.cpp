@@ -70,7 +70,7 @@
 #endif //OPENPEER_INDUCE_FAKE_PACKET_LOSS
 
 
-namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services) } }
+namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services_rudp) } }
 
 namespace openpeer
 {

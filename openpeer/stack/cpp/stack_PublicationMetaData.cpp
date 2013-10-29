@@ -463,17 +463,17 @@ namespace openpeer
       result_true:
         {
           IPublicationPtr publication = metaData->toPublication();
-          ZS_LOG_TRACE(log("less than is TRUE") + ", reason=" + reason)
-          ZS_LOG_TRACE(log("less than X (TRUE):") + getDebugValuesString())
-          ZS_LOG_TRACE(log("less than Y (TRUE):") + (publication ? Publication::convert(publication)->forPublicationMetaData().getDebugValuesString() : PublicationMetaData::convert(metaData)->getDebugValuesString()))
+          ZS_LOG_INSANE(log("less than is TRUE") + ", reason=" + reason)
+          ZS_LOG_INSANE(log("less than X (TRUE):") + getDebugValuesString())
+          ZS_LOG_INSANE(log("less than Y (TRUE):") + (publication ? Publication::convert(publication)->forPublicationMetaData().getDebugValuesString() : PublicationMetaData::convert(metaData)->getDebugValuesString()))
           return true;
         }
       result_false:
         {
           IPublicationPtr publication = metaData->toPublication();
-          ZS_LOG_TRACE(log("less than is FALSE") + ", reason=" + reason)
-          ZS_LOG_TRACE(log("less than X (FALSE):") + getDebugValuesString())
-          ZS_LOG_TRACE(log("less than Y (FALSE):") + (publication ? Publication::convert(publication)->forPublicationMetaData().getDebugValuesString() : PublicationMetaData::convert(metaData)->getDebugValuesString()))
+          ZS_LOG_INSANE(log("less than is FALSE") + ", reason=" + reason)
+          ZS_LOG_INSANE(log("less than X (FALSE):") + getDebugValuesString())
+          ZS_LOG_INSANE(log("less than Y (FALSE):") + (publication ? Publication::convert(publication)->forPublicationMetaData().getDebugValuesString() : PublicationMetaData::convert(metaData)->getDebugValuesString()))
         }
         return false;
       }

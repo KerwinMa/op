@@ -47,7 +47,7 @@
 
 #define OPENPEER_SERVICES_RUDPICESOCKETSESSION_MAX_ATTEMPTS_TO_FIND_FREE_CHANNEL_NUMBER (5)
 
-namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services) } }
+namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services_rudp) } }
 
 
 namespace openpeer
@@ -415,6 +415,11 @@ namespace openpeer
                                                                       ULONG bufferLengthInBytes
                                                                       )
       {
+        if (ZS_IS_LOGGING(Insane)) {
+          String raw = Helper::getDebugString(buffer, bufferLengthInBytes);
+          ZS_LOG_INSANE(log("RECEIVED PACKET FROM WIRE=") + "\n" + raw)
+        }
+
         RUDPPacketPtr rudp = RUDPPacket::parseIfRUDP(buffer, bufferLengthInBytes);
 
         if (!rudp) {
@@ -610,6 +615,11 @@ namespace openpeer
         if (!session) {
           ZS_LOG_WARNING(Detail, log("send packet failed as ICE session object destroyed"))
           return false;
+        }
+
+        if (ZS_IS_LOGGING(Insane)) {
+          String raw = Helper::getDebugString(packet, packetLengthInBytes);
+          ZS_LOG_INSANE(log("SEND PACKET ON WIRE=") + "\n" + raw)
         }
 
         return session->sendPacket(packet, packetLengthInBytes);  // no need to call within a lock

@@ -37,7 +37,7 @@
 #include <zsLib/helpers.h>
 #include <zsLib/Stringize.h>
 
-namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services) } }
+namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services_ice) } }
 
 namespace openpeer
 {

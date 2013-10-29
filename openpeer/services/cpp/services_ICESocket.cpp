@@ -74,7 +74,7 @@
 #define OPENPEER_SERVICES_REBIND_TIMER_WHEN_HAS_SOCKETS_IN_SECONDS (30)
 
 
-namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services) } }
+namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services_ice) } }
 
 
 namespace openpeer
@@ -536,6 +536,10 @@ namespace openpeer
 #endif //OPENPEER_SERVICES_TURNSOCKET_DEBUGGING_FORCE_USE_TURN_WITH_UDP
           ULONG bytesSent = socket->sendTo(destination, buffer, bufferLengthInBytes, &wouldBlock);
           ZS_LOG_TRACE(log("sending packet") + ", via local IP" + string(viaLocalIP) + ", via=" + toString(viaTransport) + " to ip=" + destination.string() + ", buffer=" + (buffer ? "true" : "false") + ", buffer length=" + string(bufferLengthInBytes) + ", user data=" + (isUserData ? "true" : "false") + ", bytes sent=" + string(bytesSent) + ", would block=" + (wouldBlock ? "true" : "false"))
+          if (ZS_IS_LOGGING(Insane)) {
+            String raw = Helper::getDebugString(buffer, bytesSent);
+            ZS_LOG_INSANE(log("SEND PACKET ON WIRE (") + destination.string() + ")=" + "\n" + raw)
+          }
           return ((!wouldBlock) && (bufferLengthInBytes == bytesSent));
         } catch(ISocket::Exceptions::Unspecified &error) {
           ZS_LOG_ERROR(Detail, log("sendTo error") + ", error=" + string(error.getErrorCode()))
@@ -638,6 +642,11 @@ namespace openpeer
             if (0 == bytesRead) return;
 
             ZS_LOG_TRACE(log("packet received") + ", ip=" + source.string())
+
+            if (ZS_IS_LOGGING(Insane)) {
+              String raw = Helper::getDebugString(buffer.get(), bytesRead);
+              ZS_LOG_INSANE(log("RECEIVE PACKET ON WIRE (") + source.string() + ")=" + "\n" + raw)
+            }
 
           } catch(ISocket::Exceptions::Unspecified &error) {
             ZS_LOG_ERROR(Detail, log("receiveFrom error") + ", error=" + string(error.getErrorCode()))

@@ -41,7 +41,7 @@
 #include <sys/types.h>
 #endif //_LINUX
 
-namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services) } }
+namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services_rudp) } }
 
 #define OPENPEER_SERVICES_MINIMUM_PACKET_LENGTH_IN_BYTES (12)
 

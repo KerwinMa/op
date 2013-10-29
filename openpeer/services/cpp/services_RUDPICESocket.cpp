@@ -42,7 +42,7 @@
 #define OPENPEER_SERVICES_RUDPSOCKTE_SOCKET_GONE_VERSION "c80a3b104cb84519936b6f5658f96275"
 
 
-namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services) } }
+namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services_rudp) } }
 
 namespace openpeer
 {

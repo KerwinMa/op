@@ -55,7 +55,7 @@
 #define OPENPEER_SERVICES_ICESOCKETSESSION_ACTIVATE_TIMER_IN_MS (20)
 #define OPENPEER_SERVICES_ICESOCKETSESSION_STEP_TIMER_IN_SECONDS (2)
 
-namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services) } }
+namespace openpeer { namespace services { ZS_DECLARE_SUBSYSTEM(openpeer_services_ice) } }
 
 namespace openpeer
 {

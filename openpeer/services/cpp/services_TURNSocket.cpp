@@ -2280,10 +2280,12 @@ namespace openpeer
       void TURNSocket::informWriteReady()
       {
         if (isShutdown()) return;
+
         if (!mActiveServer) {
-          ZS_LOG_WARNING(Detail, log("notify write ready does not have an active server yet"))
+          ZS_LOG_WARNING(Detail, log("notify write ready does not have an active server yet (probably okay if during TURN setup process)"))
           return;
         }
+
         if (mActiveServer->mInformedWriteReady) {
           return;
         }

@@ -1034,14 +1034,14 @@ namespace openpeer
         private:
         };
 
-        if (ZS_IS_LOGGING(Trace)) {
-          ZS_LOG_BASIC("vvvvvvvvvvvv -- PRE-SORT  -- vvvvvvvvvvvv")
+        if (ZS_IS_LOGGING(Insane)) {
+          ZS_LOG_BASIC("Helper [] vvvvvvvvvvvv -- PRE-SORT  -- vvvvvvvvvvvv")
           {
             GeneratorPtr generator = Generator::createJSONGenerator();
             boost::shared_array<char> output = generator->write(element);
             ZS_LOG_BASIC( ((CSTR)output.get()) )
           }
-          ZS_LOG_BASIC("^^^^^^^^^^^^ -- PRE-SORT  -- ^^^^^^^^^^^^")
+          ZS_LOG_BASIC("Helper [] ^^^^^^^^^^^^ -- PRE-SORT  -- ^^^^^^^^^^^^")
         }
         ElementPtr convertEl = element->clone()->toElement();
 
@@ -1050,15 +1050,15 @@ namespace openpeer
         Walker walker;
         convertEl->walk(walker, &filter);
 
-        if (ZS_IS_LOGGING(Trace)) {
+        if (ZS_IS_LOGGING(Insane)) {
           // let's output some logging...
-          ZS_LOG_BASIC("vvvvvvvvvvvv -- POST-SORT -- vvvvvvvvvvvv")
+          ZS_LOG_BASIC("Helper [] vvvvvvvvvvvv -- POST-SORT -- vvvvvvvvvvvv")
           {
             GeneratorPtr generator = Generator::createJSONGenerator();
             boost::shared_array<char> output = generator->write(convertEl);
             ZS_LOG_BASIC( ((CSTR)output.get()) )
           }
-          ZS_LOG_BASIC("^^^^^^^^^^^^ -- POST-SORT -- ^^^^^^^^^^^^")
+          ZS_LOG_BASIC("Helper [] ^^^^^^^^^^^^ -- POST-SORT -- ^^^^^^^^^^^^")
         }
 
         return convertEl;
@@ -1123,10 +1123,10 @@ namespace openpeer
       }
       
       //-----------------------------------------------------------------------
-      const zsLib::String &Helper::get(
-                                       const SplitMap &inResult,
-                                       Index index
-                                       )
+      const String &Helper::get(
+                                const SplitMap &inResult,
+                                Index index
+                                )
       {
         static String empty;
         SplitMap::const_iterator found = inResult.find(index);

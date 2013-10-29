@@ -849,12 +849,16 @@ namespace openpeer
         AutoRecursiveLock lock(mLock);
 
         if (subscription != mPeerSubscription) {
-          ZS_LOG_WARNING(Detail, log("notified about obsolete subscription"))
+          ZS_LOG_WARNING(Detail, log("notified about obsolete subscription (thus ignoring)") + ", subscription ID=" + string(subscription->getID()))
           return;
         }
 
         IPeerPtr peer = location->getPeer();
         if (!peer) {
+          if (location->getLocationType() == ILocation::LocationType_Finder) {
+            ZS_LOG_TRACE(log("notified about location finder location (thus ignoring)") + ILocation::toDebugString(location))
+            return;
+          }
           ZS_LOG_WARNING(Detail, log("notified about location which is not a peer") + ILocation::toDebugString(location))
           return;
         }

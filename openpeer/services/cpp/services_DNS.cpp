@@ -2148,7 +2148,7 @@ namespace openpeer
       while (true)
       {
         if (srvResult->mRecords.size() < 1) {
-          ZS_LOG_WARNING(Debug, "DNS extracting next IP failed.")
+          ZS_LOG_DEBUG("DNS found no IPs to extract (i.e. end of list).")
           return false;
         }
 
