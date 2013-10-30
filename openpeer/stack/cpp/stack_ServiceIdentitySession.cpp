@@ -1530,7 +1530,7 @@ namespace openpeer
         ++mFailuresInARow;
 
         if ((mFailuresInARow < 2) &&
-            (result->errorCode() == IHTTP::HTTPStatusCode_MethodFailure)) { // error 424
+            (result->errorCode() != IHTTP::HTTPStatusCode_MethodFailure)) { // error 424
           ZS_LOG_DEBUG(log("performing complete rolodex refresh"))
           refreshRolodexContacts();
           step();
