@@ -52,16 +52,9 @@ namespace openpeer
 
     interaction IRUDPICESocketSession
     {
-      typedef IICESocket::Candidate Candidate;
-      typedef IICESocket::CandidateList CandidateList;
-      typedef IICESocket::Types Types;
-      typedef IICESocket::ICEControls ICEControls;
-
       enum RUDPICESocketSessionStates
       {
         RUDPICESocketSessionState_Pending,
-        RUDPICESocketSessionState_Prepared,
-        RUDPICESocketSessionState_Searching,
         RUDPICESocketSessionState_Ready,
         RUDPICESocketSessionState_ShuttingDown,
         RUDPICESocketSessionState_Shutdown,
@@ -69,24 +62,17 @@ namespace openpeer
 
       static const char *toString(RUDPICESocketSessionStates state);
 
-      enum RUDPICESocketSessionShutdownReasons
-      {
-        RUDPICESocketSessionShutdownReason_None                   = IICESocketSession::ICESocketSessionShutdownReason_None,
-
-        RUDPICESocketSessionShutdownReason_Timeout                = IICESocketSession::ICESocketSessionShutdownReason_Timeout,
-        RUDPICESocketSessionShutdownReason_BackgroundingTimeout   = IICESocketSession::ICESocketSessionShutdownReason_BackgroundingTimeout,
-        RUDPICESocketSessionShutdownReason_CandidateSearchFailed  = IICESocketSession::ICESocketSessionShutdownReason_CandidateSearchFailed,
-
-        RUDPICESocketSessionShutdownReason_DelegateGone           = IICESocketSession::ICESocketSessionShutdownReason_DelegateGone,
-      };
-
-      static const char *toString(RUDPICESocketSessionShutdownReasons reason);
-
       static String toDebugString(IRUDPICESocketSessionPtr session, bool includeCommaPrefix = true);
+
+      static IRUDPICESocketSessionPtr listen(
+                                             IMessageQueuePtr queue,
+                                             IICESocketSessionPtr iceSession,
+                                             IRUDPICESocketSessionDelegatePtr delegate
+                                             );
 
       virtual PUID getID() const = 0;
 
-      virtual IRUDPICESocketPtr getSocket() = 0;
+      virtual IRUDPICESocketSessionSubscriptionPtr subscribe(IRUDPICESocketSessionDelegatePtr delegate) = 0;
 
       virtual RUDPICESocketSessionStates getState(
                                                   WORD *outLastErrorCode = NULL,
@@ -94,41 +80,6 @@ namespace openpeer
                                                   ) const = 0;
 
       virtual void shutdown() = 0;
-
-      virtual void getLocalCandidates(CandidateList &outCandidates) = 0;
-      virtual void updateRemoteCandidates(const CandidateList &remoteCandidates) = 0;
-      virtual void endOfRemoteCandidates() = 0;
-
-      virtual void setKeepAliveProperties(
-                                          Duration sendKeepAliveIndications,
-                                          Duration expectSTUNOrDataWithinWithinOrSendAliveCheck = Duration(),
-                                          Duration keepAliveSTUNRequestTimeout = Duration(),
-                                          Duration backgroundingTimeout = Duration()
-                                          ) = 0;
-
-      //-----------------------------------------------------------------------
-      // PURPOSE: Although each ICE session starts off as being in a particular
-      //          controlling state, the state can change due to an unintended
-      //          conflict between which side is actually controlling. This
-      //          yields the current (or final) controlling state of the
-      //          connection.
-      virtual ICEControls getConnectedControlState() = 0;
-
-      //-----------------------------------------------------------------------
-      // PURPOSE: Once the connection is established, the remote IP of the
-      //          current destination address will be known.
-      virtual IPAddress getConnectedRemoteIP() = 0;
-
-      //-----------------------------------------------------------------------
-      // PURPOSE: When a connection is established, the nominated connection
-      //          information will become known at that time.
-      // RETURNS: true if a connected pair is nominated currently, otherwise
-      //          false. If false the information in the out results is not
-      //          valid or usable data.
-      virtual bool getNominatedCandidateInformation(
-                                                    Candidate &outLocal,
-                                                    Candidate &outRemote
-                                                    ) = 0;
 
       // NOTE: Will return NULL if no channel can be open at this time.
       virtual IRUDPChannelPtr openChannel(
@@ -167,6 +118,22 @@ namespace openpeer
       virtual void onRUDPICESocketSessionChannelWaiting(IRUDPICESocketSessionPtr session) = 0;
     };
 
+    //-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    #pragma mark
+    #pragma mark IRUDPICESocketSessionSubscription
+    #pragma mark
+
+    interaction IRUDPICESocketSessionSubscription
+    {
+      virtual PUID getID() const = 0;
+
+      virtual void cancel() = 0;
+
+      virtual void background() = 0;
+    };
   }
 }
 
@@ -176,3 +143,11 @@ ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::IRUDPICESocketSessionDelegate::RUDP
 ZS_DECLARE_PROXY_METHOD_2(onRUDPICESocketSessionStateChanged, IRUDPICESocketSessionPtr, RUDPICESocketSessionStates)
 ZS_DECLARE_PROXY_METHOD_1(onRUDPICESocketSessionChannelWaiting, IRUDPICESocketSessionPtr)
 ZS_DECLARE_PROXY_END()
+
+
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_BEGIN(openpeer::services::IRUDPICESocketSessionDelegate, openpeer::services::IRUDPICESocketSessionSubscription)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_TYPEDEF(openpeer::services::IRUDPICESocketSessionPtr, IRUDPICESocketSessionPtr)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_TYPEDEF(openpeer::services::IRUDPICESocketSession::RUDPICESocketSessionStates, RUDPICESocketSessionStates)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_2(onRUDPICESocketSessionStateChanged, IRUDPICESocketSessionPtr, RUDPICESocketSessionStates)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_1(onRUDPICESocketSessionChannelWaiting, IRUDPICESocketSessionPtr)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_END()

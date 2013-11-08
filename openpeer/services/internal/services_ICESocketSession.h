@@ -180,6 +180,8 @@ namespace openpeer
 
         virtual PUID getID() const {return mID;}
 
+        virtual IICESocketSessionSubscriptionPtr subscribe(IICESocketSessionDelegatePtr delegate);
+
         virtual IICESocketPtr getSocket();
 
         virtual ICESocketSessionStates getState(
@@ -363,7 +365,9 @@ namespace openpeer
         AutoWORD mLastError;
         String mLastErrorReason;
 
-        IICESocketSessionDelegatePtr mDelegate;
+        IICESocketSessionDelegateSubscriptions mSubscriptions;
+        IICESocketSessionSubscriptionPtr mDefaultSubscription;
+
         AutoBool mInformedWriteReady;
 
         IICESocketSubscriptionPtr mSocketSubscription;
@@ -386,6 +390,7 @@ namespace openpeer
         ISTUNRequesterPtr mNominateRequester;
         CandidatePairPtr mPendingNominatation;
         CandidatePairPtr mNominated;
+        CandidatePairPtr mPreviouslyNominated;
 
         Time mLastSentData;
         Time mLastActivity;

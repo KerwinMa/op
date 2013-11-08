@@ -51,45 +51,12 @@ namespace openpeer
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
       #pragma mark
-      #pragma mark IRUDPICESocketSessionForRUDPICESocket
-      #pragma mark
-
-      //-----------------------------------------------------------------------
-      interaction IRUDPICESocketSessionForRUDPICESocket
-      {
-        typedef IICESocket::CandidateList CandidateList;
-        typedef IICESocket::ICEControls ICEControls;
-
-        IRUDPICESocketSessionForRUDPICESocket &forSocket() {return *this;}
-        const IRUDPICESocketSessionForRUDPICESocket &forSocket() const {return *this;}
-
-        static RUDPICESocketSessionPtr create(
-                                              IMessageQueuePtr queue,
-                                              RUDPICESocketPtr parent,
-                                              IRUDPICESocketSessionDelegatePtr delegate,
-                                              const char *remoteUsernameFrag,
-                                              const char *remotePassword,
-                                              const CandidateList &remoteCandidates,
-                                              ICEControls control
-                                              );
-
-        virtual PUID getID() const = 0;
-
-        virtual void shutdown() = 0;
-      };
-
-      //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      #pragma mark
       #pragma mark RUDPICESocketSession
       #pragma mark
 
       class RUDPICESocketSession : public Noop,
                                    public MessageQueueAssociator,
                                    public IRUDPICESocketSession,
-                                   public IRUDPICESocketSessionForRUDPICESocket,
                                    public IICESocketSessionDelegate,
                                    public IRUDPChannelDelegateForSessionAndListener
       {
@@ -108,18 +75,13 @@ namespace openpeer
       protected:
         RUDPICESocketSession(
                              IMessageQueuePtr queue,
-                             RUDPICESocketPtr parent,
+                             IICESocketSessionPtr iceSession,
                              IRUDPICESocketSessionDelegatePtr delegate
                              );
-        
+
         RUDPICESocketSession(Noop) : Noop(true), MessageQueueAssociator(IMessageQueuePtr()) {};
 
-        void init(
-                  const char *remoteUsernameFrag,
-                  const char *remotePassword,
-                  const CandidateList &remoteCandidates,
-                  ICEControls control
-                  );
+        void init();
 
         static RUDPICESocketSessionPtr convert(IRUDPICESocketSessionPtr session);
 
@@ -134,9 +96,15 @@ namespace openpeer
 
         static String toDebugString(IRUDPICESocketSessionPtr session, bool includeCommaPrefix = true);
 
+        static RUDPICESocketSessionPtr listen(
+                                              IMessageQueuePtr queue,
+                                              IICESocketSessionPtr iceSession,
+                                              IRUDPICESocketSessionDelegatePtr delegate
+                                              );
+
         virtual PUID getID() const {return mID;}
 
-        virtual IRUDPICESocketPtr getSocket();
+        virtual IRUDPICESocketSessionSubscriptionPtr subscribe(IRUDPICESocketSessionDelegatePtr delegate);
 
         virtual RUDPICESocketSessionStates getState(
                                                     WORD *outLastErrorCode = NULL,
@@ -144,26 +112,6 @@ namespace openpeer
                                                     ) const;
 
         virtual void shutdown();
-
-        virtual void getLocalCandidates(CandidateList &outCandidates);
-        virtual void updateRemoteCandidates(const CandidateList &remoteCandidates);
-        virtual void endOfRemoteCandidates();
-
-        virtual void setKeepAliveProperties(
-                                            Duration sendKeepAliveIndications,
-                                            Duration expectSTUNOrDataWithinWithinOrSendAliveCheck = Duration(),
-                                            Duration keepAliveSTUNRequestTimeout = Duration(),
-                                            Duration backgroundingTimeout = Duration()
-                                            );
-
-        virtual ICEControls getConnectedControlState();
-
-        virtual IPAddress getConnectedRemoteIP();
-
-        virtual bool getNominatedCandidateInformation(
-                                                      Candidate &outLocal,
-                                                      Candidate &outRemote
-                                                      );
 
         virtual IRUDPChannelPtr openChannel(
                                             IRUDPChannelDelegatePtr delegate,
@@ -176,21 +124,6 @@ namespace openpeer
                                               IRUDPChannelDelegatePtr delegate,
                                               ITransportStreamPtr receiveStream,
                                               ITransportStreamPtr sendStream
-                                              );
-
-        //---------------------------------------------------------------------
-        #pragma mark
-        #pragma mark RUDPICESocketSession => IRUDPICESocketSessionForRUDPICESocket
-        #pragma mark
-
-        static RUDPICESocketSessionPtr create(
-                                              IMessageQueuePtr queue,
-                                              RUDPICESocketPtr parent,
-                                              IRUDPICESocketSessionDelegatePtr delegate,
-                                              const char *remoteUsernameFrag,
-                                              const char *remotePassword,
-                                              const CandidateList &remoteCandidates,
-                                              ICEControls control
                                               );
 
         //---------------------------------------------------------------------
@@ -275,21 +208,22 @@ namespace openpeer
         #pragma mark RUDPICESocketSession => (data)
         #pragma mark
 
-        mutable RecursiveLock mBogusLock;
+        mutable RecursiveLock mLock;
 
         AutoPUID mID;
         RUDPICESocketSessionWeakPtr mThisWeak;
-        RUDPICESocketWeakPtr mOuter;
 
         RUDPICESocketSessionPtr mGracefulShutdownReference;
+
+        IRUDPICESocketSessionDelegateSubscriptions mSubscriptions;
+        IRUDPICESocketSessionSubscriptionPtr mDefaultSubscription;
 
         RUDPICESocketSessionStates mCurrentState;
         AutoWORD mLastError;
         String mLastErrorReason;
 
-        IRUDPICESocketSessionDelegatePtr mDelegate;
-
         IICESocketSessionPtr mICESession;
+        IICESocketSessionSubscriptionPtr mICESubscription;
 
         SessionMap mLocalChannelNumberSessions;   // local channel numbers are the channel numbers we expect to receive from the remote party
         SessionMap mRemoteChannelNumberSessions;  // remote channel numbers are the channel numbers we expect to send to the remote party
@@ -312,15 +246,11 @@ namespace openpeer
 
         static IRUDPICESocketSessionFactory &singleton();
 
-        virtual RUDPICESocketSessionPtr create(
-                                               IMessageQueuePtr queue,
-                                               RUDPICESocketPtr parent,
-                                               IRUDPICESocketSessionDelegatePtr delegate,
-                                               const char *remoteUsernameFrag,
-                                               const char *remotePassword,
-                                               const CandidateList &remoteCandidates,
-                                               ICEControls control
-                                               );
+        static RUDPICESocketSessionPtr listen(
+                                              IMessageQueuePtr queue,
+                                              IICESocketSessionPtr iceSession,
+                                              IRUDPICESocketSessionDelegatePtr delegate
+                                              );
       };
       
     }

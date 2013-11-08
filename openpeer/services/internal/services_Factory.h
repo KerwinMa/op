@@ -57,7 +57,6 @@ namespace openpeer
                       public IRSAPublicKeyFactory,
                       public IRUDPChannelFactory,
                       public IRUDPChannelStreamFactory,
-                      public IRUDPICESocketFactory,
                       public IRUDPICESocketSessionFactory,
                       public IRUDPListenerFactory,
                       public IRUDPMessagingFactory,

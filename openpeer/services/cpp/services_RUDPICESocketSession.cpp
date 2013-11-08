@@ -61,55 +61,32 @@ namespace openpeer
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
       #pragma mark
-      #pragma mark IRUDPICESocketSessionForRUDPICESocket
-      #pragma mark
-
-      //-----------------------------------------------------------------------
-      RUDPICESocketSessionPtr IRUDPICESocketSessionForRUDPICESocket::create(
-                                                                            IMessageQueuePtr queue,
-                                                                            RUDPICESocketPtr parent,
-                                                                            IRUDPICESocketSessionDelegatePtr delegate,
-                                                                            const char *remoteUsernameFrag,
-                                                                            const char *remotePassword,
-                                                                            const CandidateList &remoteCandidates,
-                                                                            ICEControls control
-                                                                            )
-      {
-        return IRUDPICESocketSessionFactory::singleton().create(queue, parent, delegate, remoteUsernameFrag, remotePassword, remoteCandidates, control);
-      }
-
-      //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      #pragma mark
       #pragma mark RUDPICESocketSession
       #pragma mark
 
       //-----------------------------------------------------------------------
       RUDPICESocketSession::RUDPICESocketSession(
                                                  IMessageQueuePtr queue,
-                                                 RUDPICESocketPtr parent,
+                                                 IICESocketSessionPtr iceSession,
                                                  IRUDPICESocketSessionDelegatePtr delegate
                                                  ) :
         MessageQueueAssociator(queue),
         mCurrentState(RUDPICESocketSessionState_Pending),
-        mOuter(parent),
-        mDelegate(IRUDPICESocketSessionDelegateProxy::createWeak(queue, delegate))
+        mICESession(iceSession)
       {
         ZS_LOG_BASIC(log("created"))
+
+        if (delegate) {
+          mDefaultSubscription = mSubscriptions.subscribe(delegate);
+        }
       }
 
       //-----------------------------------------------------------------------
-      void RUDPICESocketSession::init(
-                                      const char *remoteUsernameFrag,
-                                      const char *remotePassword,
-                                      const CandidateList &remoteCandidates,
-                                      ICEControls control
-                                      )
+      void RUDPICESocketSession::init()
       {
         AutoRecursiveLock lock(getLock());
-        mICESession = (mOuter.lock())->forSession().getICESocket()->createSessionFromRemoteCandidates(mThisWeak.lock(), remoteUsernameFrag, remotePassword, remoteCandidates, control);
+
+        mICESubscription = mICESession->subscribe(mThisWeak.lock());
       }
 
       //-----------------------------------------------------------------------
@@ -119,23 +96,6 @@ namespace openpeer
         mThisWeak.reset();
         ZS_LOG_BASIC(log("destroyed"))
         cancel();
-      }
-
-      //-----------------------------------------------------------------------
-      RUDPICESocketSessionPtr RUDPICESocketSession::create(
-                                                           IMessageQueuePtr queue,
-                                                           RUDPICESocketPtr parent,
-                                                           IRUDPICESocketSessionDelegatePtr delegate,
-                                                           const char *remoteUsernameFrag,
-                                                           const char *remotePassword,
-                                                           const CandidateList &remoteCandidates,
-                                                           ICEControls control
-                                                           )
-      {
-        RUDPICESocketSessionPtr pThis(new RUDPICESocketSession(queue, parent, delegate));
-        pThis->mThisWeak = pThis;
-        pThis->init(remoteUsernameFrag, remotePassword, remoteCandidates, control);
-        return pThis;
       }
 
       //-----------------------------------------------------------------------
@@ -162,12 +122,46 @@ namespace openpeer
       }
       
       //-----------------------------------------------------------------------
-      IRUDPICESocketPtr RUDPICESocketSession::getSocket()
+      RUDPICESocketSessionPtr RUDPICESocketSession::listen(
+                                                           IMessageQueuePtr queue,
+                                                           IICESocketSessionPtr iceSession,
+                                                           IRUDPICESocketSessionDelegatePtr delegate
+                                                           )
+      {
+        RUDPICESocketSessionPtr pThis(new RUDPICESocketSession(queue, iceSession, delegate));
+        pThis->mThisWeak = pThis;
+        pThis->init();
+        return pThis;
+      }
+
+      //-----------------------------------------------------------------------
+      IRUDPICESocketSessionSubscriptionPtr RUDPICESocketSession::subscribe(IRUDPICESocketSessionDelegatePtr originalDelegate)
       {
         AutoRecursiveLock lock(getLock());
-        RUDPICESocketPtr socket = mOuter.lock();
-        if (!socket) return IRUDPICESocketPtr();
-        return socket->forSession().getRUDPICESocket();
+        if (!originalDelegate) return mDefaultSubscription;
+
+        IRUDPICESocketSessionSubscriptionPtr subscription = mSubscriptions.subscribe(originalDelegate);
+
+        IRUDPICESocketSessionDelegatePtr delegate = mSubscriptions.delegate(subscription);
+
+        if (delegate) {
+          RUDPICESocketSessionPtr pThis = mThisWeak.lock();
+
+          if (RUDPICESocketSessionState_Pending != mCurrentState) {
+            delegate->onRUDPICESocketSessionStateChanged(pThis, mCurrentState);
+          }
+
+          if (mPendingSessions.size() > 0) {
+            // inform the delegate of the new session waiting...
+            mSubscriptions.delegate()->onRUDPICESocketSessionChannelWaiting(mThisWeak.lock());
+          }
+        }
+
+        if (isShutdown()) {
+          mSubscriptions.clear();
+        }
+
+        return subscription;
       }
 
       //-----------------------------------------------------------------------
@@ -187,78 +181,6 @@ namespace openpeer
       {
         AutoRecursiveLock lock(getLock());
         cancel();
-      }
-
-      //-----------------------------------------------------------------------
-      void RUDPICESocketSession::getLocalCandidates(CandidateList &outCandidates)
-      {
-        outCandidates.clear();
-
-        IICESocketSessionPtr session = getICESession();
-        if (!session) return;
-        session->getLocalCandidates(outCandidates);
-      }
-
-      //-----------------------------------------------------------------------
-      void RUDPICESocketSession::updateRemoteCandidates(const CandidateList &remoteCandidates)
-      {
-        IICESocketSessionPtr session = getICESession();
-        if (!session) return;
-        session->updateRemoteCandidates(remoteCandidates);
-      }
-
-      //-----------------------------------------------------------------------
-      void RUDPICESocketSession::endOfRemoteCandidates()
-      {
-        IICESocketSessionPtr session = getICESession();
-        if (!session) return;
-        session->endOfRemoteCandidates();
-      }
-
-      //-----------------------------------------------------------------------
-      void RUDPICESocketSession::setKeepAliveProperties(
-                                                        Duration sendKeepAliveIndications,
-                                                        Duration expectSTUNOrDataWithinWithinOrSendAliveCheck,
-                                                        Duration keepAliveSTUNRequestTimeout,
-                                                        Duration backgroundingTimeout
-                                                        )
-      {
-        IICESocketSessionPtr session = getICESession();
-        if (!session) {
-          ZS_LOG_WARNING(Detail, log("unable to obtain ICE socket session to set keep alive properties"))
-          return;
-        }
-        session->setKeepAliveProperties(sendKeepAliveIndications, expectSTUNOrDataWithinWithinOrSendAliveCheck, keepAliveSTUNRequestTimeout, backgroundingTimeout);
-      }
-
-      //-----------------------------------------------------------------------
-      RUDPICESocketSession::ICEControls RUDPICESocketSession::getConnectedControlState()
-      {
-        IICESocketSessionPtr session = getICESession();
-        if (!session) return IICESocket::ICEControl_Controlled;
-
-        return session->getConnectedControlState();
-      }
-
-      //-----------------------------------------------------------------------
-      IPAddress RUDPICESocketSession::getConnectedRemoteIP()
-      {
-        IICESocketSessionPtr session = getICESession();
-        if (!session) return IPAddress();
-
-        return session->getConnectedRemoteIP();
-      }
-
-      //-----------------------------------------------------------------------
-      bool RUDPICESocketSession::getNominatedCandidateInformation(
-                                                                  Candidate &outLocal,
-                                                                  Candidate &outRemote
-                                                                  )
-      {
-        IICESocketSessionPtr session = getICESession();
-        if (!session) return false;
-
-        return session->getNominatedCandidateInformation(outLocal, outRemote);
       }
 
       //-----------------------------------------------------------------------
@@ -318,7 +240,7 @@ namespace openpeer
                                                                                                             getAssociatedMessageQueue(),
                                                                                                             mThisWeak.lock(),
                                                                                                             delegate,
-                                                                                                            getConnectedRemoteIP(),
+                                                                                                            iceSession->getConnectedRemoteIP(),
                                                                                                             channelNumber,
                                                                                                             iceSession->getLocalUsernameFrag(),
                                                                                                             iceSession->getLocalPassword(),
@@ -636,9 +558,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       RecursiveLock &RUDPICESocketSession::getLock() const
       {
-        RUDPICESocketPtr outer = mOuter.lock();
-        if (!outer) return mBogusLock;
-        return outer->forSession().getLock();
+        return mLock;
       }
 
       //-----------------------------------------------------------------------
@@ -672,13 +592,15 @@ namespace openpeer
 
         Helper::getDebugValue("graceful shutdown", mGracefulShutdownReference ? String("true") : String(), firstTime) +
 
+        Helper::getDebugValue("subscriptions", mSubscriptions.size() > 0 ? string(mSubscriptions.size()) : String(), firstTime) +
+        Helper::getDebugValue("default subscription", mDefaultSubscription ? String("true") : String(), firstTime) +
+
         Helper::getDebugValue("state", IRUDPICESocketSession::toString(mCurrentState), firstTime) +
         Helper::getDebugValue("last error", 0 != mLastError ? string(mLastError) : String(), firstTime) +
         Helper::getDebugValue("last reason", mLastErrorReason, firstTime) +
 
-        Helper::getDebugValue("delegate", mDelegate ? String("true") : String(), firstTime) +
-
-        Helper::getDebugValue("ice session", mICESession ? String("true") : String(), firstTime) +
+        Helper::getDebugValue("ice session", mICESession ? string(mICESession->getID()) : String(), firstTime) +
+        Helper::getDebugValue("ice subscription", mICESubscription ? String("true") : String(), firstTime) +
 
         Helper::getDebugValue("local channel number sessions", mLocalChannelNumberSessions.size() > 0 ? string(mLocalChannelNumberSessions.size()) : String(), firstTime) +
         Helper::getDebugValue("remote channel number sessions", mRemoteChannelNumberSessions.size() > 0 ? string(mRemoteChannelNumberSessions.size()) : String(), firstTime) +
@@ -699,8 +621,8 @@ namespace openpeer
         for (SessionMap::iterator iter = mLocalChannelNumberSessions.begin(); iter != mLocalChannelNumberSessions.end(); ++iter) {
 
           switch (get(mLastError)) {
-            case RUDPICESocketSessionShutdownReason_None:     (*iter).second->forSession().shutdown(); break;
-            default:                                          (*iter).second->forSession().shutdownFromTimeout(); break;
+            case IICESocketSession::ICESocketSessionShutdownReason_None:    (*iter).second->forSession().shutdown(); break;
+            default:                                                        (*iter).second->forSession().shutdownFromTimeout(); break;
           }
         }
 
@@ -715,16 +637,15 @@ namespace openpeer
 
         mGracefulShutdownReference.reset();
 
-        mDelegate.reset();
-
-        if (mICESession) {
-          mICESession->close();
-          mICESession.reset();
+        mSubscriptions.clear();
+        if (mDefaultSubscription) {
+          mDefaultSubscription->cancel();
+          mDefaultSubscription.reset();
         }
 
-        IRUDPICESocketForRUDPICESocketSessionPtr outerProxy = IRUDPICESocketForRUDPICESocketSessionProxy::create(mOuter.lock());
-        if (outerProxy) {
-          outerProxy->onRUDPICESessionClosed(mID);
+        if (mICESubscription) {
+          mICESubscription->cancel();
+          mICESubscription.reset();
         }
 
         mLocalChannelNumberSessions.clear();
@@ -743,10 +664,11 @@ namespace openpeer
 
         IICESocketSession::ICESocketSessionStates state = mICESession->getState();
         switch (state) {
-          case IICESocketSession::ICESocketSessionState_Pending:  break;
-          case IICESocketSession::ICESocketSessionState_Prepared:   setState(RUDPICESocketSessionState_Prepared); break;
-          case IICESocketSession::ICESocketSessionState_Searching:  setState(RUDPICESocketSessionState_Searching); break;
-          case IICESocketSession::ICESocketSessionState_Nominating: setState(RUDPICESocketSessionState_Searching); break;
+          case IICESocketSession::ICESocketSessionState_Pending:
+          case IICESocketSession::ICESocketSessionState_Prepared:
+          case IICESocketSession::ICESocketSessionState_Searching:
+          case IICESocketSession::ICESocketSessionState_Haulted:
+          case IICESocketSession::ICESocketSessionState_Nominating: setState(RUDPICESocketSessionState_Pending); break;
           case IICESocketSession::ICESocketSessionState_Nominated:  setState(RUDPICESocketSessionState_Ready); break;
           case IICESocketSession::ICESocketSessionState_Shutdown:   cancel(); break;
         }
@@ -761,15 +683,10 @@ namespace openpeer
 
         mCurrentState = state;
 
-        if (!mDelegate) return;
-
         RUDPICESocketSessionPtr pThis = mThisWeak.lock();
 
         if (pThis) {
-          try {
-            mDelegate->onRUDPICESocketSessionStateChanged(pThis, mCurrentState);
-          } catch(IRUDPICESocketSessionDelegateProxy::Exceptions::DelegateGone &) {
-          }
+          mSubscriptions.delegate()->onRUDPICESocketSessionStateChanged(pThis, mCurrentState);
         }
       }
 
@@ -865,16 +782,16 @@ namespace openpeer
 
           if (!valid) break;
 
-          Candidate nominatedLocal;
-          Candidate nominatedRemote;
-          bool hasCandidate = getNominatedCandidateInformation(nominatedLocal, nominatedRemote);
+          IICESocketSession::Candidate nominatedLocal;
+          IICESocketSession::Candidate nominatedRemote;
+          bool hasCandidate = mICESession->getNominatedCandidateInformation(nominatedLocal, nominatedRemote);
           if (!hasCandidate) break;
 
           // found a useable channel number therefor create a new session
           RUDPChannelPtr session = IRUDPChannelForRUDPICESocketSession::createForRUDPICESocketSessionIncoming(
                                                                                                               getAssociatedMessageQueue(),
                                                                                                               mThisWeak.lock(),
-                                                                                                              getConnectedRemoteIP(),
+                                                                                                              mICESession->getConnectedRemoteIP(),
                                                                                                               channelNumber,
                                                                                                               mICESession->getLocalUsernameFrag(),
                                                                                                               mICESession->getLocalPassword(),
@@ -902,13 +819,7 @@ namespace openpeer
           mPendingSessions.push_back(session);
 
           // inform the delegate of the new session waiting...
-          try {
-            mDelegate->onRUDPICESocketSessionChannelWaiting(mThisWeak.lock());
-          } catch(IRUDPICESocketSessionDelegateProxy::Exceptions::DelegateGone &) {
-            setError(RUDPICESocketSessionShutdownReason_DelegateGone, "delegate gone");
-            cancel();
-            return true;
-          }
+          mSubscriptions.delegate()->onRUDPICESocketSessionChannelWaiting(mThisWeak.lock());
         } while (false);  // using as a scope rather than as a loop
 
         return response;
@@ -928,7 +839,7 @@ namespace openpeer
         }
       }
     }
-
+    
     //-------------------------------------------------------------------------
     //-------------------------------------------------------------------------
     //-------------------------------------------------------------------------
@@ -942,8 +853,6 @@ namespace openpeer
     {
       switch (states) {
         case RUDPICESocketSessionState_Pending:       return "Preparing";
-        case RUDPICESocketSessionState_Prepared:      return "Prepared";
-        case RUDPICESocketSessionState_Searching:     return "Searching";
         case RUDPICESocketSessionState_Ready:         return "Ready";
         case RUDPICESocketSessionState_ShuttingDown:  return "Shutting down";
         case RUDPICESocketSessionState_Shutdown:      return "Shutdown";
@@ -953,15 +862,19 @@ namespace openpeer
     }
 
     //-------------------------------------------------------------------------
-    const char *IRUDPICESocketSession::toString(RUDPICESocketSessionShutdownReasons reason)
-    {
-      return IICESocketSession::toString((IICESocketSession::ICESocketSessionShutdownReasons)reason);
-    }
-
-    //-------------------------------------------------------------------------
     String IRUDPICESocketSession::toDebugString(IRUDPICESocketSessionPtr session, bool includeCommaPrefix)
     {
       return internal::RUDPICESocketSession::toDebugString(session, includeCommaPrefix);
+    }
+
+    //-------------------------------------------------------------------------
+    IRUDPICESocketSessionPtr IRUDPICESocketSession::listen(
+                                                           IMessageQueuePtr queue,
+                                                           IICESocketSessionPtr iceSession,
+                                                           IRUDPICESocketSessionDelegatePtr delegate
+                                                           )
+    {
+      return internal::IRUDPICESocketSessionFactory::singleton().listen(queue, iceSession, delegate);
     }
   }
 }

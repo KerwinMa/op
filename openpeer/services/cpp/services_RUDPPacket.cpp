@@ -163,6 +163,13 @@ namespace openpeer
       if (packetLengthInBytes < OPENPEER_SERVICES_MINIMUM_PACKET_LENGTH_IN_BYTES) return RUDPPacketPtr();  // does not meet the minimum size expectations so it can't be RUDP
 
       WORD channelNumber = ntohs(((WORD *)packet)[0]);
+
+      if ((channelNumber < LegalChannelNumber_StartRange) ||
+          (channelNumber > LegalChannelNumber_EndRange)) {
+        ZS_LOG_INSANE("RUDPPacket [] not RUDP packet as not within legal channel range, channel=" + string(channelNumber))
+        return RUDPPacketPtr();
+      }
+
       WORD dataLength = ntohs(((WORD *)packet)[1]);
 
       BYTE flags = packet[sizeof(WORD)+sizeof(WORD)];

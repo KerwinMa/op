@@ -79,6 +79,12 @@ namespace openpeer
         VectorState_NoMoreData =         (0xFF),
       };
 
+      enum LegalChannelNumbers
+      {
+        LegalChannelNumber_StartRange =   (0x4000),
+        LegalChannelNumber_EndRange =     (0x7FFF),
+      };
+
       struct VectorEncoderState
       {
         VectorStates mLastState;

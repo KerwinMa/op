@@ -31,6 +31,8 @@
 
 #pragma once
 
+#if 0
+
 #include <openpeer/services/types.h>
 #include <openpeer/services/IICESocket.h>
 #include <zsLib/Proxy.h>
@@ -197,3 +199,5 @@ ZS_DECLARE_PROXY_SUBSCRIPTIONS_TYPEDEF(openpeer::services::IRUDPICESocketDelegat
 ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_2(onRUDPICESocketStateChanged, IRUDPICESocketPtr, RUDPICESocketStates)
 ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_1(onRUDPICESocketCandidatesChanged, IRUDPICESocketPtr)
 ZS_DECLARE_PROXY_SUBSCRIPTIONS_END()
+
+#endif //0

@@ -62,6 +62,7 @@ namespace openpeer
         ICESocketSessionState_Pending,
         ICESocketSessionState_Prepared,
         ICESocketSessionState_Searching,
+        ICESocketSessionState_Haulted,
         ICESocketSessionState_Nominating,
         ICESocketSessionState_Nominated,
         ICESocketSessionState_Shutdown,
@@ -86,6 +87,8 @@ namespace openpeer
       static String toDebugString(IICESocketSessionPtr session, bool includeCommaPrefix = true);
 
       virtual PUID getID() const = 0;
+
+      virtual IICESocketSessionSubscriptionPtr subscribe(IICESocketSessionDelegatePtr delegate) = 0;
 
       virtual IICESocketPtr getSocket() = 0;
 
@@ -184,6 +187,23 @@ namespace openpeer
 
       virtual void onICESocketSessionWriteReady(IICESocketSessionPtr session) = 0;
     };
+
+    //-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    #pragma mark
+    #pragma mark IICESocketSessionSubscription
+    #pragma mark
+
+    interaction IICESocketSessionSubscription
+    {
+      virtual PUID getID() const = 0;
+
+      virtual void cancel() = 0;
+
+      virtual void background() = 0;
+    };
   }
 }
 
@@ -197,3 +217,54 @@ ZS_DECLARE_PROXY_METHOD_SYNC_3(handleICESocketSessionReceivedPacket, IICESocketS
 ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_4(handleICESocketSessionReceivedSTUNPacket, bool, IICESocketSessionPtr, STUNPacketPtr, const String &, const String &)
 ZS_DECLARE_PROXY_METHOD_1(onICESocketSessionWriteReady, openpeer::services::IICESocketSessionPtr)
 ZS_DECLARE_PROXY_END()
+
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_BEGIN(openpeer::services::IICESocketSessionDelegate, openpeer::services::IICESocketSessionSubscription)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_TYPEDEF(openpeer::services::IICESocketSessionPtr, IICESocketSessionPtr)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_TYPEDEF(openpeer::services::STUNPacketPtr, STUNPacketPtr)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_TYPEDEF(openpeer::services::IICESocketSession::ICESocketSessionStates, ICESocketSessionStates)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_2(onICESocketSessionStateChanged, IICESocketSessionPtr, ICESocketSessionStates)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_1(onICESocketSessionNominationChanged, IICESocketSessionPtr)
+
+  // notify each subscription of the received packet
+  virtual void handleICESocketSessionReceivedPacket(
+                                                    IICESocketSessionPtr session,
+                                                    const BYTE *buffer,
+                                                    ULONG bufferLengthInBytes
+                                                    )
+  {
+    ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_TYPES_AND_VALUES(SubscriptionsMap, subscriptions, SubscriptionsMapKeyType, DelegateTypePtr, DelegateTypeProxy)
+    for (SubscriptionsMap::iterator iter = subscriptions.begin(); iter != subscriptions.end(); )
+    {
+      SubscriptionsMap::iterator current = iter; ++iter;
+      try {
+        (*current).second->handleICESocketSessionReceivedPacket(session, buffer, bufferLengthInBytes);
+      } catch(DelegateTypeProxy::Exceptions::DelegateGone &) {
+        ZS_INTERNAL_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_ERASE_KEY((*current).first)
+      }
+    }
+  }
+
+  // notify each subscription of the received stun packet until one claims to handle the packet
+  virtual bool handleICESocketSessionReceivedSTUNPacket(
+                                                        IICESocketSessionPtr session,
+                                                        STUNPacketPtr stun,
+                                                        const String &localUsernameFrag,
+                                                        const String &remoteUsernameFrag
+                                                        )
+  {
+    ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_TYPES_AND_VALUES(SubscriptionsMap, subscriptions, SubscriptionsMapKeyType, DelegatePtr, DelegateProxy)
+    for (SubscriptionsMap::iterator iter = subscriptions.begin(); iter != subscriptions.end(); )
+    {
+      SubscriptionsMap::iterator current = iter; ++iter;
+      try {
+        if ((*current).second->handleICESocketSessionReceivedSTUNPacket(session, stun, localUsernameFrag, remoteUsernameFrag))
+          return true;
+      } catch(DelegateProxy::Exceptions::DelegateGone &) {
+        ZS_INTERNAL_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_ERASE_KEY((*current).first)
+      }
+    }
+    return false;
+  }
+
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_1(onICESocketSessionWriteReady, IICESocketSessionPtr)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_END()

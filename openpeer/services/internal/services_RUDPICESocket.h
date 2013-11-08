@@ -31,6 +31,8 @@
 
 #pragma once
 
+#if 0
+
 #include <openpeer/services/internal/types.h>
 #include <openpeer/services/IRUDPICESocket.h>
 #include <openpeer/services/IICESocket.h>
@@ -298,3 +300,5 @@ ZS_DECLARE_PROXY_METHOD_SYNC_CONST_RETURN_0(getICESocket, openpeer::services::II
 ZS_DECLARE_PROXY_METHOD_SYNC_CONST_RETURN_0(getRUDPICESocket, openpeer::services::IRUDPICESocketPtr)
 ZS_DECLARE_PROXY_METHOD_1(onRUDPICESessionClosed, PUID)
 ZS_DECLARE_PROXY_END()
+
+#endif //0

@@ -223,7 +223,6 @@ namespace openpeer
         mFoundation(ICESocketSession::convert(foundation)),
         mRemoteUsernameFrag(remoteUsernameFrag),
         mRemotePassword(remotePassword),
-        mDelegate(IICESocketSessionDelegateProxy::createWeak(queue, delegate)),
         mControl(control),
         mConflictResolver(randomQWORD()),
         mLastSentData(zsLib::now()),
@@ -235,6 +234,10 @@ namespace openpeer
 
         mLocalUsernameFrag = getSocket()->getUsernameFrag();
         mLocalPassword = getSocket()->getPassword();
+
+        if (delegate) {
+          mDefaultSubscription = mSubscriptions.subscribe(delegate);
+        }
       }
 
       //-----------------------------------------------------------------------
@@ -285,6 +288,31 @@ namespace openpeer
         ICESocketPtr socket = mICESocketWeak.lock();
         if (!socket) return IICESocketPtr();
         return socket->forICESocketSession().getSocket();
+      }
+
+      //-----------------------------------------------------------------------
+      IICESocketSessionSubscriptionPtr ICESocketSession::subscribe(IICESocketSessionDelegatePtr originalDelegate)
+      {
+        AutoRecursiveLock lock(getLock());
+        if (!originalDelegate) return mDefaultSubscription;
+
+        IICESocketSessionSubscriptionPtr subscription = mSubscriptions.subscribe(originalDelegate);
+
+        IICESocketSessionDelegatePtr delegate = mSubscriptions.delegate(subscription);
+
+        if (delegate) {
+          ICESocketSessionPtr pThis = mThisWeak.lock();
+
+          if (ICESocketSessionState_Pending != mCurrentState) {
+            delegate->onICESocketSessionStateChanged(pThis, mCurrentState);
+          }
+        }
+
+        if (isShutdown()) {
+          mSubscriptions.clear();
+        }
+        
+        return subscription;
       }
 
       //-----------------------------------------------------------------------
@@ -455,10 +483,12 @@ namespace openpeer
         AutoRecursiveLock lock(getLock());
         if (isShutdown()) return false;
 
-        if (!mNominated) return false;
+        CandidatePairPtr resultPair = mNominated ? mNominated : mPreviouslyNominated;
 
-        outLocal = mNominated->mLocal;
-        outRemote = mNominated->mRemote;
+        if (!resultPair) return false;
+
+        outLocal = resultPair->mLocal;
+        outRemote = resultPair->mRemote;
         return true;
       }
 
@@ -501,28 +531,15 @@ namespace openpeer
 
         ZS_LOG_DEBUG(log("handle stun packet") + ", via local IP=" + string(viaLocalIP) + ", via transport" + IICESocket::toString(viaTransport) + ", source=" + string(source) + ", local username frag=" + localUsernameFrag + ", remote username frag=" + remoteUsernameFrag)
 
-        IICESocketSessionDelegatePtr delegate;
-        {
-          AutoRecursiveLock lock(getLock());
-          delegate = mDelegate;
-        }
-
-        if (!delegate) {
-          ZS_LOG_WARNING(Debug, log("unable to handle STUN packet as delegate is gone"))
+        if (mSubscriptions.size() < 1) {
+          ZS_LOG_WARNING(Debug, log("unable to handle STUN packet as no subscribers"))
           return false;
         }
 
         // inform that the session is now connected
         if (STUNPacket::Method_Binding != stun->mMethod) {
-          try {
-            ZS_LOG_DETAIL(log("received incoming STUN which is not ICE related thus handing via delgate"))
-            return delegate->handleICESocketSessionReceivedSTUNPacket(mThisWeak.lock(), stun, localUsernameFrag, remoteUsernameFrag);
-          } catch(IICESocketSessionDelegateProxy::Exceptions::DelegateGone &) {
-            setError(ICESocketSessionShutdownReason_DelegateGone, "delegate gone");
-            cancel();
-            return false;
-          }
-          return false;
+          ZS_LOG_DETAIL(log("received incoming STUN which is not ICE related thus handing via delgate"))
+          return mSubscriptions.delegate()->handleICESocketSessionReceivedSTUNPacket(mThisWeak.lock(), stun, localUsernameFrag, remoteUsernameFrag);
         }
 
         AutoRecursiveLock lock(getLock());
@@ -785,8 +802,6 @@ namespace openpeer
       {
         // WARNING: This method calls a delegate synchronously thus must
         //          never be called from a method that is within a lock.
-        IICESocketSessionDelegatePtr delegate;
-
         {
           AutoRecursiveLock lock(getLock());
           if ((NULL == packet) ||
@@ -817,19 +832,10 @@ namespace openpeer
             mAliveCheckRequester->cancel();
             mAliveCheckRequester.reset();
           }
-
-          delegate = mDelegate;
         }
 
         // we have a match on the packet... send the data to the delegate...
-        try {
-          delegate->handleICESocketSessionReceivedPacket(mThisWeak.lock(), packet, packetLengthInBytes);
-        } catch(IICESocketSessionDelegateProxy::Exceptions::DelegateGone &) {
-          AutoRecursiveLock lock(getLock());
-          setError(ICESocketSessionShutdownReason_DelegateGone, "delegate gone");
-          cancel();
-        }
-
+        mSubscriptions.delegate()->handleICESocketSessionReceivedPacket(mThisWeak.lock(), packet, packetLengthInBytes);
         return true;
       }
 
@@ -854,13 +860,8 @@ namespace openpeer
 
         ZS_LOG_TRACE(log("notify local write ready"))
 
-        try {
-          mDelegate->onICESocketSessionWriteReady(mThisWeak.lock());
-          get(mInformedWriteReady) = true;
-        } catch(IICESocketSessionDelegateProxy::Exceptions::DelegateGone &) {
-          setError(ICESocketSessionShutdownReason_DelegateGone, "delegate gone");
-          cancel();
-        }
+        mSubscriptions.delegate()->onICESocketSessionWriteReady(mThisWeak.lock());
+        get(mInformedWriteReady) = true;
       }
 
       //-----------------------------------------------------------------------
@@ -884,13 +885,8 @@ namespace openpeer
 
         ZS_LOG_TRACE(log("notify relay write ready"))
 
-        try {
-          mDelegate->onICESocketSessionWriteReady(mThisWeak.lock());
-          get(mInformedWriteReady) = true;
-        } catch(IICESocketSessionDelegateProxy::Exceptions::DelegateGone &) {
-          setError(ICESocketSessionShutdownReason_DelegateGone, "delegate gone");
-          cancel();
-        }
+        mSubscriptions.delegate()->onICESocketSessionWriteReady(mThisWeak.lock());
+        get(mInformedWriteReady) = true;
       }
 
       //-----------------------------------------------------------------------
@@ -1136,8 +1132,20 @@ namespace openpeer
           ZS_LOG_WARNING(Detail, log("alive connectivity check failed (probably a connection timeout)") + mNominated->toDebugString())
 
           mAliveCheckRequester.reset();
-          setError(ICESocketSessionShutdownReason_Timeout, "activity check timeout");
-          cancel();
+
+          mPreviouslyNominated = mNominated;
+          mNominated.reset();
+
+          // nomination failed, force scanning to happen now
+          mNominated->mReceivedRequest = false;
+          mNominated->mReceivedResponse = false;
+
+          if (mNominated->mRequester) {
+            mNominated->mRequester->cancel();
+            mNominated->mRequester.reset();
+          }
+
+          (IWakeDelegateProxy::create(mThisWeak.lock()))->onWake();
           return;
         }
 
@@ -1401,7 +1409,8 @@ namespace openpeer
         Helper::getDebugValue("last error", 0 != mLastError ? string(mLastError) : String(), firstTime) +
         Helper::getDebugValue("last reason", mLastErrorReason, firstTime) +
 
-        Helper::getDebugValue("delegate", mDelegate ? String("true") : String(), firstTime) +
+        Helper::getDebugValue("subscriptions", mSubscriptions.size() > 0 ? string(mSubscriptions.size()) : String(), firstTime) +
+        Helper::getDebugValue("default subscription", mDefaultSubscription ? String("true") : String(), firstTime) +
         Helper::getDebugValue("informed write ready", mInformedWriteReady ? String("true") : String(), firstTime) +
 
         Helper::getDebugValue("socket subscription", mSocketSubscription ? String("true") : String(), firstTime) +
@@ -1462,7 +1471,11 @@ namespace openpeer
 
         setState(ICESocketSessionState_Shutdown);
 
-        mDelegate.reset();
+        mSubscriptions.clear();
+        if (mDefaultSubscription) {
+          mDefaultSubscription->cancel();
+          mDefaultSubscription.reset();
+        }
 
         if (mSocketSubscription) {
           mSocketSubscription->cancel();
@@ -1548,17 +1561,11 @@ namespace openpeer
 
         mCurrentState = state;
 
-        if (!mDelegate) return;
-
         ICESocketSessionPtr pThis = mThisWeak.lock();
 
         if (pThis) {
           // inform the delegate of the state change
-          try {
-            mDelegate->onICESocketSessionStateChanged(pThis, mCurrentState);
-          } catch(IICESocketSessionDelegateProxy::Exceptions::DelegateGone &) {
-            ZS_LOG_DEBUG(log("delegate gone"))
-          }
+          mSubscriptions.delegate()->onICESocketSessionStateChanged(pThis, mCurrentState);
         }
       }
 
@@ -2103,12 +2110,9 @@ namespace openpeer
         if (mLastNotifiedNominated == mNominated) return;
 
         ICESocketSessionPtr pThis = mThisWeak.lock();
-        try {
-          mDelegate->onICESocketSessionNominationChanged(pThis);
-          mLastNotifiedNominated = mNominated;
-        } catch(IICESocketSessionDelegateProxy::Exceptions::DelegateGone &) {
-          ZS_LOG_WARNING(Detail, log("delegate gone"))
-        }
+
+        mSubscriptions.delegate()->onICESocketSessionNominationChanged(pThis);
+        mLastNotifiedNominated = mNominated;
       }
 
       //-----------------------------------------------------------------------
@@ -2214,6 +2218,7 @@ namespace openpeer
         case ICESocketSessionState_Pending:    return "Pending";
         case ICESocketSessionState_Prepared:   return "Prepared";
         case ICESocketSessionState_Searching:  return "Searching";
+        case ICESocketSessionState_Haulted:    return "Haulted";
         case ICESocketSessionState_Nominating: return "Nominating";
         case ICESocketSessionState_Nominated:  return "Nominated";
         case ICESocketSessionState_Shutdown:   return "Shutdown";

@@ -427,49 +427,6 @@ namespace openpeer
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
       #pragma mark
-      #pragma mark IRUDPICESocketFactory
-      #pragma mark
-
-      //-----------------------------------------------------------------------
-      IRUDPICESocketFactory &IRUDPICESocketFactory::singleton()
-      {
-        return *(Factory::singleton().get());
-      }
-
-      //-----------------------------------------------------------------------
-      RUDPICESocketPtr IRUDPICESocketFactory::create(
-                                                     IMessageQueuePtr queue,
-                                                     IRUDPICESocketDelegatePtr delegate,
-                                                     const char *turnServer,
-                                                     const char *turnServerUsername,
-                                                     const char *turnServerPassword,
-                                                     const char *stunServer,
-                                                     WORD port
-                                                     )
-      {
-        return RUDPICESocket::create(queue, delegate, turnServer, turnServerUsername, turnServerPassword, stunServer, port);
-      }
-
-      //-----------------------------------------------------------------------
-      RUDPICESocketPtr IRUDPICESocketFactory::create(
-                                                     IMessageQueuePtr queue,
-                                                     IRUDPICESocketDelegatePtr delegate,
-                                                     IDNS::SRVResultPtr srvTURNUDP,
-                                                     IDNS::SRVResultPtr srvTURNTCP,
-                                                     const char *turnServerUsername,
-                                                     const char *turnServerPassword,
-                                                     IDNS::SRVResultPtr srvSTUN,
-                                                     WORD port
-                                                     )
-      {
-        return RUDPICESocket::create(queue, delegate, srvTURNUDP, srvTURNTCP, turnServerUsername, turnServerPassword, srvSTUN, port);
-      }
-
-      //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      #pragma mark
       #pragma mark IRUDPICESocketSessionFactory
       #pragma mark
 
@@ -480,17 +437,13 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      RUDPICESocketSessionPtr IRUDPICESocketSessionFactory::create(
+      RUDPICESocketSessionPtr IRUDPICESocketSessionFactory::listen(
                                                                    IMessageQueuePtr queue,
-                                                                   RUDPICESocketPtr parent,
-                                                                   IRUDPICESocketSessionDelegatePtr delegate,
-                                                                   const char *remoteUsernameFrag,
-                                                                   const char *remotePassword,
-                                                                   const CandidateList &remoteCandidates,
-                                                                   ICEControls control
+                                                                   IICESocketSessionPtr iceSession,
+                                                                   IRUDPICESocketSessionDelegatePtr delegate
                                                                    )
       {
-        return RUDPICESocketSession::create(queue, parent, delegate, remoteUsernameFrag, remotePassword, remoteCandidates, control);
+        return RUDPICESocketSession::listen(queue, iceSession, delegate);
       }
 
       //-----------------------------------------------------------------------

@@ -166,6 +166,11 @@ namespace openpeer
     typedef boost::weak_ptr<IICESocketSessionDelegate> IICESocketSessionDelegateWeakPtr;
     typedef zsLib::Proxy<IICESocketSessionDelegate> IICESocketSessionDelegateProxy;
 
+    interaction IICESocketSessionSubscription;
+    typedef boost::shared_ptr<IICESocketSessionSubscription> IICESocketSessionSubscriptionPtr;
+    typedef boost::weak_ptr<IICESocketSessionSubscription> IICESocketSessionSubscriptionWeakPtr;
+    typedef zsLib::ProxySubscriptions<IICESocketSessionDelegate, IICESocketSessionSubscription> IICESocketSessionDelegateSubscriptions;
+
     interaction IHTTP;
     typedef boost::shared_ptr<IHTTP> IHTTPPtr;
     typedef boost::weak_ptr<IHTTP> IHTTPWeakPtr;
@@ -232,28 +237,19 @@ namespace openpeer
     typedef boost::weak_ptr<IRUDPChannelDelegate> IRUDPChannelDelegateWeakPtr;
     typedef zsLib::Proxy<IRUDPChannelDelegate> IRUDPChannelDelegateProxy;
 
-    interaction IRUDPICESocket;
-    typedef boost::shared_ptr<IRUDPICESocket> IRUDPICESocketPtr;
-    typedef boost::weak_ptr<IRUDPICESocket> IRUDPICESocketWeakPtr;
-
-    interaction IRUDPICESocketSubscription;
-    typedef boost::shared_ptr<IRUDPICESocketSubscription> IRUDPICESocketSubscriptionPtr;
-    typedef boost::weak_ptr<IRUDPICESocketSubscription> IRUDPICESocketSubscriptionWeakPtr;
-
-    interaction IRUDPICESocketDelegate;
-    typedef boost::shared_ptr<IRUDPICESocketDelegate> IRUDPICESocketDelegatePtr;
-    typedef boost::weak_ptr<IRUDPICESocketDelegate> IRUDPICESocketDelegateWeakPtr;
-    typedef zsLib::Proxy<IRUDPICESocketDelegate> IRUDPICESocketDelegateProxy;
-    typedef zsLib::ProxySubscriptions<IRUDPICESocketDelegate, IRUDPICESocketSubscription> IRUDPICESocketDelegateSubscriptions;
-
     interaction IRUDPICESocketSession;
     typedef boost::shared_ptr<IRUDPICESocketSession> IRUDPICESocketSessionPtr;
     typedef boost::weak_ptr<IRUDPICESocketSession> IRUDPICESocketSessionWeakPtr;
+
+    interaction IRUDPICESocketSessionSubscription;
+    typedef boost::shared_ptr<IRUDPICESocketSessionSubscription> IRUDPICESocketSessionSubscriptionPtr;
+    typedef boost::weak_ptr<IRUDPICESocketSessionSubscription> IRUDPICESocketSessionSubscriptionWeakPtr;
 
     interaction IRUDPICESocketSessionDelegate;
     typedef boost::shared_ptr<IRUDPICESocketSessionDelegate> IRUDPICESocketSessionDelegatePtr;
     typedef boost::weak_ptr<IRUDPICESocketSessionDelegate> IRUDPICESocketSessionDelegateWeakPtr;
     typedef zsLib::Proxy<IRUDPICESocketSessionDelegate> IRUDPICESocketSessionDelegateProxy;
+    typedef zsLib::ProxySubscriptions<IRUDPICESocketSessionDelegate, IRUDPICESocketSessionSubscription> IRUDPICESocketSessionDelegateSubscriptions;
 
     interaction ISTUNDiscovery;
     typedef boost::shared_ptr<ISTUNDiscovery> ISTUNDiscoveryPtr;

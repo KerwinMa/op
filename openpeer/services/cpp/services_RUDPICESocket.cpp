@@ -29,6 +29,8 @@
 
  */
 
+#if 0
+
 #include <openpeer/services/internal/services_RUDPICESocket.h>
 #include <openpeer/services/internal/services_RUDPICESocketSession.h>
 #include <openpeer/services/internal/services_Helper.h>
@@ -571,3 +573,5 @@ namespace openpeer
     }
   }
 }
+
+#endif //0
