@@ -1896,6 +1896,7 @@ namespace openpeer
           ZS_LOG_TRACE(log("already nominated - no reason to end search"))
           return true;
         }
+
         for (CandidatePairList::iterator iter = mCandidatePairs.begin(); iter != mCandidatePairs.end(); ++iter)
         {
           CandidatePairPtr &pairing = (*iter);
@@ -2093,7 +2094,18 @@ namespace openpeer
           }
 
           if (mCandidatePairs.size() > 0) {
-            setState(ICESocketSessionState_Searching);
+            for (CandidatePairList::iterator iter = mCandidatePairs.begin(); iter != mCandidatePairs.end(); ++iter)
+            {
+              CandidatePairPtr &pairing = (*iter);
+
+              if (pairing->mFailed) continue;
+
+              ZS_LOG_TRACE(log("found candidate which has not failed thus still searching"))
+              setState(ICESocketSessionState_Searching);
+              return false;
+            }
+            ZS_LOG_DEBUG(log("all known candidates have failed thus search is haulted"))
+            setState(ICESocketSessionState_Haulted);
           } else {
             setState(ICESocketSessionState_Prepared);
           }

@@ -380,6 +380,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       void Identity::cancel()
       {
+        ZS_LOG_DEBUG(log("cancel called"))
         mSession->cancel();
       }
 
