@@ -51,7 +51,6 @@ namespace openpeer
             AttributeType_Context,
             AttributeType_PeerSecret,
             AttributeType_LocationInfo,
-            AttributeType_Routes,
             AttributeType_PeerFiles,
           };
 
@@ -92,9 +91,6 @@ namespace openpeer
           const LocationInfo &locationInfo() const                      {return mLocationInfo;}
           void locationInfo(const LocationInfo &location)               {mLocationInfo = location;}
 
-          const RouteList &routes() const                               {return mRoutes;}
-          void routes(const RouteList &routes)                          {mRoutes = routes;}
-
           IPeerFilesPtr peerFiles() const                               {return mPeerFiles;}
           void peerFiles(IPeerFilesPtr peerFiles)                       {mPeerFiles = peerFiles;}
 
@@ -109,7 +105,6 @@ namespace openpeer
 
           String mRequestfindProofBundleDigestValue;
           LocationInfo mLocationInfo;
-          RouteList mRoutes;
 
           bool mFinal;
 

@@ -73,12 +73,18 @@ namespace openpeer
 
       using services::IDNS;
       using services::IICESocket;
-      using services::IRUDPICESocket;
-      using services::IRUDPICESocketPtr;
-      using services::IRUDPICESocketDelegate;
+      using services::IICESocketPtr;
+      using services::IICESocketDelegate;
+      using services::IICESocketDelegatePtr;
+      using services::IICESocketSession;
+      using services::IICESocketSessionPtr;
+      using services::IICESocketSessionDelegate;
+      using services::IICESocketSessionDelegatePtr;
+      using services::IICESocketSessionSubscriptionPtr;
+      using services::IICESocketSubscriptionPtr;
       using services::IRUDPICESocketSession;
       using services::IRUDPICESocketSessionDelegate;
-      using services::IRUDPICESocketSubscriptionPtr;
+      using services::IRUDPICESocketSessionSubscriptionPtr;
       using services::IRUDPMessaging;
       using services::IRUDPMessagingDelegate;
       using services::IDNSDelegate;

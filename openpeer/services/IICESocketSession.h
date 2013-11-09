@@ -106,6 +106,10 @@ namespace openpeer
 
       virtual void getLocalCandidates(CandidateList &outCandidates) = 0;
       virtual void updateRemoteCandidates(const CandidateList &remoteCandidates) = 0;
+
+      //-----------------------------------------------------------------------
+      // PURPOSE: Calling this method will cause the ICE connection to shutdown
+      //          when all ICE candidate searches are exhausted.
       virtual void endOfRemoteCandidates() = 0;
 
       virtual void setKeepAliveProperties(

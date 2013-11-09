@@ -74,8 +74,6 @@ namespace openpeer
 
         virtual String getDomain() const = 0;
 
-        virtual IRUDPICESocketPtr getSocket() const = 0;
-
         virtual IPeerFilesPtr getPeerFiles() const = 0;
 
         virtual bool extractNextFinder(
@@ -117,7 +115,7 @@ namespace openpeer
 
         virtual String getDomain() const = 0;
 
-        virtual IRUDPICESocketPtr getSocket() const = 0;
+        virtual IICESocketPtr getSocket() const = 0;
 
         virtual IPeerFilesPtr getPeerFiles() const = 0;
 
@@ -306,7 +304,7 @@ namespace openpeer
                       public IAccountFinderDelegate,
                       public IAccountPeerLocationDelegate,
                       public IDNSDelegate,
-                      public IRUDPICESocketDelegate,
+                      public IICESocketDelegate,
                       public IMessageMonitorDelegate,
                       public IFinderRelayChannelDelegate,
                       public ITransportStreamWriterDelegate,
@@ -402,8 +400,6 @@ namespace openpeer
 
         virtual String getDomain() const;
 
-        virtual IRUDPICESocketPtr getSocket() const;
-
         // (duplicate) virtual IPeerFilesPtr getPeerFiles() const;
 
         virtual bool extractNextFinder(
@@ -427,7 +423,7 @@ namespace openpeer
 
         // (duplicate) virtual String getDomain() const;
 
-        // (duplicate) virtual IRUDPICESocketPtr getSocket() const;
+        virtual IICESocketPtr getSocket() const;
 
         // (duplicate) virtual IPeerFilesPtr getPeerFiles() const;
 
@@ -574,15 +570,15 @@ namespace openpeer
 
         //---------------------------------------------------------------------
         #pragma mark
-        #pragma mark Account => IRUDPICESocketDelegate
+        #pragma mark Account => IICESocketDelegate
         #pragma mark
 
-        virtual void onRUDPICESocketStateChanged(
-                                                 IRUDPICESocketPtr socket,
-                                                 RUDPICESocketStates state
-                                                 );
+        virtual void onICESocketStateChanged(
+                                             IICESocketPtr socket,
+                                             ICESocketStates state
+                                             );
 
-        virtual void onRUDPICESocketCandidatesChanged(IRUDPICESocketPtr socket);
+        virtual void onICESocketCandidatesChanged(IICESocketPtr socket);
 
         //---------------------------------------------------------------------
         #pragma mark
@@ -824,7 +820,7 @@ namespace openpeer
         Service::MethodPtr mTURN;
         Service::MethodPtr mSTUN;
 
-        IRUDPICESocketPtr mSocket;
+        IICESocketPtr mSocket;
 
         String mMasterPeerSecret;
 

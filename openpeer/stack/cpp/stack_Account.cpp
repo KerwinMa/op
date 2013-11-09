@@ -307,13 +307,6 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      IRUDPICESocketPtr Account::getSocket() const
-      {
-        AutoRecursiveLock lock(getLock());
-        return mSocket;
-      }
-
-      //-----------------------------------------------------------------------
       bool Account::extractNextFinder(
                                       Finder &outFinder,
                                       IPAddress &outFinderIP
@@ -353,6 +346,13 @@ namespace openpeer
       #pragma mark
       #pragma mark Account => IAccountForAccountPeerLocation
       #pragma mark
+
+      //-----------------------------------------------------------------------
+      IICESocketPtr Account::getSocket() const
+      {
+        AutoRecursiveLock lock(getLock());
+        return mSocket;
+      }
 
       //-----------------------------------------------------------------------
       bool Account::isFinderReady() const
@@ -513,7 +513,7 @@ namespace openpeer
 
         if (location == mSelfLocation) {
           if (mSocket) {
-            get(info->mCandidatesFinal) = IRUDPICESocket::RUDPICESocketState_Ready == mSocket->getState();
+            get(info->mCandidatesFinal) = IICESocket::ICESocketState_Ready == mSocket->getState();
 
             IICESocket::CandidateList candidates;
             mSocket->getLocalCandidates(candidates, &(info->mCandidatesVersion));
@@ -1433,25 +1433,25 @@ namespace openpeer
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
       #pragma mark
-      #pragma mark Account => IRUDPICESocketDelegate
+      #pragma mark Account => IICESocketDelegate
       #pragma mark
 
       //-----------------------------------------------------------------------
-      void Account::onRUDPICESocketStateChanged(
-                                                IRUDPICESocketPtr socket,
-                                                RUDPICESocketStates state
-                                                )
+      void Account::onICESocketStateChanged(
+                                            IICESocketPtr socket,
+                                            ICESocketStates state
+                                            )
       {
-        ZS_LOG_DEBUG(log("on rudp ice socket state changed"))
+        ZS_LOG_DEBUG(log("on ice socket state changed"))
 
         AutoRecursiveLock lock(getLock());
         step();
       }
 
       //-----------------------------------------------------------------------
-      void Account::onRUDPICESocketCandidatesChanged(IRUDPICESocketPtr socket)
+      void Account::onICESocketCandidatesChanged(IICESocketPtr socket)
       {
-        ZS_LOG_DEBUG(log("on rudp ice socket candidates changed"))
+        ZS_LOG_DEBUG(log("on ice socket candidates changed"))
 
         AutoRecursiveLock lock(getLock());
         step();
@@ -2068,7 +2068,7 @@ namespace openpeer
             ZS_LOG_DEBUG(log("shutting down socket"))
             mSocket->shutdown();
 
-            if (IRUDPICESocket::RUDPICESocketState_Shutdown != mSocket->getState()) {
+            if (IICESocket::ICESocketState_Shutdown != mSocket->getState()) {
               ZS_LOG_DEBUG(log("shutdown still waiting for RUDP socket to shutdown"))
               return;
             }
@@ -2253,17 +2253,17 @@ namespace openpeer
       bool Account::stepSocket()
       {
         if (mSocket) {
-          IRUDPICESocket::RUDPICESocketStates socketState = mSocket->getState();
+          IICESocket::ICESocketStates socketState = mSocket->getState();
 
-          if (IRUDPICESocket::RUDPICESocketState_Shutdown == socketState) {
+          if (IICESocket::ICESocketState_Shutdown == socketState) {
             ZS_LOG_ERROR(Debug, log("notified RUDP ICE socket is shutdown unexpected"))
             setError(IHTTP::HTTPStatusCode_Networkconnecttimeouterror, "RUDP ICE Socket Session shutdown unexpectedly");
             cancel();
             return false;
           }
 
-          if ((IRUDPICESocket::RUDPICESocketState_Ready != socketState) &&
-              (IRUDPICESocket::RUDPICESocketState_Sleeping != socketState)) {
+          if ((IICESocket::ICESocketState_Ready != socketState) &&
+              (IICESocket::ICESocketState_Sleeping != socketState)) {
             ZS_LOG_TRACE(log("waiting for the socket to wake up or to go to sleep"))
             return true;
           }
@@ -2280,14 +2280,14 @@ namespace openpeer
 
         ZS_LOG_DEBUG(log("creating RUDP ICE socket") + ", turn=" + turnServer + ", username=" + turnServerUsername + ", password=" + turnServerPassword + ", stun=" + stunServer)
 
-        mSocket = IRUDPICESocket::create(
-                                         IStackForInternal::queueServices(),
-                                         mThisWeak.lock(),
-                                         turnServer,
-                                         turnServerUsername,
-                                         turnServerPassword,
-                                         stunServer
-                                         );
+        mSocket = IICESocket::create(
+                                     IStackForInternal::queueServices(),
+                                     mThisWeak.lock(),
+                                     turnServer,
+                                     turnServerUsername,
+                                     turnServerPassword,
+                                     stunServer
+                                     );
         if (mSocket) {
           ZS_LOG_TRACE(log("socket created thus need to wait for socket to be ready"))
           return true;
@@ -2669,7 +2669,7 @@ namespace openpeer
         }
 
         mSocket->wakeup();
-        if (IRUDPICESocket::RUDPICESocketState_Ready != mSocket->getState()) {
+        if (IICESocket::ICESocketState_Ready != mSocket->getState()) {
           ZS_LOG_DEBUG(log("should issue find request but must wait until ICE candidates are fully ready") + PeerInfo::toDebugString(peerInfo))
           return;
         }

@@ -61,7 +61,6 @@ namespace openpeer
     {
       using services::IICESocket;
 
-      using services::IRUDPICESocketSubscriptionPtr;
       using services::IRUDPMessagingPtr;
       using services::IMessageLayerSecurityChannel;
       using services::IMessageLayerSecurityChannelPtr;
@@ -151,8 +150,8 @@ namespace openpeer
                                   public IAccountPeerLocationForAccount,
                                   public IWakeDelegate,
                                   public IFinderRelayChannelDelegate,
-                                  public services::IRUDPICESocketDelegate,
-                                  public services::IRUDPICESocketSessionDelegate,
+                                  public IICESocketDelegate,
+                                  public IRUDPICESocketSessionDelegate,
                                   public services::IRUDPMessagingDelegate,
                                   public services::ITransportStreamWriterDelegate,
                                   public services::ITransportStreamReaderDelegate,
@@ -259,14 +258,14 @@ namespace openpeer
 
         //---------------------------------------------------------------------
         #pragma mark
-        #pragma mark AccountPeerLocation => IRUDPICESocketDelegate
+        #pragma mark AccountPeerLocation => IICESocketDelegate
         #pragma mark
 
-        virtual void onRUDPICESocketStateChanged(
-                                                 IRUDPICESocketPtr socket,
-                                                 RUDPICESocketStates state
-                                                 );
-        virtual void onRUDPICESocketCandidatesChanged(IRUDPICESocketPtr socket);
+        virtual void onICESocketStateChanged(
+                                             IICESocketPtr socket,
+                                             ICESocketStates state
+                                             );
+        virtual void onICESocketCandidatesChanged(IICESocketPtr socket);
 
         //---------------------------------------------------------------------
         #pragma mark
@@ -358,7 +357,7 @@ namespace openpeer
         bool isShutdown() const     {return IAccount::AccountState_Shutdown == mCurrentState;}
 
         RecursiveLock &getLock() const;
-        IRUDPICESocketPtr getSocket() const;
+        IICESocketPtr getSocket() const;
 
         String log(const char *message) const;
         virtual String getDebugValueString(bool includeCommaPrefix = true) const;
@@ -366,13 +365,13 @@ namespace openpeer
         void cancel();
 
         void step();
-        bool stepSocketSubscription(IRUDPICESocketPtr socket);
+        bool stepSocketSubscription(IICESocketPtr socket);
         bool stepOutgoingRelayChannel();
         bool stepIncomingRelayChannel();
         bool stepAnyConnectionPresent();
-        bool stepPendingRequests(IRUDPICESocketPtr socket);
-        bool stepRespondLastRequest(IRUDPICESocketPtr socket);  // do not call as a direct step
-        bool stepSocketSession();
+        bool stepPendingRequests(IICESocketPtr socket);
+        bool stepRespondLastRequest(IICESocketPtr socket);  // do not call as a direct step
+        bool stepRUDPSocketSession();
         bool stepIncomingIdentify();
         bool stepIdentify();
         bool stepMessaging();
@@ -410,8 +409,10 @@ namespace openpeer
         LocationPtr mLocation;
         PeerPtr mPeer;
 
-        IRUDPICESocketSubscriptionPtr mSocketSubscription;
-        IRUDPICESocketSessionPtr mSocketSession;   // this will only become valid when a connection is establishing
+        IICESocketSubscriptionPtr mSocketSubscription;
+        IICESocketSessionPtr mSocketSession;   // this will only become valid when a connection is establishing
+        IRUDPICESocketSessionPtr mRUDPSocketSession;
+        IRUDPICESocketSessionSubscriptionPtr mRUDPSocketSessionSubscription;
         IRUDPMessagingPtr mMessaging;
         ITransportStreamReaderPtr mMessagingReceiveStream;
         ITransportStreamWriterPtr mMessagingSendStream;

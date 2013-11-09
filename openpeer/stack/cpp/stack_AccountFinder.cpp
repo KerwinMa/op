@@ -658,14 +658,6 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      IRUDPICESocketPtr AccountFinder::getSocket() const
-      {
-        AccountPtr outer = mOuter.lock();
-        if (!outer) return IRUDPICESocketPtr();
-        return outer->forAccountFinder().getSocket();
-      }
-
-      //-----------------------------------------------------------------------
       void AccountFinder::setTimeout(Time expires)
       {
         Time tick = zsLib::now();

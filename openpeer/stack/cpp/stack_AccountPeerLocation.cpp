@@ -247,7 +247,7 @@ namespace openpeer
           return;
         }
 
-        IRUDPICESocketPtr socket = getSocket();
+        IICESocketPtr socket = getSocket();
         if (!socket) {
           ZS_LOG_WARNING(Detail, log("no RUDP ICE socket found for peer location"))
           return;
@@ -270,7 +270,7 @@ namespace openpeer
         }
 
         if (!mSocketSession) {
-          mSocketSession = socket->createSessionFromRemoteCandidates(mThisWeak.lock(), remoteICEUsernameFrag, remoteICEPassword, iceCandidates, control);
+          mSocketSession = socket->createSessionFromRemoteCandidates(IICESocketSessionDelegatePtr(), remoteICEUsernameFrag, remoteICEPassword, iceCandidates, control);
 
           if (mSocketSession) {
             ZS_LOG_DEBUG(log("setting keep alive properties for socket session"))
@@ -290,6 +290,12 @@ namespace openpeer
           mSocketSession->updateRemoteCandidates(iceCandidates);
           if (candidatesFinal) {
             mSocketSession->endOfRemoteCandidates();
+          }
+        }
+
+        if (!mRUDPSocketSession) {
+          if (mSocketSession) {
+            mRUDPSocketSession = IRUDPICESocketSession::listen(IStackForInternal::queueServices(), mSocketSession, mThisWeak.lock());
           }
         }
 
@@ -605,21 +611,21 @@ namespace openpeer
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
       #pragma mark
-      #pragma mark AccountPeerLocation => IRUDPICESocketDelegate
+      #pragma mark AccountPeerLocation => IICESocketDelegate
       #pragma mark
 
       //-----------------------------------------------------------------------
-      void AccountPeerLocation::onRUDPICESocketStateChanged(
-                                                            IRUDPICESocketPtr socket,
-                                                            RUDPICESocketStates state
-                                                            )
+      void AccountPeerLocation::onICESocketStateChanged(
+                                                        IICESocketPtr socket,
+                                                        ICESocketStates state
+                                                        )
       {
         AutoRecursiveLock lock(getLock());
         step();
       }
 
       //-----------------------------------------------------------------------
-      void AccountPeerLocation::onRUDPICESocketCandidatesChanged(IRUDPICESocketPtr socket)
+      void AccountPeerLocation::onICESocketCandidatesChanged(IICESocketPtr socket)
       {
         AutoRecursiveLock lock(getLock());
         step();
@@ -648,7 +654,7 @@ namespace openpeer
           return;
         }
 
-        if (session != mSocketSession) {
+        if (session != mRUDPSocketSession) {
           ZS_LOG_WARNING(Detail, log("received socket session state changed from an obsolete session") + ", session ID=" + string(session->getID()))
           return;
         }
@@ -660,9 +666,9 @@ namespace openpeer
           String reason;
           session->getState(&errorCode, &reason);
 
-          ZS_LOG_WARNING(Detail, log("notified RUDP ICE socket session is shutdown") + ", error=" + IRUDPICESocketSession::toString(static_cast<IRUDPICESocketSession::RUDPICESocketSessionShutdownReasons>(errorCode)) + ", reason=" + reason)
-          if ((IRUDPICESocketSession::RUDPICESocketSessionShutdownReason_Timeout == errorCode) ||
-              (IRUDPICESocketSession::RUDPICESocketSessionShutdownReason_BackgroundingTimeout == errorCode)) {
+          ZS_LOG_WARNING(Detail, log("notified RUDP ICE socket session is shutdown") + ", error=" + IICESocketSession::toString(static_cast<IICESocketSession::ICESocketSessionShutdownReasons>(errorCode)) + ", reason=" + reason)
+          if ((IICESocketSession::ICESocketSessionShutdownReason_Timeout == errorCode) ||
+              (IICESocketSession::ICESocketSessionShutdownReason_BackgroundingTimeout == errorCode)) {
             mShouldRefindNow = true;
           }
           cancel();
@@ -687,7 +693,7 @@ namespace openpeer
           return; // ignore incoming channels during the shutdown
         }
 
-        if (session != mSocketSession) return;
+        if (session != mRUDPSocketSession) return;
 
         if (mMessaging) {
           if (IRUDPMessaging::RUDPMessagingState_Connected != mMessaging->getState())
@@ -698,7 +704,7 @@ namespace openpeer
             ITransportStreamPtr receiveStream = ITransportStream::create(ITransportStreamWriterDelegatePtr(), mThisWeak.lock());
             ITransportStreamPtr sendStream = ITransportStream::create(mThisWeak.lock(), ITransportStreamReaderDelegatePtr());
 
-            IRUDPMessagingPtr messaging = IRUDPMessaging::acceptChannel(IStackForInternal::queueServices(), mSocketSession, mThisWeak.lock(), receiveStream, sendStream);
+            IRUDPMessagingPtr messaging = IRUDPMessaging::acceptChannel(IStackForInternal::queueServices(), mRUDPSocketSession, mThisWeak.lock(), receiveStream, sendStream);
             if (!messaging) return;
 
             if (OPENPEER_STACK_PEER_TO_PEER_RUDP_CONNECTION_INFO != messaging->getRemoteConnectionInfo()) {
@@ -739,7 +745,7 @@ namespace openpeer
           ITransportStreamPtr sendStream = ITransportStream::create();
 
           // we already have a connected channel, so dump this one...
-          IRUDPMessagingPtr messaging = IRUDPMessaging::acceptChannel(IStackForInternal::queueServices(), mSocketSession, mThisWeak.lock(), receiveStream, sendStream);
+          IRUDPMessagingPtr messaging = IRUDPMessaging::acceptChannel(IStackForInternal::queueServices(), mRUDPSocketSession, mThisWeak.lock(), receiveStream, sendStream);
           messaging->shutdown();
 
           receiveStream->cancel();
@@ -756,7 +762,7 @@ namespace openpeer
         ITransportStreamPtr sendStream = ITransportStream::create(mThisWeak.lock(), ITransportStreamReaderDelegatePtr());
 
         // no messaging present, accept this incoming channel
-        mMessaging = IRUDPMessaging::acceptChannel(IStackForInternal::queueServices(), mSocketSession, mThisWeak.lock(), receiveStream, sendStream);
+        mMessaging = IRUDPMessaging::acceptChannel(IStackForInternal::queueServices(), mRUDPSocketSession, mThisWeak.lock(), receiveStream, sendStream);
         mIncoming = true;
 
         mMessagingReceiveStream = receiveStream->getReader();
@@ -1029,10 +1035,10 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      IRUDPICESocketPtr AccountPeerLocation::getSocket() const
+      IICESocketPtr AccountPeerLocation::getSocket() const
       {
         AccountPtr outer = mOuter.lock();
-        if (!outer) return IRUDPICESocketPtr();
+        if (!outer) return IICESocketPtr();
         return outer->forAccountPeerLocation().getSocket();
       }
 
@@ -1066,8 +1072,10 @@ namespace openpeer
         (mLocation != mLocationInfo.mLocation ? ILocation::toDebugString(mLocation) : String()) +
         IPeer::toDebugString(mPeer) +
 
-        Helper::getDebugValue("rudp ice socket subscription id", mSocketSubscription ? string(mSocketSubscription->getID()) : String(), firstTime) +
-        Helper::getDebugValue("rudp ice socket session id", mSocketSession ? string(mSocketSession->getID()) : String(), firstTime) +
+        Helper::getDebugValue("ice socket subscription id", mSocketSubscription ? string(mSocketSubscription->getID()) : String(), firstTime) +
+        Helper::getDebugValue("ice socket session id", mSocketSession ? string(mSocketSession->getID()) : String(), firstTime) +
+        Helper::getDebugValue("rudp ice socket session id", mRUDPSocketSession ? string(mRUDPSocketSession->getID()) : String(), firstTime) +
+        Helper::getDebugValue("rudp ice socket subscription id", mRUDPSocketSessionSubscription ? string(mRUDPSocketSessionSubscription->getID()) : String(), firstTime) +
         Helper::getDebugValue("rudp messagine id", mMessaging ? string(mMessaging->getID()) : String(), firstTime) +
         Helper::getDebugValue("messaging receive stream id", mMessagingReceiveStream ? string(mMessagingReceiveStream->getID()) : String(), firstTime) +
         Helper::getDebugValue("messaging send stream id", mMessagingSendStream ? string(mMessagingSendStream->getID()) : String(), firstTime) +
@@ -1119,11 +1127,6 @@ namespace openpeer
           mKeepAliveMonitor.reset();
         }
 
-        if (mSocketSubscription) {
-          mSocketSubscription->cancel();
-          mSocketSubscription.reset();
-        }
-
         if (mGracefulShutdownReference) {
 
           if (mMessaging) {
@@ -1134,16 +1137,20 @@ namespace openpeer
               ZS_LOG_DEBUG(log("waiting for RUDP messaging to shutdown"))
               return;
             }
+
+            mMessaging.reset();
           }
 
-          if (mSocketSession) {
+          if (mRUDPSocketSession) {
             ZS_LOG_DEBUG(log("requesting RUDP socket session shutdown"))
-            mSocketSession->shutdown();
+            mRUDPSocketSession->shutdown();
 
-            if (IRUDPICESocketSession::RUDPICESocketSessionState_Shutdown != mSocketSession->getState()) {
+            if (IRUDPICESocketSession::RUDPICESocketSessionState_Shutdown != mRUDPSocketSession->getState()) {
               ZS_LOG_DEBUG(log("waiting for RUDP ICE socket session to shutdown"))
               return;
             }
+
+            mRUDPSocketSession.reset();
           }
         }
 
@@ -1178,7 +1185,7 @@ namespace openpeer
         }
 
         if (mMessaging) {
-          ZS_LOG_DEBUG(log("hard shutdown of RUDP messaging"))
+          ZS_LOG_WARNING(Detail, log("hard shutdown of RUDP messaging"))
           mMessaging->shutdown();
           mMessaging.reset();
         }
@@ -1191,10 +1198,30 @@ namespace openpeer
           mMessagingSendStream.reset();
         }
 
+        if (mSocketSubscription) {
+          mSocketSubscription->cancel();
+          mSocketSubscription.reset();
+        }
+
         if (mSocketSession) {
-          ZS_LOG_DEBUG(log("hard shutdown of RUDP ICE socket session"))
-          mSocketSession->shutdown();
+          mSocketSession->close();
           mSocketSession.reset();
+        }
+
+        if (mSocketSession) {
+          mSocketSession->close();
+          mSocketSession.reset();
+        }
+
+        if (mRUDPSocketSession) {
+          ZS_LOG_WARNING(Detail, log("hard shutdown of RUDP socket session"))
+          mRUDPSocketSession->shutdown();
+          mRUDPSocketSession.reset();
+        }
+
+        if (mRUDPSocketSessionSubscription) {
+          mRUDPSocketSessionSubscription->cancel();
+          mRUDPSocketSessionSubscription.reset();
         }
 
         ZS_LOG_DEBUG(log("cancel completed"))
@@ -1219,7 +1246,7 @@ namespace openpeer
           return;
         }
 
-        IRUDPICESocketPtr socket = getSocket();
+        IICESocketPtr socket = getSocket();
         if (!socket) {
           ZS_LOG_ERROR(Debug, log("attempted to get RUDP ICE socket but ICE socket is gone"))
           cancel();
@@ -1230,7 +1257,7 @@ namespace openpeer
         if (!stepOutgoingRelayChannel()) return;
         if (!stepIncomingRelayChannel()) return;
 
-        if (stepSocketSession()) {
+        if (stepRUDPSocketSession()) {
           if (stepMessaging()) {
             if (stepMLS()) {
               // NOTE: account can proceed to ready even if P2P channel cannot be established yet (as relay can be used)
@@ -1249,17 +1276,17 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      bool AccountPeerLocation::stepSocketSubscription(IRUDPICESocketPtr socket)
+      bool AccountPeerLocation::stepSocketSubscription(IICESocketPtr socket)
       {
         if (mSocketSubscription) {
           socket->wakeup();
 
-          if (IRUDPICESocket::RUDPICESocketState_Ready != socket->getState()) {
-            ZS_LOG_TRACE(log("RUDP socket needs to wake up"))
+          if (IICESocket::ICESocketState_Ready != socket->getState()) {
+            ZS_LOG_TRACE(log("ICE socket needs to wake up"))
             return true;
           }
 
-          ZS_LOG_TRACE(log("RUDP socket is awake"))
+          ZS_LOG_TRACE(log("ICE socket is awake"))
           return true;
         }
 
@@ -1396,19 +1423,19 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      bool AccountPeerLocation::stepSocketSession()
+      bool AccountPeerLocation::stepRUDPSocketSession()
       {
-        if (!mSocketSession) {
+        if (!mRUDPSocketSession) {
           ZS_LOG_TRACE(log("waiting for a RUDP ICE socket session connection"))
           return false;
         }
 
-        if (IRUDPICESocketSession::RUDPICESocketSessionState_Ready != mSocketSession->getState()) {
+        if (IRUDPICESocketSession::RUDPICESocketSessionState_Ready != mRUDPSocketSession->getState()) {
           ZS_LOG_TRACE(log("waiting for RUDP ICE socket session to complete"))
           return false;
         }
 
-        ZS_LOG_TRACE(log("socket session is ready"))
+        ZS_LOG_TRACE(log("RUDP socket session is ready"))
         return true;
       }
 
@@ -1433,7 +1460,7 @@ namespace openpeer
         ITransportStreamPtr receiveStream = ITransportStream::create();
         ITransportStreamPtr sendStream = ITransportStream::create();
 
-        mMessaging = IRUDPMessaging::openChannel(IStackForInternal::queueServices(), mSocketSession, mThisWeak.lock(), OPENPEER_STACK_PEER_TO_PEER_RUDP_CONNECTION_INFO, receiveStream, sendStream);
+        mMessaging = IRUDPMessaging::openChannel(IStackForInternal::queueServices(), mRUDPSocketSession, mThisWeak.lock(), OPENPEER_STACK_PEER_TO_PEER_RUDP_CONNECTION_INFO, receiveStream, sendStream);
 
         if (!mMessaging) {
           ZS_LOG_WARNING(Detail, log("unable to open a messaging channel to remote peer thus shutting down"))
@@ -1627,9 +1654,11 @@ namespace openpeer
 
         if (mSocketSession) {
           switch (mSocketSession->getState(&error, &reason)) {
-            case IRUDPICESocketSession::RUDPICESocketSessionState_Pending:
-            case IRUDPICESocketSession::RUDPICESocketSessionState_Prepared:
-            case IRUDPICESocketSession::RUDPICESocketSessionState_Searching:
+            case IICESocketSession::ICESocketSessionState_Pending:
+            case IICESocketSession::ICESocketSessionState_Prepared:
+            case IICESocketSession::ICESocketSessionState_Searching:
+            case IICESocketSession::ICESocketSessionState_Haulted:
+            case IICESocketSession::ICESocketSessionState_Nominating:
             {
               if (!found) {
                 mSocketSession->endOfRemoteCandidates();  // no more candidates can possibly arrive
@@ -1637,32 +1666,70 @@ namespace openpeer
               found = true;
               break;
             }
-            case IRUDPICESocketSession::RUDPICESocketSessionState_Ready:
+            case IICESocketSession::ICESocketSessionState_Nominated:
             {
+              ZS_THROW_BAD_STATE_IF(!mRUDPSocketSession)  // how is this possible since it's created with the ICE socket
+
+              // scope: check to make sure RUDP socket is ready too
+              {
+                switch (mRUDPSocketSession->getState(&error, &reason)) {
+                  case IRUDPICESocketSession::RUDPICESocketSessionState_Pending: {
+                    ZS_LOG_TRACE(log("rudp ice socket session is pending"))
+                    found = true;
+                    goto rudp_not_ready;
+                  }
+                  case IRUDPICESocketSession::RUDPICESocketSessionState_Ready: {
+                    ZS_LOG_TRACE(log("rudp ice socket session is ready"))
+                    found = true;
+                    goto rudp_ready;
+                  }
+                  case IRUDPICESocketSession::RUDPICESocketSessionState_ShuttingDown:
+                  case IRUDPICESocketSession::RUDPICESocketSessionState_Shutdown: {
+                    ZS_LOG_WARNING(Trace, log("rudp socket session is shutdown (thus unuseable)") + ", error=" + string(error) + ", reason=" + reason)
+                    goto rudp_not_ready;
+                  }
+                }
+              }
+
+            rudp_not_ready:
+              break;
+
+            rudp_ready:
+
               if (!mMessaging) {
                 ZS_LOG_TRACE(log("waiting for a messaging channel to be setup"))
                 found = true;
                 break;
               }
-              switch (mMessaging->getState(&error, &reason)) {
-                case IRUDPMessaging::RUDPMessagingState_Connecting:
-                {
-                  ZS_LOG_TRACE(log("Messaging channel is still pending (thus communication channel is not available yet)"))
-                  found = true;
-                  break;
-                }
-                case IRUDPMessaging::RUDPMessagingState_Connected:
-                {
-                  ZS_LOG_TRACE(log("Messaging channel is connected (but must see if MLS channel is ready)"))
-                  found = true;
-                  break;
-                }
-                case IRUDPMessaging::RUDPMessagingState_ShuttingDown:
-                case IRUDPMessaging::RUDPMessagingState_Shutdown: {
-                  ZS_LOG_WARNING(Trace, log("messaging channel is shutdown (thus unuseable)") + ", error=" + string(error) + ", reason=" + reason)
-                  break;
+
+              // scope: check if messaging is ready
+              {
+                switch (mMessaging->getState(&error, &reason)) {
+                  case IRUDPMessaging::RUDPMessagingState_Connecting:
+                  {
+                    ZS_LOG_TRACE(log("Messaging channel is still pending (thus communication channel is not available yet)"))
+                    found = true;
+                    goto messaging_not_ready;
+                  }
+                  case IRUDPMessaging::RUDPMessagingState_Connected:
+                  {
+                    ZS_LOG_TRACE(log("Messaging channel is connected (but must see if MLS channel is ready)"))
+                    found = true;
+                    goto messaging_ready;
+                  }
+                  case IRUDPMessaging::RUDPMessagingState_ShuttingDown:
+                  case IRUDPMessaging::RUDPMessagingState_Shutdown: {
+                    ZS_LOG_WARNING(Trace, log("messaging channel is shutdown (thus unuseable)") + ", error=" + string(error) + ", reason=" + reason)
+                    goto messaging_not_ready;
+                  }
                 }
               }
+
+            messaging_not_ready:
+              break;
+
+            messaging_ready:
+
               if (!mMLSChannel) {
                 ZS_LOG_TRACE(log("waiting for an MLS channel to be setup"))
                 found = true;
@@ -1687,8 +1754,7 @@ namespace openpeer
               }
               break;
             }
-            case IRUDPICESocketSession::RUDPICESocketSessionState_ShuttingDown:
-            case IRUDPICESocketSession::RUDPICESocketSessionState_Shutdown:
+            case IICESocketSession::ICESocketSessionState_Shutdown:
               ZS_LOG_WARNING(Trace, log("rudp socket session is shutdown (thus unuseable)") + ", error=" + string(error) + ", reason=" + reason)
               break;
           }
@@ -1710,7 +1776,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      bool AccountPeerLocation::stepPendingRequests(IRUDPICESocketPtr socket)
+      bool AccountPeerLocation::stepPendingRequests(IICESocketPtr socket)
       {
         if (mPendingRequests.size() < 1) {
           ZS_LOG_TRACE(log("no pending requests"))
@@ -1743,7 +1809,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      bool AccountPeerLocation::stepRespondLastRequest(IRUDPICESocketPtr socket)
+      bool AccountPeerLocation::stepRespondLastRequest(IICESocketPtr socket)
       {
         AccountPtr outer = mOuter.lock();
         ZS_THROW_BAD_STATE_IF(!outer)

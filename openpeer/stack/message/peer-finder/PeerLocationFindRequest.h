@@ -62,7 +62,6 @@ namespace openpeer
             AttributeType_ICEPassword,
             AttributeType_ExcludedLocations,
             AttributeType_LocationInfo,
-            AttributeType_Routes,                             // filled when decoding from incoming request
             AttributeType_PeerFiles,
           };
 
@@ -104,9 +103,6 @@ namespace openpeer
           const ExcludedLocationList &excludeLocations() const            {return mExcludedLocations;}
           void excludeLocations(const ExcludedLocationList &excludeList)  {mExcludedLocations = excludeList;}
 
-          const RouteList &routes() const                                 {return mRoutes;}
-          void routes(const RouteList &routes)                            {mRoutes = routes;}
-
           const LocationInfo &locationInfo() const                        {return mLocationInfo;}
           void locationInfo(const LocationInfo &location)                 {mLocationInfo = location;}
 
@@ -128,7 +124,6 @@ namespace openpeer
 
           ExcludedLocationList mExcludedLocations;
 
-          RouteList mRoutes;
           LocationInfo mLocationInfo;
 
           IPeerFilesPtr mPeerFiles;

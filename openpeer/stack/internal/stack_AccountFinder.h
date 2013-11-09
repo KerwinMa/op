@@ -329,8 +329,6 @@ namespace openpeer
 
         RecursiveLock &getLock() const;
 
-        IRUDPICESocketPtr getSocket() const;
-
         void setTimeout(Time expires);
 
         String log(const char *message) const;

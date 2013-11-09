@@ -212,25 +212,6 @@ namespace openpeer
               }
             }
 
-#define WARNING_REMOVE_ROUTES 1
-#define WARNING_REMOVE_ROUTES 2
-
-            ElementPtr routesEl = root->findFirstChildElement("routes");
-            if (routesEl) {
-              RouteList routeLst;
-              ElementPtr routeEl = routesEl->findFirstChildElement("route");
-              while (routeEl)
-              {
-                String id = IMessageHelper::getAttributeID(routeEl);
-                routeLst.push_back(id);
-
-                routeEl = routeEl->getNextSiblingElement();
-              }
-
-              if (routeLst.size() > 0)
-                ret->mRoutes = routeLst;
-            }
-
             ElementPtr excludeEl = root->findFirstChildElement("exclude");
             if (excludeEl) {
               ElementPtr locationsEl = excludeEl->findFirstChildElement("locations");
@@ -269,7 +250,6 @@ namespace openpeer
             case AttributeType_ICEPassword:                       return mICEPassword.hasData();
             case AttributeType_LocationInfo:                      return mLocationInfo.hasData();
             case AttributeType_ExcludedLocations:                 return (mExcludedLocations.size() > 0);
-            case AttributeType_Routes:                            return (mRoutes.size() != 0);
             case AttributeType_PeerFiles:                         return mPeerFiles;
             default:                                              break;
           }
@@ -370,21 +350,6 @@ namespace openpeer
             {
               const String &location = (*it);
               locationsEl->adoptAsLastChild(IMessageHelper::createElementWithID("location", location));
-            }
-          }
-
-#define WARNING_REMOVE_ROUTES 1
-#define WARNING_REMOVE_ROUTES 2
-
-          if (hasAttribute(AttributeType_Routes))
-          {
-            ElementPtr routesEl = IMessageHelper::createElement("routes");
-            root->adoptAsLastChild(routesEl);
-
-            for(RouteList::const_iterator it = mRoutes.begin(); it != mRoutes.end(); ++it)
-            {
-              const String &route = (*it);
-              routesEl->adoptAsLastChild(IMessageHelper::createElementWithID("route", route));
             }
           }
 

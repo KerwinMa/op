@@ -142,10 +142,6 @@ namespace openpeer
           if (request->hasAttribute(PeerLocationFindRequest::AttributeType_RequestfindProofBundleDigestValue)) {
             ret->mRequestfindProofBundleDigestValue = request->mRequestfindProofBundleDigestValue;
           }
-          if (request->hasAttribute(PeerLocationFindRequest::AttributeType_Routes)) {
-            ret->mRoutes = request->mRoutes;
-          }
-
           return ret;
         }
 
@@ -158,7 +154,6 @@ namespace openpeer
             case AttributeType_Context:                           return mContext.hasData();
             case AttributeType_PeerSecret:                        return mPeerSecret.hasData();
             case AttributeType_LocationInfo:                      return mLocationInfo.hasData();
-            case AttributeType_Routes:                            return mRoutes.size() > 0;
             case AttributeType_PeerFiles:                         return mPeerFiles;
             default:
               break;
