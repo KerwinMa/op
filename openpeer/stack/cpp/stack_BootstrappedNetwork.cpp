@@ -1060,10 +1060,17 @@ namespace openpeer
           return NULL;
         }
 
-        const Service *service = &(*found).second;
+        const ServiceMap &serviceMap = (*found).second;
+        if (!serviceMap.size() < 1) {
+          ZS_LOG_WARNING(Debug, log("service method not found") + ", type=" + serviceType + ", method=" + method)
+          return NULL;
+        }
 
-        Service::MethodMap::const_iterator foundMethod = service->mMethods.find(method);
-        if (foundMethod == service->mMethods.end()) {
+        // this only finds the first service rather than the entire array since most cases we only have one service per type
+        const Service::MethodMap &methodMap = (*(serviceMap.begin())).second.mMethods;
+
+        Service::MethodMap::const_iterator foundMethod = methodMap.find(method);
+        if (foundMethod == methodMap.end()) {
           ZS_LOG_WARNING(Debug, log("service method not found") + ", type=" + serviceType + ", method=" + method)
           return NULL;
         }

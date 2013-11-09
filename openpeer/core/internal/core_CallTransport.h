@@ -106,10 +106,8 @@ namespace openpeer
 
         static CallTransportPtr create(
                                        ICallTransportDelegatePtr delegate,
-                                       const char *turnServer,
-                                       const char *turnServerUsername,
-                                       const char *turnServerPassword,
-                                       const char *stunServer
+                                       const IICESocket::TURNServerInfoList &turnServers,
+                                       const IICESocket::STUNServerInfoList &stunServers
                                        );
 
         virtual void shutdown() = 0;
@@ -207,12 +205,10 @@ namespace openpeer
         CallTransport(
                       IMessageQueuePtr queue,
                       ICallTransportDelegatePtr delegate,
-                      const char *turnServer,
-                      const char *turnServerUsername,
-                      const char *turnServerPassword,
-                      const char *stunServer
+                      const IICESocket::TURNServerInfoList &turnServers,
+                      const IICESocket::STUNServerInfoList &stunServers
                       );
-        
+
         CallTransport(Noop) : Noop(true), MessageQueueAssociator(IMessageQueuePtr()) {};
 
         void init();
@@ -238,10 +234,8 @@ namespace openpeer
 
         static CallTransportPtr create(
                                        ICallTransportDelegatePtr delegate,
-                                       const char *turnServer,
-                                       const char *turnServerUsername,
-                                       const char *turnServerPassword,
-                                       const char *stunServer
+                                       const IICESocket::TURNServerInfoList &turnServers,
+                                       const IICESocket::STUNServerInfoList &stunServers
                                        );
 
         virtual void shutdown();
@@ -344,10 +338,8 @@ namespace openpeer
                           );
 
           void init(
-                    const char *turnServer,
-                    const char *turnServerUsername,
-                    const char *turnServerPassword,
-                    const char *stunServer
+                    const IICESocket::TURNServerInfoList &turnServers,
+                    const IICESocket::STUNServerInfoList &stunServers
                     );
 
         public:
@@ -361,10 +353,8 @@ namespace openpeer
           static TransportSocketPtr create(
                                            IMessageQueuePtr queue,
                                            CallTransportPtr outer,
-                                           const char *turnServer,
-                                           const char *turnServerUsername,
-                                           const char *turnServerPassword,
-                                           const char *stunServer
+                                           const IICESocket::TURNServerInfoList &turnServers,
+                                           const IICESocket::STUNServerInfoList &stunServers
                                            );
 
           PUID getID() const {return mID;}
@@ -418,10 +408,8 @@ namespace openpeer
 
         ICallTransportDelegatePtr mDelegate;
 
-        String mTURNServer;
-        String mTURNServerUsername;
-        String mTURNServerPassword;
-        String mSTUNServer;
+        IICESocket::TURNServerInfoList mTURNServers;
+        IICESocket::STUNServerInfoList mSTUNServers;
 
         CallTransportStates mCurrentState;
 
@@ -459,10 +447,8 @@ namespace openpeer
 
         virtual CallTransportPtr create(
                                         ICallTransportDelegatePtr delegate,
-                                        const char *turnServer,
-                                        const char *turnServerUsername,
-                                        const char *turnServerPassword,
-                                        const char *stunServer
+                                        const IICESocket::TURNServerInfoList &turnServers,
+                                        const IICESocket::STUNServerInfoList &stunServers
                                         );
       };
       

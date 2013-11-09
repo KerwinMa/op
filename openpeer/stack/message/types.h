@@ -88,6 +88,9 @@ namespace openpeer
         typedef boost::shared_ptr<Method> MethodPtr;
         typedef boost::weak_ptr<Method> MethodWeakPtr;
         typedef std::map<Method::MethodName, Method> MethodMap;
+        typedef std::list<MethodPtr> MethodList;
+        typedef boost::shared_ptr<MethodList> MethodListPtr;
+        typedef boost::weak_ptr<MethodList> MethodListWeakPtr;
         typedef String ServiceID;
         typedef String Type;
 
@@ -103,7 +106,7 @@ namespace openpeer
       typedef boost::shared_ptr<Service> ServicePtr;
       typedef boost::weak_ptr<Service> ServiceWeakPtr;
       typedef std::map<Service::ServiceID, Service> ServiceMap;
-      typedef std::map<Service::Type, Service> ServiceTypeMap;
+      typedef std::map<Service::Type, ServiceMap> ServiceTypeMap;
 
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------

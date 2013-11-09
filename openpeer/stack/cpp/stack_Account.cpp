@@ -263,17 +263,46 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       void Account::getNATServers(
-                                  String &outTURNServer,
-                                  String &outTURNUsername,
-                                  String &outTURNPassword,
-                                  String &outSTUNServer
+                                  IICESocket::TURNServerInfoList &outTURNServers,
+                                  IICESocket::STUNServerInfoList &outSTUNServers
                                   ) const
       {
         AutoRecursiveLock lock(getLock());
-        outTURNServer = mTURN ? mTURN->mURI : String();
-        outTURNUsername = mTURN ? mTURN->mUsername : String();
-        outTURNPassword = mTURN ? mTURN->mPassword : String();
-        outSTUNServer = (mSTUN ? mSTUN->mURI : (mTURN ? mTURN->mURI : String()));
+
+        outTURNServers.clear();
+        outSTUNServers.clear();
+
+        if (mTURN) {
+          for (Service::MethodList::iterator iter = mTURN->begin(); iter != mTURN->end(); ++iter)
+          {
+            Service::MethodPtr &method = (*iter);
+            if (!method) continue;
+
+            IICESocket::TURNServerInfoPtr turnInfo = IICESocket::TURNServerInfo::create();
+            turnInfo->mTURNServer = method->mURI;
+            turnInfo->mTURNServerUsername = method->mUsername;
+            turnInfo->mTURNServerPassword = method->mPassword;
+
+            if (turnInfo->hasData()) {
+              outTURNServers.push_back(turnInfo);
+            }
+          }
+        }
+
+        if (mSTUN) {
+          for (Service::MethodList::iterator iter = mSTUN->begin(); iter != mSTUN->end(); ++iter)
+          {
+            Service::MethodPtr &method = (*iter);
+            if (!method) continue;
+
+            IICESocket::STUNServerInfoPtr stunInfo = IICESocket::STUNServerInfo::create();
+            stunInfo->mSTUNServer = method->mURI;
+
+            if (stunInfo->hasData()) {
+              outSTUNServers.push_back(stunInfo);
+            }
+          }
+        }
       }
 
       //-----------------------------------------------------------------------
@@ -1930,12 +1959,6 @@ namespace openpeer
       {
         AutoRecursiveLock lock(getLock());
 
-        String turn;
-        String username;
-        String password;
-        String stun;
-        getNATServers(turn, username, password, stun);
-
         bool firstTime = !includeCommaPrefix;
         return
         Helper::getDebugValue("stack account id", string(mID), firstTime) +
@@ -1945,10 +1968,6 @@ namespace openpeer
         Helper::getDebugValue("error reason", mLastErrorReason, firstTime) +
         Helper::getDebugValue("timer last fired", Time() != mLastTimerFired ? IHelper::timeToString(mLastTimerFired) : String(), firstTime) +
         Helper::getDebugValue("block until", Time() != mBlockLocationShutdownsUntil ? IHelper::timeToString(mBlockLocationShutdownsUntil) : String(), firstTime) +
-        Helper::getDebugValue("turn", turn, firstTime) +
-        Helper::getDebugValue("turn username", username, firstTime) +
-        Helper::getDebugValue("turn password", password, firstTime) +
-        Helper::getDebugValue("stun", stun, firstTime) +
         //mSelfLocation->forAccount().getDebugValueString() +
         Helper::getDebugValue("master peer secret", mMasterPeerSecret, firstTime) +
         Helper::getDebugValue("finder", mFinder ? String("true") : String(), firstTime) +
@@ -2208,10 +2227,10 @@ namespace openpeer
 
         if (!mTURN) {
           ZS_LOG_DEBUG(log("creating TURN session"))
-          mTURN = mLockboxSession->forAccount().findServiceMethod("turn", "turn");
+          mTURN = mLockboxSession->forAccount().findServiceMethods("turn", "turn");
         }
         if (!mSTUN) {
-          mSTUN = mLockboxSession->forAccount().findServiceMethod("stun", "stun");
+          mSTUN = mLockboxSession->forAccount().findServiceMethods("stun", "stun");
         }
 
         return true;
@@ -2272,21 +2291,17 @@ namespace openpeer
           return true;
         }
 
-        String turnServer;
-        String turnServerUsername;
-        String turnServerPassword;
-        String stunServer;
-        getNATServers(turnServer, turnServerUsername, turnServerPassword, stunServer);
+        IICESocket::TURNServerInfoList turnServers;
+        IICESocket::STUNServerInfoList stunServers;
+        getNATServers(turnServers, stunServers);
 
-        ZS_LOG_DEBUG(log("creating RUDP ICE socket") + ", turn=" + turnServer + ", username=" + turnServerUsername + ", password=" + turnServerPassword + ", stun=" + stunServer)
+        ZS_LOG_DEBUG(log("creating ICE socket") + ", turn servers=" + string(turnServers.size()) + ", stun servers=" + string(stunServers.size()))
 
         mSocket = IICESocket::create(
                                      IStackForInternal::queueServices(),
                                      mThisWeak.lock(),
-                                     turnServer,
-                                     turnServerUsername,
-                                     turnServerPassword,
-                                     stunServer
+                                     turnServers,
+                                     stunServers
                                      );
         if (mSocket) {
           ZS_LOG_TRACE(log("socket created thus need to wait for socket to be ready"))

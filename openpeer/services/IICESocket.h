@@ -94,6 +94,8 @@ namespace openpeer
         String toDebugString(bool includeCommaPrefix = true) const;
       };
 
+      typedef boost::shared_ptr<Candidate> CandidatePtr;
+
       typedef std::list<Candidate> CandidateList;
       static void compare(
                           const CandidateList &inOldCandidatesList,
@@ -108,6 +110,38 @@ namespace openpeer
         ICEControl_Controlled,
       };
 
+      struct TURNServerInfo;
+      struct STUNServerInfo;
+
+      typedef boost::shared_ptr<TURNServerInfo> TURNServerInfoPtr;
+      typedef boost::shared_ptr<STUNServerInfo> STUNServerInfoPtr;
+
+      struct TURNServerInfo
+      {
+        String mTURNServer;
+        String mTURNServerUsername;
+        String mTURNServerPassword;
+        IDNS::SRVResultPtr mSRVTURNServerUDP;
+        IDNS::SRVResultPtr mSRVTURNServerTCP;
+
+        static TURNServerInfoPtr create();
+        bool hasData() const;
+        String toDebugString(bool includeCommaPrefix = true) const;
+      };
+
+      struct STUNServerInfo
+      {
+        String mSTUNServer;
+        IDNS::SRVResultPtr mSRVSTUNServerUDP;
+
+        static STUNServerInfoPtr create();
+        bool hasData() const;
+        String toDebugString(bool includeCommaPrefix = true) const;
+      };
+
+      typedef std::list<TURNServerInfoPtr> TURNServerInfoList;
+      typedef std::list<STUNServerInfoPtr> STUNServerInfoList;
+
       static const char *toString(ICEControls control);
       
       //-----------------------------------------------------------------------
@@ -115,30 +149,12 @@ namespace openpeer
       static String toDebugString(IICESocketPtr socket, bool includeCommaPrefix = true);
 
       //-----------------------------------------------------------------------
-      // PURPOSE: creates a socket and resolves STUN/TURN servers
+      // PURPOSE: creates/binds an ICE socket
       static IICESocketPtr create(
                                   IMessageQueuePtr queue,
                                   IICESocketDelegatePtr delegate,
-                                  const char *turnServer,
-                                  const char *turnServerUsername,
-                                  const char *turnServerPassword,
-                                  const char *stunServer,
-                                  WORD port = 0,
-                                  bool firstWORDInAnyPacketWillNotConflictWithTURNChannels = false,
-                                  IICESocketPtr foundationSocket = IICESocketPtr()
-                                  );
-
-      //-----------------------------------------------------------------------
-      // PURPOSE: creates a socket using existing resolved STUN/TURN SRV
-      //          results.
-      static IICESocketPtr create(
-                                  IMessageQueuePtr queue,
-                                  IICESocketDelegatePtr delegate,
-                                  IDNS::SRVResultPtr srvTURNUDP,
-                                  IDNS::SRVResultPtr srvTURNTCP,
-                                  const char *turnServerUsername,
-                                  const char *turnServerPassword,
-                                  IDNS::SRVResultPtr srvSTUN,
+                                  const TURNServerInfoList &turnServers,
+                                  const STUNServerInfoList &stunServers,
                                   WORD port = 0,
                                   bool firstWORDInAnyPacketWillNotConflictWithTURNChannels = false,
                                   IICESocketPtr foundationSocket = IICESocketPtr()
@@ -254,11 +270,15 @@ namespace openpeer
 }
 
 ZS_DECLARE_PROXY_BEGIN(openpeer::services::IICESocketDelegate)
-ZS_DECLARE_PROXY_METHOD_2(onICESocketStateChanged, openpeer::services::IICESocketPtr, openpeer::services::IICESocketDelegate::ICESocketStates)
-ZS_DECLARE_PROXY_METHOD_1(onICESocketCandidatesChanged, openpeer::services::IICESocketPtr)
+ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::IICESocketPtr, IICESocketPtr)
+ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::IICESocketDelegate::ICESocketStates, ICESocketStates)
+ZS_DECLARE_PROXY_METHOD_2(onICESocketStateChanged, IICESocketPtr, ICESocketStates)
+ZS_DECLARE_PROXY_METHOD_1(onICESocketCandidatesChanged, IICESocketPtr)
 ZS_DECLARE_PROXY_END()
 
 ZS_DECLARE_PROXY_SUBSCRIPTIONS_BEGIN(openpeer::services::IICESocketDelegate, openpeer::services::IICESocketSubscription)
-ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_2(onICESocketStateChanged, openpeer::services::IICESocketPtr, openpeer::services::IICESocketDelegate::ICESocketStates)
-ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_1(onICESocketCandidatesChanged, openpeer::services::IICESocketPtr)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_TYPEDEF(openpeer::services::IICESocketPtr, IICESocketPtr)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_TYPEDEF(openpeer::services::IICESocketDelegate::ICESocketStates, ICESocketStates)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_2(onICESocketStateChanged, IICESocketPtr, ICESocketStates)
+ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_1(onICESocketCandidatesChanged, IICESocketPtr)
 ZS_DECLARE_PROXY_SUBSCRIPTIONS_END()

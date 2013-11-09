@@ -177,13 +177,11 @@ namespace openpeer
       //-----------------------------------------------------------------------
       CallTransportPtr ICallTransportFactory::create(
                                                      ICallTransportDelegatePtr delegate,
-                                                     const char *turnServer,
-                                                     const char *turnServerUsername,
-                                                     const char *turnServerPassword,
-                                                     const char *stunServer
+                                                     const IICESocket::TURNServerInfoList &turnServers,
+                                                     const IICESocket::STUNServerInfoList &stunServers
                                                      )
       {
-        return CallTransport::create(delegate, turnServer, turnServerUsername, turnServerPassword, stunServer);
+        return CallTransport::create(delegate, turnServers, stunServers);
       }
 
       //-----------------------------------------------------------------------

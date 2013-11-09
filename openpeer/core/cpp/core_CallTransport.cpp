@@ -104,13 +104,11 @@ namespace openpeer
       //-----------------------------------------------------------------------
       CallTransportPtr ICallTransportForAccount::create(
                                                         ICallTransportDelegatePtr delegate,
-                                                        const char *turnServer,
-                                                        const char *turnServerUsername,
-                                                        const char *turnServerPassword,
-                                                        const char *stunServer
+                                                        const IICESocket::TURNServerInfoList &turnServers,
+                                                        const IICESocket::STUNServerInfoList &stunServers
                                                         )
       {
-        return ICallTransportFactory::singleton().create(delegate, turnServer, turnServerUsername, turnServerPassword, stunServer);
+        return ICallTransportFactory::singleton().create(delegate, turnServers, stunServers);
       }
 
       //-----------------------------------------------------------------------
@@ -125,18 +123,14 @@ namespace openpeer
       CallTransport::CallTransport(
                                    IMessageQueuePtr queue,
                                    ICallTransportDelegatePtr delegate,
-                                   const char *turnServer,
-                                   const char *turnServerUsername,
-                                   const char *turnServerPassword,
-                                   const char *stunServer
+                                   const IICESocket::TURNServerInfoList &turnServers,
+                                   const IICESocket::STUNServerInfoList &stunServers
                                    ) :
         MessageQueueAssociator(queue),
         mID(zsLib::createPUID()),
         mDelegate(ICallTransportDelegateProxy::createWeak(queue, delegate)),
-        mTURNServer(turnServer ? turnServer : ""),
-        mTURNServerUsername(turnServerUsername ? turnServerUsername : ""),
-        mTURNServerPassword(turnServerPassword ? turnServerPassword : ""),
-        mSTUNServer(stunServer ? stunServer : ""),
+        mTURNServers(turnServers),
+        mSTUNServers(stunServers),
         mCurrentState(CallTransportState_Pending),
         mTotalCalls(0),
         mFocusCallID(0),
@@ -182,13 +176,11 @@ namespace openpeer
       //-----------------------------------------------------------------------
       CallTransportPtr CallTransport::create(
                                              ICallTransportDelegatePtr delegate,
-                                             const char *turnServer,
-                                             const char *turnServerUsername,
-                                             const char *turnServerPassword,
-                                             const char *stunServer
+                                             const IICESocket::TURNServerInfoList &turnServers,
+                                             const IICESocket::STUNServerInfoList &stunServers
                                              )
       {
-        CallTransportPtr pThis(new CallTransport(IStackForInternal::queueMedia(), delegate, turnServer, turnServerUsername, turnServerPassword, stunServer));
+        CallTransportPtr pThis(new CallTransport(IStackForInternal::queueMedia(), delegate, turnServers, stunServers));
         pThis->mThisWeak = pThis;
         pThis->init();
         return pThis;
@@ -506,26 +498,25 @@ namespace openpeer
       {
         AutoRecursiveLock lock(getLock());
         bool firstTime = !includeCommaPrefix;
-        return Helper::getDebugValue("call transport id", string(mID), firstTime) +
-               Helper::getDebugValue("state", ICallTransport::toString(mCurrentState), firstTime) +
-               Helper::getDebugValue("turn", mTURNServer, firstTime) +
-               Helper::getDebugValue("turn username", mTURNServerUsername, firstTime) +
-               Helper::getDebugValue("turn password", mTURNServerPassword, firstTime) +
-               Helper::getDebugValue("stun", mSTUNServer, firstTime) +
-               Helper::getDebugValue("total calls", 0 != mTotalCalls ? string(mTotalCalls) : String(), firstTime) +
-               Helper::getDebugValue("socket cleanup timer", mSocketCleanupTimer ? String("true") : String(), firstTime) +
-               Helper::getDebugValue("started", mStarted ? String("true") : String(), firstTime) +
-               ICall::toDebugString(mFocus.lock()) +
-               Helper::getDebugValue("focus call id", 0 != mFocusCallID ? string(mFocusCallID) : String(), firstTime) +
-               Helper::getDebugValue("focus location id", 0 != mFocusLocationID ? string(mFocusLocationID) : String(), firstTime) +
-               Helper::getDebugValue("has audio", mHasAudio ? String("true") : String(), firstTime) +
-               Helper::getDebugValue("has video", mHasAudio ? String("true") : String(), firstTime) +
-               Helper::getDebugValue("blocked until", 0 != mBlockUntilStartStopCompleted ? string(mBlockUntilStartStopCompleted) : String(), firstTime) +
-               ", audio: " + TransportSocket::toDebugString(mAudioSocket, false) +
-               ", video: " + TransportSocket::toDebugString(mVideoSocket, false) +
-               Helper::getDebugValue("audio socket id", 0 != mAudioSocketID ? string(mAudioSocketID) : String(), firstTime) +
-               Helper::getDebugValue("video socket id", 0 != mVideoSocketID ? string(mVideoSocketID) : String(), firstTime) +
-               Helper::getDebugValue("obsolete sockets", mObsoleteSockets.size() > 0 ? string(mObsoleteSockets.size()) : String(), firstTime);
+        return
+        Helper::getDebugValue("call transport id", string(mID), firstTime) +
+        Helper::getDebugValue("state", ICallTransport::toString(mCurrentState), firstTime) +
+        Helper::getDebugValue("turn servers", mTURNServers.size() > 0 ? string(mTURNServers.size()) : String(), firstTime) +
+        Helper::getDebugValue("stun", mSTUNServers.size() > 0 ? string(mSTUNServers.size()) : String(), firstTime) +
+        Helper::getDebugValue("total calls", 0 != mTotalCalls ? string(mTotalCalls) : String(), firstTime) +
+        Helper::getDebugValue("socket cleanup timer", mSocketCleanupTimer ? String("true") : String(), firstTime) +
+        Helper::getDebugValue("started", mStarted ? String("true") : String(), firstTime) +
+        ICall::toDebugString(mFocus.lock()) +
+        Helper::getDebugValue("focus call id", 0 != mFocusCallID ? string(mFocusCallID) : String(), firstTime) +
+        Helper::getDebugValue("focus location id", 0 != mFocusLocationID ? string(mFocusLocationID) : String(), firstTime) +
+        Helper::getDebugValue("has audio", mHasAudio ? String("true") : String(), firstTime) +
+        Helper::getDebugValue("has video", mHasAudio ? String("true") : String(), firstTime) +
+        Helper::getDebugValue("blocked until", 0 != mBlockUntilStartStopCompleted ? string(mBlockUntilStartStopCompleted) : String(), firstTime) +
+        ", audio: " + TransportSocket::toDebugString(mAudioSocket, false) +
+        ", video: " + TransportSocket::toDebugString(mVideoSocket, false) +
+        Helper::getDebugValue("audio socket id", 0 != mAudioSocketID ? string(mAudioSocketID) : String(), firstTime) +
+        Helper::getDebugValue("video socket id", 0 != mVideoSocketID ? string(mVideoSocketID) : String(), firstTime) +
+        Helper::getDebugValue("obsolete sockets", mObsoleteSockets.size() > 0 ? string(mObsoleteSockets.size()) : String(), firstTime);
       }
 
       //-----------------------------------------------------------------------
@@ -768,12 +759,12 @@ namespace openpeer
 
           if (!mAudioSocket) {
             ZS_LOG_DEBUG(log("creating audio sockets"))
-            mAudioSocket = TransportSocket::create(getAssociatedMessageQueue(), mThisWeak.lock(), mTURNServer, mTURNServerUsername, mTURNServerPassword, mSTUNServer);
+            mAudioSocket = TransportSocket::create(getAssociatedMessageQueue(), mThisWeak.lock(), mTURNServers, mSTUNServers);
             mAudioSocketID = mAudioSocket->getID();
           }
           if (!mVideoSocket) {
             ZS_LOG_DEBUG(log("creating video sockets"))
-            mVideoSocket = TransportSocket::create(getAssociatedMessageQueue(), mThisWeak.lock(), mTURNServer, mTURNServerUsername, mTURNServerPassword, mSTUNServer);
+            mVideoSocket = TransportSocket::create(getAssociatedMessageQueue(), mThisWeak.lock(), mTURNServers, mSTUNServers);
             mVideoSocketID = mVideoSocket->getID();
           }
           return;
@@ -850,13 +841,11 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       void CallTransport::TransportSocket::init(
-                                                const char *turnServer,
-                                                const char *turnServerUsername,
-                                                const char *turnServerPassword,
-                                                const char *stunServer
+                                                const IICESocket::TURNServerInfoList &turnServers,
+                                                const IICESocket::STUNServerInfoList &stunServers
                                                 )
       {
-        mRTPSocket = IICESocket::create(getAssociatedMessageQueue(), mThisWeak.lock(), turnServer, turnServerUsername, turnServerPassword, stunServer, 0, true);
+        mRTPSocket = IICESocket::create(getAssociatedMessageQueue(), mThisWeak.lock(), turnServers, stunServers, 0, true);
       }
 
       //-----------------------------------------------------------------------
@@ -884,18 +873,17 @@ namespace openpeer
       #pragma mark CallTransport::TransportSocket => friend CallTransport
       #pragma mark
 
+      //-----------------------------------------------------------------------
       CallTransport::TransportSocketPtr CallTransport::TransportSocket::create(
                                                                                IMessageQueuePtr queue,
                                                                                CallTransportPtr outer,
-                                                                               const char *turnServer,
-                                                                               const char *turnServerUsername,
-                                                                               const char *turnServerPassword,
-                                                                               const char *stunServer
+                                                                               const IICESocket::TURNServerInfoList &turnServers,
+                                                                               const IICESocket::STUNServerInfoList &stunServers
                                                                                )
       {
         TransportSocketPtr pThis(new TransportSocket(queue, outer));
         pThis->mThisWeak = pThis;
-        pThis->init(turnServer, turnServerUsername, turnServerPassword, stunServer);
+        pThis->init(turnServers, stunServers);
         return pThis;
       }
 

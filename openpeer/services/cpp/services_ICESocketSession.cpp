@@ -133,15 +133,17 @@ namespace openpeer
       //-----------------------------------------------------------------------
       static bool isCandidateMatch(
                                    const ICESocketSession::CandidatePairPtr &pair,
-                                   const IPAddress &viaLocalIP,
-                                   IICESocket::Types viaTransport,
+                                   const IICESocket::Candidate &viaLocalCandidate,
                                    const IPAddress &source
                                    )
       {
         if (!pair) return false;
         if (!pair->mRemote.mIPAddress.isEqualIgnoringIPv4Format(source)) return false;
-        if (normalize(pair->mLocal.mType) != viaTransport) return false;
-        if (!viaLocalIP.isEqualIgnoringIPv4Format(getViaLocalIP(pair->mLocal))) return false;
+        if (normalize(pair->mLocal.mType) != normalize(viaLocalCandidate.mType)) return false;
+        if (!getViaLocalIP(viaLocalCandidate).isEqualIgnoringIPv4Format(getViaLocalIP(pair->mLocal))) return false;
+        if (IICESocket::Type_Relayed == normalize(pair->mLocal.mType)) {
+          if (!viaLocalCandidate.mRelatedIP.isEqualIgnoringIPv4Format(pair->mLocal.mRelatedIP)) return false;
+        }
         return true;
       }
 
@@ -456,7 +458,7 @@ namespace openpeer
         }
 
         mLastSentData = zsLib::now();
-        return sendTo(getViaLocalIP(mNominated->mLocal), mNominated->mLocal.mType, mNominated->mRemote.mIPAddress, packet, packetLengthInBytes, true);
+        return sendTo(mNominated->mLocal, mNominated->mRemote.mIPAddress, packet, packetLengthInBytes, true);
       }
 
       //-----------------------------------------------------------------------
@@ -519,8 +521,7 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       bool ICESocketSession::handleSTUNPacket(
-                                              const IPAddress &viaLocalIP,
-                                              IICESocket::Types viaTransport,
+                                              const IICESocket::Candidate &viaLocalCandidate,
                                               const IPAddress &source,
                                               STUNPacketPtr stun,
                                               const String &localUsernameFrag,
@@ -529,7 +530,7 @@ namespace openpeer
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!stun)
 
-        ZS_LOG_DEBUG(log("handle stun packet") + ", via local IP=" + string(viaLocalIP) + ", via transport" + IICESocket::toString(viaTransport) + ", source=" + string(source) + ", local username frag=" + localUsernameFrag + ", remote username frag=" + remoteUsernameFrag)
+        ZS_LOG_DEBUG(log("handle stun packet") + ", candidate: " + viaLocalCandidate.toDebugString(false) + ", source=" + string(source) + ", local username frag=" + localUsernameFrag + ", remote username frag=" + remoteUsernameFrag)
 
         if (mSubscriptions.size() < 1) {
           ZS_LOG_WARNING(Debug, log("unable to handle STUN packet as no subscribers"))
@@ -560,14 +561,14 @@ namespace openpeer
         bool failedIntegrity = (!stun->isValidMessageIntegrity(mLocalPassword));
         if (failedIntegrity) goto send_response;
 
-        if (isCandidateMatch(mNominated, viaLocalIP, viaTransport, source)) {
+        if (isCandidateMatch(mNominated, viaLocalCandidate, source)) {
           found = mNominated;
         }
 
         for (CandidatePairList::iterator iter = mCandidatePairs.begin(); (!found) && (iter != mCandidatePairs.end()); ++iter)
         {
           CandidatePairPtr &pair = (*iter);
-          if (isCandidateMatch(pair, viaLocalIP, viaTransport, source)) {
+          if (isCandidateMatch(pair, viaLocalCandidate, source)) {
             found = pair;
             break;
           }
@@ -584,8 +585,11 @@ namespace openpeer
           for (CandidateList::iterator iter = mLocalCandidates.begin(); iter != mLocalCandidates.end(); ++iter)
           {
             Candidate &candidate = (*iter);
-            if (candidate.mType != viaTransport) continue;
-            if (getViaLocalIP(candidate) != viaLocalIP) continue;
+            if (candidate.mType != viaLocalCandidate.mType) continue;
+            if (getViaLocalIP(candidate) != getViaLocalIP(viaLocalCandidate)) continue;
+            if (IICESocket::Type_Relayed == candidate.mType) {
+              if (candidate.mRelatedIP != viaLocalCandidate.mRelatedIP) continue;
+            }
 
             foundLocalCandidate = iter;
             break;
@@ -693,7 +697,7 @@ namespace openpeer
             boost::shared_array<BYTE> buffer;
             ULONG bufferLengthInBytes = 0;
             response->packetize(buffer, bufferLengthInBytes, STUNPacket::RFC_5245_ICE);
-            sendTo(viaLocalIP, viaTransport, source, buffer.get(), bufferLengthInBytes, false);
+            sendTo(viaLocalCandidate, source, buffer.get(), bufferLengthInBytes, false);
           }
 
           if ((failedIntegrity) || (!correctRole)) {
@@ -729,8 +733,8 @@ namespace openpeer
 
                 get(mInformedWriteReady) = false;
 
-                notifyLocalWriteReady(viaLocalIP);
-                notifyRelayWriteReady(viaLocalIP);
+                notifyLocalWriteReady(viaLocalCandidate);
+                notifyRelayWriteReady(viaLocalCandidate);
 
                 (IWakeDelegateProxy::create(mThisWeak.lock()))->onWake();
               }
@@ -793,8 +797,7 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       bool ICESocketSession::handlePacket(
-                                          const IPAddress &viaLocalIP,
-                                          IICESocket::Types viaTransport,
+                                          const IICESocket::Candidate &viaLocalCandidate,
                                           const IPAddress &source,
                                           const BYTE *packet,
                                           ULONG packetLengthInBytes
@@ -820,8 +823,8 @@ namespace openpeer
             return false;                                          // can't receive if not connected
           }
 
-          if (!isCandidateMatch(mNominated, viaLocalIP, viaTransport, source)) {
-            ZS_LOG_WARNING(Trace, log("incoming remote IP on data packet does not match nominated canddiate thus ignoring") + ", via local IP=" + string(viaLocalIP) + ", via transport=" + IICESocket::toString(viaTransport) + ", source=" + string(source) + ", local: " + mNominated->mLocal.toDebugString(false) + ", remote: " + mNominated->mRemote.toDebugString(false))
+          if (!isCandidateMatch(mNominated, viaLocalCandidate, source)) {
+            ZS_LOG_WARNING(Trace, log("incoming remote IP on data packet does not match nominated canddiate thus ignoring") + ", candidate: " + viaLocalCandidate.toDebugString(false) + ", source=" + string(source) + ", local: " + mNominated->mLocal.toDebugString(false) + ", remote: " + mNominated->mRemote.toDebugString(false))
             return false;
           }
 
@@ -840,7 +843,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      void ICESocketSession::notifyLocalWriteReady(const IPAddress &viaLocalIP)
+      void ICESocketSession::notifyLocalWriteReady(const IICESocket::Candidate &viaLocalCandidate)
       {
         AutoRecursiveLock lock(getLock());
         if (isShutdown()) return;
@@ -851,8 +854,8 @@ namespace openpeer
           return;
         }
 
-        if (!isCandidateMatch(mNominated, viaLocalIP, IICESocket::Type_Local, mNominated->mRemote.mIPAddress)) {
-          ZS_LOG_WARNING(Trace, log("write ready notification does not match") + ", via local IP=" + string(viaLocalIP) + ", via transport=" + IICESocket::toString(IICESocket::Type_Local))
+        if (!isCandidateMatch(mNominated, viaLocalCandidate, mNominated->mRemote.mIPAddress)) {
+          ZS_LOG_WARNING(Trace, log("write ready notification does not match") + ", candidate: " + viaLocalCandidate.toDebugString(false))
           return;
         }
 
@@ -865,7 +868,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      void ICESocketSession::notifyRelayWriteReady(const IPAddress &viaLocalIP)
+      void ICESocketSession::notifyRelayWriteReady(const IICESocket::Candidate &viaLocalCandidate)
       {
         AutoRecursiveLock lock(getLock());
         if (isShutdown()) return;
@@ -876,8 +879,8 @@ namespace openpeer
           return;
         }
 
-        if (!isCandidateMatch(mNominated, viaLocalIP, IICESocket::Type_Relayed, mNominated->mRemote.mIPAddress)) {
-          ZS_LOG_WARNING(Trace, log("write ready notification does not match") + ", via local IP=" + string(viaLocalIP) + ", via transport=" + IICESocket::toString(IICESocket::Type_Relayed))
+        if (!isCandidateMatch(mNominated, viaLocalCandidate, mNominated->mRemote.mIPAddress)) {
+          ZS_LOG_WARNING(Trace, log("write ready notification does not match") + ", candidate: " + viaLocalCandidate.toDebugString(false))
           return;
         }
 
@@ -964,13 +967,13 @@ namespace openpeer
 
         if (requester == mNominateRequester) {
           ZS_THROW_BAD_STATE_IF(!mPendingNominatation)
-          sendTo(getViaLocalIP(mPendingNominatation->mLocal), mPendingNominatation->mLocal.mType, destination, packet.get(), packetLengthInBytes, false);
+          sendTo(mPendingNominatation->mLocal, destination, packet.get(), packetLengthInBytes, false);
           return;
         }
 
         if (requester == mAliveCheckRequester) {
             ZS_THROW_BAD_STATE_IF(!mNominated)
-            sendTo(getViaLocalIP(mNominated->mLocal), mNominated->mLocal.mType, destination, packet.get(), packetLengthInBytes, false);
+            sendTo(mNominated->mLocal, destination, packet.get(), packetLengthInBytes, false);
             return;
         }
 
@@ -980,7 +983,7 @@ namespace openpeer
           {
             CandidatePairPtr pairing = (*iter);
             if (requester == pairing->mRequester) {
-              sendTo(getViaLocalIP(pairing->mLocal), pairing->mLocal.mType, destination, packet.get(), packetLengthInBytes, false);
+              sendTo(pairing->mLocal, destination, packet.get(), packetLengthInBytes, false);
               return;
             }
           }
@@ -1068,8 +1071,8 @@ namespace openpeer
 
           get(mInformedWriteReady) = false;
 
-          notifyLocalWriteReady(getViaLocalIP(usePair->mLocal));
-          notifyRelayWriteReady(getViaLocalIP(usePair->mLocal));
+          notifyLocalWriteReady(usePair->mLocal);
+          notifyRelayWriteReady(usePair->mLocal);
 
           (IWakeDelegateProxy::create(mThisWeak.lock()))->onWake();
           return true;
@@ -1315,7 +1318,7 @@ namespace openpeer
           boost::shared_array<BYTE> buffer;
           ULONG length = 0;
           indication->packetize(buffer, length, STUNPacket::RFC_5245_ICE);
-          sendTo(getViaLocalIP(mNominated->mLocal), mNominated->mLocal.mType, mNominated->mRemote.mIPAddress, buffer.get(), length, true);
+          sendTo(mNominated->mLocal, mNominated->mRemote.mIPAddress, buffer.get(), length, true);
         }
 
         if (timer == mExpectingDataTimer)
@@ -2156,8 +2159,7 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       bool ICESocketSession::sendTo(
-                                    const IPAddress &viaLocalIP,
-                                    IICESocket::Types viaTransport,
+                                    const IICESocket::Candidate &viaLocalCandidate,
                                     const IPAddress &destination,
                                     const BYTE *buffer,
                                     ULONG bufferLengthInBytes,
@@ -2165,17 +2167,17 @@ namespace openpeer
                                     )
       {
         if (isShutdown()) {
-          ZS_LOG_WARNING(Debug, log("cannot send packet as ICE session is closed") + ", via=" + IICESocket::toString(viaTransport) + " to ip=" + destination.string() + ", buffer=" + (buffer ? "true" : "false") + ", buffer length=" + string(bufferLengthInBytes) + ", user data=" + (isUserData ? "true" : "false"))
+          ZS_LOG_WARNING(Debug, log("cannot send packet as ICE session is closed") + ", candidate: " + viaLocalCandidate.toDebugString(false) + " to ip=" + destination.string() + ", buffer=" + (buffer ? "true" : "false") + ", buffer length=" + string(bufferLengthInBytes) + ", user data=" + (isUserData ? "true" : "false"))
           return false;
         }
         ICESocketPtr socket = mICESocketWeak.lock();
         if (!socket) {
-          ZS_LOG_WARNING(Debug, log("cannot send packet as ICE socket is closed") + ", via=" + IICESocket::toString(viaTransport) + " to ip=" + destination.string() + ", buffer=" + (buffer ? "true" : "false") + ", buffer length=" + string(bufferLengthInBytes) + ", user data=" + (isUserData ? "true" : "false"))
+          ZS_LOG_WARNING(Debug, log("cannot send packet as ICE socket is closed") + ", candidate: " + viaLocalCandidate.toDebugString(false) + " to ip=" + destination.string() + ", buffer=" + (buffer ? "true" : "false") + ", buffer length=" + string(bufferLengthInBytes) + ", user data=" + (isUserData ? "true" : "false"))
           return false;
         }
 
-        ZS_LOG_TRACE(log("sending packet") + ", via IP=" + string(viaLocalIP) + ", via=" + IICESocket::toString(viaTransport) + " to ip=" + destination.string() + ", buffer=" + (buffer ? "true" : "false") + ", buffer length=" + string(bufferLengthInBytes) + ", user data=" + (isUserData ? "true" : "false"))
-        return socket->forICESocketSession().sendTo(viaLocalIP, viaTransport, destination, buffer, bufferLengthInBytes, isUserData);
+        ZS_LOG_TRACE(log("sending packet") + ", candidate: " + viaLocalCandidate.toDebugString(false) + " to ip=" + destination.string() + ", buffer=" + (buffer ? "true" : "false") + ", buffer length=" + string(bufferLengthInBytes) + ", user data=" + (isUserData ? "true" : "false"))
+        return socket->forICESocketSession().sendTo(viaLocalCandidate, destination, buffer, bufferLengthInBytes, isUserData);
       }
 
       //-----------------------------------------------------------------------

@@ -1436,13 +1436,11 @@ namespace openpeer
           return true;
         }
 
-        String turnServer;
-        String turnUsername;
-        String turnPassword;
-        String stunServer;
+        IICESocket::TURNServerInfoList turnServers;
+        IICESocket::STUNServerInfoList stunServers;
+        mStackAccount->getNATServers(turnServers, stunServers);
 
-        mStackAccount->getNATServers(turnServer, turnUsername, turnPassword, stunServer);
-        mCallTransport = ICallTransportForAccount::create(mThisWeak.lock(), turnServer, turnUsername, turnPassword, stunServer);
+        mCallTransport = ICallTransportForAccount::create(mThisWeak.lock(), turnServers, stunServers);
 
         if (!mCallTransport) {
           ZS_LOG_ERROR(Detail, log("failed to create call transport object thus shutting down"))

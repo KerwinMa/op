@@ -94,10 +94,10 @@ namespace openpeer
 
         virtual void attach(AccountPtr account) = 0;
 
-        virtual Service::MethodPtr findServiceMethod(
-                                                     const char *serviceType,
-                                                     const char *method
-                                                     ) const = 0;
+        virtual Service::MethodListPtr findServiceMethods(
+                                                          const char *serviceType,
+                                                          const char *method
+                                                          ) const = 0;
 
         virtual BootstrappedNetworkPtr getBootstrappedNetwork() const = 0;
       };
@@ -258,10 +258,10 @@ namespace openpeer
 
         virtual void attach(AccountPtr account);
 
-        virtual Service::MethodPtr findServiceMethod(
-                                                     const char *serviceType,
-                                                     const char *method
-                                                     ) const;
+        virtual Service::MethodListPtr findServiceMethods(
+                                                          const char *serviceType,
+                                                          const char *method
+                                                          ) const;
 
         virtual BootstrappedNetworkPtr getBootstrappedNetwork() const;
 

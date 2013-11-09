@@ -198,33 +198,14 @@ namespace openpeer
       ICESocketPtr IICESocketFactory::create(
                                              IMessageQueuePtr queue,
                                              IICESocketDelegatePtr delegate,
-                                             const char *turnServer,
-                                             const char *turnServerUsername,
-                                             const char *turnServerPassword,
-                                             const char *stunServer,
+                                             const IICESocket::TURNServerInfoList &turnServers,
+                                             const IICESocket::STUNServerInfoList &stunServers,
                                              WORD port,
                                              bool firstWORDInAnyPacketWillNotConflictWithTURNChannels,
                                              IICESocketPtr foundationSocket
                                              )
       {
-        return internal::ICESocket::create(queue, delegate, turnServer, turnServerUsername, turnServerPassword, stunServer, port, firstWORDInAnyPacketWillNotConflictWithTURNChannels, foundationSocket);
-      }
-
-      //-----------------------------------------------------------------------
-      ICESocketPtr IICESocketFactory::create(
-                                             IMessageQueuePtr queue,
-                                             IICESocketDelegatePtr delegate,
-                                             IDNS::SRVResultPtr srvTURNUDP,
-                                             IDNS::SRVResultPtr srvTURNTCP,
-                                             const char *turnServerUsername,
-                                             const char *turnServerPassword,
-                                             IDNS::SRVResultPtr srvSTUN,
-                                             WORD port,
-                                             bool firstWORDInAnyPacketWillNotConflictWithTURNChannels,
-                                             IICESocketPtr foundationSocket
-                                             )
-      {
-        return internal::ICESocket::create(queue, delegate, srvTURNUDP, srvTURNTCP, turnServerUsername, turnServerPassword, srvSTUN, port, firstWORDInAnyPacketWillNotConflictWithTURNChannels, foundationSocket);
+        return internal::ICESocket::create(queue, delegate, turnServers, stunServers, port, firstWORDInAnyPacketWillNotConflictWithTURNChannels, foundationSocket);
       }
 
       //-----------------------------------------------------------------------

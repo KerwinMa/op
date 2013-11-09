@@ -447,24 +447,37 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      Service::MethodPtr ServiceLockboxSession::findServiceMethod(
-                                                                  const char *serviceType,
-                                                                  const char *method
-                                                                  ) const
+      Service::MethodListPtr ServiceLockboxSession::findServiceMethods(
+                                                                       const char *serviceType,
+                                                                       const char *method
+                                                                       ) const
       {
-        if (NULL == serviceType) return Service::MethodPtr();
-        if (NULL == method) return Service::MethodPtr();
+        if (NULL == serviceType) return Service::MethodListPtr();
+        if (NULL == method) return Service::MethodListPtr();
 
         ServiceTypeMap::const_iterator found = mServicesByType.find(serviceType);
-        if (found == mServicesByType.end()) return Service::MethodPtr();
+        if (found == mServicesByType.end()) return Service::MethodListPtr();
 
-        const Service *service = &(*found).second;
+        Service::MethodListPtr result;
 
-        Service::MethodMap::const_iterator foundMethod = service->mMethods.find(method);
-        if (foundMethod == service->mMethods.end()) return Service::MethodPtr();
+        const ServiceMap &serviceMap = (*found).second;
 
-        Service::MethodPtr result(new Service::Method);
-        (*result) = ((*foundMethod).second);
+        for (ServiceMap::const_iterator iter = serviceMap.begin(); iter != serviceMap.end(); ++iter)
+        {
+          const Service &service = (*iter).second;
+
+          Service::MethodMap::const_iterator foundMethod = service.mMethods.find(method);
+          if (foundMethod == service.mMethods.end()) continue;
+
+          if (!result) {
+            result = Service::MethodListPtr(new Service::MethodList);
+          }
+
+          Service::MethodPtr method(new Service::Method);
+          (*method) = ((*foundMethod).second);
+
+          result->push_back(method);
+        }
 
         return result;
       }
@@ -928,7 +941,10 @@ namespace openpeer
           service.mID = "bogus";
           service.mType = "bogus";
 
-          mServicesByType[service.mType] = service;
+          ServiceMap bogusMap;
+          bogusMap[service.mID] = service;
+
+          mServicesByType[service.mType] = bogusMap;
         }
 
         step();

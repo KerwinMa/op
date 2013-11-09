@@ -69,8 +69,7 @@ namespace openpeer
         virtual RecursiveLock &getLock() const = 0;
 
         virtual bool sendTo(
-                            const IPAddress &viaLocalIP,
-                            IICESocket::Types viaTransport,
+                            const IICESocket::Candidate &viaLocalCandidate,
                             const IPAddress &destination,
                             const BYTE *buffer,
                             ULONG bufferLengthInBytes,
@@ -113,50 +112,86 @@ namespace openpeer
 
         typedef std::map<IPAddress, ICESocketSessionPtr> QuickRouteMap;
 
-        struct LocalSocket
+        struct TURNInfo
         {
-          AutoPUID          mID;
-          SocketPtr         mSocket;
-          ISTUNDiscoveryPtr mSTUNDiscovery;
+          TURNServerInfoPtr mServerInfo;
+
           ITURNSocketPtr    mTURNSocket;
 
           Time              mTURNRetryAfter;
           Duration          mTURNRetryDuration;
           TimerPtr          mTURNRetryTimer;
 
-          Candidate         mLocal;
-          Candidate         mReflexive;
-          Candidate         mRelay;
+          CandidatePtr      mRelay;
+
+          TURNInfo(
+                   WORD componentID,
+                   ULONG nextLocalPreference
+                   );
+        };
+
+        struct STUNInfo
+        {
+          STUNServerInfoPtr mServerInfo;
+
+          ISTUNDiscoveryPtr mSTUNDiscovery;
+
+          CandidatePtr      mReflexive;
+
+          STUNInfo(
+                   WORD componentID,
+                   ULONG nextLocalPreference
+                   );
+        };
+
+        typedef boost::shared_ptr<TURNInfo> TURNInfoPtr;
+        typedef boost::shared_ptr<STUNInfo> STUNInfoPtr;
+
+        typedef std::map<TURNInfoPtr, TURNInfoPtr> TURNInfoMap;
+        typedef std::map<ITURNSocketPtr, TURNInfoPtr> TURNInfoSocketMap;
+        typedef std::map<IPAddress, TURNInfoPtr> TURNInfoRelatedIPMap;
+        typedef std::map<STUNInfoPtr, STUNInfoPtr> STUNInfoMap;
+        typedef std::map<ISTUNDiscoveryPtr, STUNInfoPtr> STUNInfoDiscoveryMap;
+
+        struct LocalSocket
+        {
+          AutoPUID              mID;
+          SocketPtr             mSocket;
+
+          CandidatePtr          mLocal;
+
+          TURNInfoMap           mTURNInfos;
+          TURNInfoSocketMap     mTURNSockets;
+          TURNInfoRelatedIPMap  mTURNRelayIPs;
+
+          STUNInfoMap           mSTUNInfos;
+          STUNInfoDiscoveryMap  mSTUNDiscoveries;
 
           LocalSocket(
                       WORD componentID,
-                      ULONG nextLocalPreference,
-                      const String &usernameFrag,
-                      const String &password
+                      ULONG nextLocalPreference
                       );
+
+          void clearTURN(ITURNSocketPtr turnSocket);
+          void clearSTUN(ISTUNDiscoveryPtr stunDiscovery);
         };
 
         typedef boost::shared_ptr<LocalSocket> LocalSocketPtr;
         typedef boost::weak_ptr<LocalSocket> LocalSocketWeakPtr;
 
         typedef IPAddress LocalIP;
-        typedef std::map<LocalIP, LocalSocketPtr> SocketLocalIPMap;
-        typedef std::map<ITURNSocketPtr, LocalSocketPtr> SocketTURNMap;
-        typedef std::map<ISTUNDiscoveryPtr, LocalSocketPtr> SocketSTUNMap;
-        typedef std::map<ISocketPtr, LocalSocketPtr> SocketMap;
+        typedef std::map<LocalIP, LocalSocketPtr> LocalSocketIPAddressMap;
+        typedef std::map<ITURNSocketPtr, LocalSocketPtr> LocalSocketTURNSocketMap;
+        typedef std::map<ISTUNDiscoveryPtr, LocalSocketPtr> LocalSocketSTUNDiscoveryMap;
+        typedef std::map<ISocketPtr, LocalSocketPtr> LocalSocketMap;
 
       protected:
         ICESocket(
                   IMessageQueuePtr queue,
                   IICESocketDelegatePtr delegate,
-                  IDNS::SRVResultPtr srvTURNUDP,
-                  IDNS::SRVResultPtr srvTURNTCP,
-                  const char *turnServer,
-                  const char *turnUsername,
-                  const char *turnPassword,
+                  const TURNServerInfoList &turnServers,
+                  const STUNServerInfoList &stunServers,
                   bool firstWORDInAnyPacketWillNotConflictWithTURNChannels,
-                  IDNS::SRVResultPtr srvSTUN,
-                  const char *stunServer,
                   WORD port,
                   IICESocketPtr foundationSocket
                   );
@@ -180,23 +215,8 @@ namespace openpeer
         static ICESocketPtr create(
                                    IMessageQueuePtr queue,
                                    IICESocketDelegatePtr delegate,
-                                   const char *turnServer,
-                                   const char *turnServerUsername,
-                                   const char *turnServerPassword,
-                                   const char *stunServer,
-                                   WORD port = 0,
-                                   bool firstWORDInAnyPacketWillNotConflictWithTURNChannels = false,
-                                   IICESocketPtr foundationSocket = IICESocketPtr()
-                                   );
-
-        static ICESocketPtr create(
-                                   IMessageQueuePtr queue,
-                                   IICESocketDelegatePtr delegate,
-                                   IDNS::SRVResultPtr srvTURNUDP,
-                                   IDNS::SRVResultPtr srvTURNTCP,
-                                   const char *turnServerUsername,
-                                   const char *turnServerPassword,
-                                   IDNS::SRVResultPtr srvSTUN,
+                                   const TURNServerInfoList &turnServers,
+                                   const STUNServerInfoList &stunServers,
                                    WORD port = 0,
                                    bool firstWORDInAnyPacketWillNotConflictWithTURNChannels = false,
                                    IICESocketPtr foundationSocket = IICESocketPtr()
@@ -245,8 +265,7 @@ namespace openpeer
         virtual RecursiveLock &getLock() const {return mLock;}
 
         virtual bool sendTo(
-                            const IPAddress &viaLocalIP,
-                            IICESocket::Types viaTransport,
+                            const Candidate &viaLocalCandidate,
                             const IPAddress &destination,
                             const BYTE *buffer,
                             ULONG bufferLengthInBytes,
@@ -346,8 +365,7 @@ namespace openpeer
         // NOTE:  Do NOT call this method while in a lock because it must
         //        deliver data to delegates synchronously.
         void internalReceivedData(
-                                  const IPAddress &viaLocalIP,
-                                  IICESocket::Types viaTransport,
+                                  const Candidate &viaCandidate,
                                   const IPAddress &source,
                                   const BYTE *buffer,
                                   ULONG bufferLengthInBytes
@@ -399,10 +417,10 @@ namespace openpeer
 
         ULONG               mNextLocalPreference;
 
-        SocketLocalIPMap    mSocketLocalIPs;
-        SocketTURNMap       mSocketTURNs;
-        SocketSTUNMap       mSocketSTUNs;
-        SocketMap           mSockets;
+        LocalSocketIPAddressMap     mSocketLocalIPs;
+        LocalSocketTURNSocketMap    mSocketTURNs;
+        LocalSocketSTUNDiscoveryMap mSocketSTUNs;
+        LocalSocketMap              mSockets;
 
         TimerPtr            mRebindTimer;
         Time                mRebindAttemptStartTime;
@@ -410,17 +428,11 @@ namespace openpeer
 
         bool                mMonitoringWriteReady;
 
-        IDNS::SRVResultPtr  mTURNSRVUDPResult;
-        IDNS::SRVResultPtr  mTURNSRVTCPResult;
-        String              mTURNServer;
-        String              mTURNUsername;
-        String              mTURNPassword;
+        TURNServerInfoList  mTURNServers;
+        STUNServerInfoList  mSTUNServers;
         bool                mFirstWORDInAnyPacketWillNotConflictWithTURNChannels;
         Time                mTURNLastUsed;                    // when was the TURN server last used to transport any data
         Duration            mTURNShutdownIfNotUsedBy;         // when will TURN be shutdown if it is not used by this time
-
-        IDNS::SRVResultPtr  mSTUNSRVResult;
-        String              mSTUNServer;
 
         ICESocketSessionMap mSessions;
 
@@ -447,23 +459,8 @@ namespace openpeer
         virtual ICESocketPtr create(
                                     IMessageQueuePtr queue,
                                     IICESocketDelegatePtr delegate,
-                                    const char *turnServer,
-                                    const char *turnServerUsername,
-                                    const char *turnServerPassword,
-                                    const char *stunServer,
-                                    WORD port = 0,
-                                    bool firstWORDInAnyPacketWillNotConflictWithTURNChannels = false,
-                                    IICESocketPtr foundationSocket = IICESocketPtr()
-                                    );
-
-        virtual ICESocketPtr create(
-                                    IMessageQueuePtr queue,
-                                    IICESocketDelegatePtr delegate,
-                                    IDNS::SRVResultPtr srvTURNUDP,
-                                    IDNS::SRVResultPtr srvTURNTCP,
-                                    const char *turnServerUsername,
-                                    const char *turnServerPassword,
-                                    IDNS::SRVResultPtr srvSTUN,
+                                    const IICESocket::TURNServerInfoList &turnServers,
+                                    const IICESocket::STUNServerInfoList &stunServers,
                                     WORD port = 0,
                                     bool firstWORDInAnyPacketWillNotConflictWithTURNChannels = false,
                                     IICESocketPtr foundationSocket = IICESocketPtr()
@@ -474,9 +471,11 @@ namespace openpeer
 }
 
 ZS_DECLARE_PROXY_BEGIN(openpeer::services::internal::IICESocketForICESocketSession)
-ZS_DECLARE_PROXY_METHOD_SYNC_CONST_RETURN_0(getSocket, openpeer::services::IICESocketPtr)
+ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::IICESocketPtr, IICESocketPtr)
+ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::IICESocket, IICESocket)
+ZS_DECLARE_PROXY_METHOD_SYNC_CONST_RETURN_0(getSocket, IICESocketPtr)
 ZS_DECLARE_PROXY_METHOD_SYNC_CONST_RETURN_0(getLock, RecursiveLock &)
-ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_6(sendTo, bool, const IPAddress &, openpeer::services::IICESocket::Types, const IPAddress &, const BYTE *, ULONG, bool)
+ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_5(sendTo, bool, const IICESocket::Candidate &, const IPAddress &, const BYTE *, ULONG, bool)
 ZS_DECLARE_PROXY_METHOD_1(onICESocketSessionClosed, PUID)
 ZS_DECLARE_PROXY_METHOD_SYNC_2(addRoute, openpeer::services::internal::ICESocketSessionPtr, const IPAddress &)
 ZS_DECLARE_PROXY_METHOD_SYNC_1(removeRoute, openpeer::services::internal::ICESocketSessionPtr)

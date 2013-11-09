@@ -74,7 +74,15 @@ namespace openpeer
             Service service = MessageHelper::createService(serviceEl);
             if (service.hasData()) {
               ret->mServices[service.mID] = service;
-              ret->mServicesByType[service.mType] = service;
+
+              ServiceTypeMap::iterator found = ret->mServicesByType.find(service.mType);
+              if (found == ret->mServicesByType.end()) {
+                ret->mServicesByType[service.mType] = ServiceMap();
+                found = ret->mServicesByType.find(service.mType);
+              }
+
+              ServiceMap &changeMap = (*found).second;
+              changeMap[service.mID] = service;
             }
 
             serviceEl = serviceEl->findNextSiblingElement("service");

@@ -44,6 +44,7 @@ namespace openpeer
   {
     namespace internal
     {
+      //-----------------------------------------------------------------------
       DNSMonitor::DNSMonitor(IMessageQueuePtr queue) :
         MessageQueueAssociator(queue),
         mID(zsLib::createPUID()),
@@ -51,10 +52,12 @@ namespace openpeer
       {
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::init()
       {
       }
 
+      //-----------------------------------------------------------------------
       DNSMonitor::~DNSMonitor()
       {
         for (ResultMap::iterator iter = mOutstandingQueries.begin(); iter != mOutstandingQueries.end(); ++iter)
@@ -66,6 +69,7 @@ namespace openpeer
         cleanIfNoneOutstanding();
       }
 
+      //-----------------------------------------------------------------------
       DNSMonitorPtr DNSMonitor::create(IMessageQueuePtr queue)
       {
         DNSMonitorPtr pThis(new DNSMonitor(queue));
@@ -74,6 +78,7 @@ namespace openpeer
         return pThis;
       }
 
+      //-----------------------------------------------------------------------
       DNSMonitorPtr DNSMonitor::singleton()
       {
         AutoRecursiveLock lock(Helper::getGlobalLock());
@@ -81,6 +86,7 @@ namespace openpeer
         return monitor;
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::createDNSContext()
       {
         if (NULL != mCtx)
@@ -123,6 +129,7 @@ namespace openpeer
         mTimer = Timer::create(mThisWeak.lock(), Seconds(1), true);
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::cleanIfNoneOutstanding()
       {
         if (mOutstandingQueries.size() > 0) return;   // still outstanding queries
@@ -141,6 +148,7 @@ namespace openpeer
         mTimer.reset();
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::cancel(struct dns_query *query)
       {
         AutoRecursiveLock lock(mLock);
@@ -154,6 +162,7 @@ namespace openpeer
         dns_cancel(mCtx, query);
       }
 
+      //-----------------------------------------------------------------------
       bool DNSMonitor::done(struct dns_query *query)
       {
         AutoRecursiveLock lock(mLock);
@@ -166,6 +175,7 @@ namespace openpeer
         return false;
       }
 
+      //-----------------------------------------------------------------------
       struct dns_query *DNSMonitor::submitAQuery(const char *name, int flags, IResultPtr result)
       {
         AutoRecursiveLock lock(mLock);
@@ -186,6 +196,7 @@ namespace openpeer
         return query;
       }
 
+      //-----------------------------------------------------------------------
       struct dns_query *DNSMonitor::submitAAAAQuery(const char *name, int flags, IResultPtr result)
       {
         AutoRecursiveLock lock(mLock);
@@ -206,6 +217,7 @@ namespace openpeer
         return query;
       }
 
+      //-----------------------------------------------------------------------
       struct dns_query *DNSMonitor::submitSRVQuery(const char *name, const char *service, const char *protocol, int flags, IResultPtr result)
       {
         AutoRecursiveLock lock(mLock);
@@ -226,6 +238,7 @@ namespace openpeer
         return query;
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::dns_query_a4(struct dns_ctx *ctx, struct dns_rr_a4 *record, void *data)
       {
         IResult *result = ((IResult *)data);
@@ -244,6 +257,7 @@ namespace openpeer
         result->done();                     // this object no longer has a hard reference to itself
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::dns_query_a6(struct dns_ctx *ctx, struct dns_rr_a6 *record, void *data)
       {
         IResult *result = ((IResult *)data);
@@ -258,10 +272,11 @@ namespace openpeer
         // notify of the result
         result->onAAAAResult(record);
 
-        monitor->done(result->getQuery()); // monitor can now forget about this query
+        monitor->done(result->getQuery());  // monitor can now forget about this query
         result->done();                     // this object no longer has a hard reference to itself
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::dns_query_srv(struct dns_ctx *ctx, struct dns_rr_srv *record, void *data)
       {
         IResult *result = ((IResult *)data);
@@ -280,6 +295,7 @@ namespace openpeer
         result->done();                     // this object no longer has a hard reference to itself
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::onReadReady(ISocketPtr socket)
       {
         AutoRecursiveLock lock(mLock);
@@ -295,11 +311,13 @@ namespace openpeer
         cleanIfNoneOutstanding();
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::onWriteReady(ISocketPtr socket)
       {
         // we can ignore the write ready, it only writes during a timeout event or during creation
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::onException(ISocketPtr socket)
       {
         AutoRecursiveLock lock(mLock);
@@ -320,6 +338,7 @@ namespace openpeer
         cleanIfNoneOutstanding();
       }
 
+      //-----------------------------------------------------------------------
       void DNSMonitor::onTimer(TimerPtr timer)
       {
         AutoRecursiveLock lock(mLock);
@@ -330,6 +349,7 @@ namespace openpeer
         cleanIfNoneOutstanding();
       }
 
+      //-----------------------------------------------------------------------
       String DNSMonitor::log(const char *message) const
       {
         return String("DNSMonitor [") + string(mID) + "] " + message;

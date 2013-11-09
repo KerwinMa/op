@@ -82,23 +82,21 @@ namespace openpeer
         virtual void updateRemoteCandidates(const CandidateList &remoteCandidates) = 0;
 
         virtual bool handleSTUNPacket(
-                                      const IPAddress &viaLocalIP,
-                                      IICESocket::Types viaTransport,
+                                      const IICESocket::Candidate &viaLocalCandidate,
                                       const IPAddress &source,
                                       STUNPacketPtr stun,
                                       const String &localUsernameFrag,
                                       const String &remoteUsernameFrag
                                       ) = 0;
         virtual bool handlePacket(
-                                  const IPAddress &viaLocalIP,
-                                  IICESocket::Types viaTransport,
+                                  const IICESocket::Candidate &viaLocalCandidate,
                                   const IPAddress &source,
                                   const BYTE *packet,
                                   ULONG packetLengthInBytes
                                   ) = 0;
 
-        virtual void notifyLocalWriteReady(const IPAddress &viaLocalIP) = 0;
-        virtual void notifyRelayWriteReady(const IPAddress &viaLocalIP) = 0;
+        virtual void notifyLocalWriteReady(const IICESocket::Candidate &viaLocalCandidate) = 0;
+        virtual void notifyRelayWriteReady(const IICESocket::Candidate &viaLocalCandidate) = 0;
       };
 
       //-----------------------------------------------------------------------
@@ -242,23 +240,21 @@ namespace openpeer
         // (duplicate) virtual void updateRemoteCandidates(const CandidateList &remoteCandidates);
 
         virtual bool handleSTUNPacket(
-                                      const IPAddress &viaLocalIP,
-                                      IICESocket::Types viaTransport,
+                                      const IICESocket::Candidate &viaLocalCandidate,
                                       const IPAddress &source,
                                       STUNPacketPtr stun,
                                       const String &localUsernameFrag,
                                       const String &remoteUsernameFrag
                                       );
         virtual bool handlePacket(
-                                  const IPAddress &viaLocalIP,
-                                  IICESocket::Types viaTransport,
+                                  const IICESocket::Candidate &viaLocalCandidate,
                                   const IPAddress &source,
                                   const BYTE *packet,
                                   ULONG packetLengthInBytes
                                   );
 
-        virtual void notifyLocalWriteReady(const IPAddress &viaLocalIP);
-        virtual void notifyRelayWriteReady(const IPAddress &viaLocalIP);
+        virtual void notifyLocalWriteReady(const IICESocket::Candidate &viaLocalCandidate);
+        virtual void notifyRelayWriteReady(const IICESocket::Candidate &viaLocalCandidate);
 
         //---------------------------------------------------------------------
         #pragma mark
@@ -339,8 +335,7 @@ namespace openpeer
         void switchRole(ICEControls newRole);
 
         bool sendTo(
-                    const IPAddress &viaLocalIP,
-                    IICESocket::Types viaTransport,
+                    const IICESocket::Candidate &viaLocalCandidate,
                     const IPAddress &destination,
                     const BYTE *buffer,
                     ULONG bufferLengthInBytes,

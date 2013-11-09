@@ -382,10 +382,8 @@ namespace openpeer
         virtual IServiceLockboxSessionPtr getLockboxSession() const;
 
         virtual void getNATServers(
-                                   String &outTURNServer,
-                                   String &outTURNUsername,
-                                   String &outTURNPassword,
-                                   String &outSTUNServer
+                                   IICESocket::TURNServerInfoList &outTURNServers,
+                                   IICESocket::STUNServerInfoList &outSTUNServers
                                    ) const;
 
         virtual void shutdown();
@@ -817,8 +815,8 @@ namespace openpeer
         Time mBlockLocationShutdownsUntil;
 
         ServiceLockboxSessionPtr mLockboxSession;
-        Service::MethodPtr mTURN;
-        Service::MethodPtr mSTUN;
+        Service::MethodListPtr mTURN;
+        Service::MethodListPtr mSTUN;
 
         IICESocketPtr mSocket;
 
