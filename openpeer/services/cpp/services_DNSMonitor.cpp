@@ -45,6 +45,14 @@ namespace openpeer
     namespace internal
     {
       //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      #pragma mark
+      #pragma mark DNSMonitor
+      #pragma mark
+
+      //-----------------------------------------------------------------------
       DNSMonitor::DNSMonitor(IMessageQueuePtr queue) :
         MessageQueueAssociator(queue),
         mID(zsLib::createPUID()),
@@ -60,11 +68,22 @@ namespace openpeer
       //-----------------------------------------------------------------------
       DNSMonitor::~DNSMonitor()
       {
-        for (ResultMap::iterator iter = mOutstandingQueries.begin(); iter != mOutstandingQueries.end(); ++iter)
+        for (PendingQueriesMap::iterator iter = mPendingQueries.begin(); iter != mPendingQueries.end(); ++iter)
         {
-          (*iter).second->cancel();
+          CacheInfoPtr &cacheInfo = (*iter).second;
+          for (ResultList::iterator resultIter = cacheInfo->mPendingResults.begin(); resultIter != cacheInfo->mPendingResults.end(); ++resultIter)
+          {
+            IResultPtr result = (*resultIter);
+            result->onCancel();
+          }
+          if ((mCtx) &&
+              (cacheInfo->mPendingQuery)) {
+            dns_cancel(mCtx, cacheInfo->mPendingQuery);
+            cacheInfo->mPendingQuery = NULL;
+          }
         }
-        mOutstandingQueries.clear();
+
+        mPendingQueries.clear();
 
         cleanIfNoneOutstanding();
       }
@@ -132,7 +151,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       void DNSMonitor::cleanIfNoneOutstanding()
       {
-        if (mOutstandingQueries.size() > 0) return;   // still outstanding queries
+        if (mPendingQueries.size() > 0) return;   // still outstanding queries
 
         if (NULL == mCtx)
           return;
@@ -149,150 +168,298 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      void DNSMonitor::cancel(struct dns_query *query)
+      DNSMonitor::CacheInfoPtr DNSMonitor::done(QueryID queryID)
       {
         AutoRecursiveLock lock(mLock);
 
-        if (!done(query)) // only cancel the DNS if it is a known DNS
+        CacheInfoPtr result;
+
+        PendingQueriesMap::iterator found = mPendingQueries.find(queryID);
+        if (found == mPendingQueries.end()) return CacheInfoPtr();
+
+        result = (*found).second;
+        result->mPendingQuery = NULL;
+        mPendingQueries.erase(found);
+        return result;
+      }
+
+      //-----------------------------------------------------------------------
+      void DNSMonitor::cancel(
+                              QueryID queryID,
+                              IResultPtr result
+                              )
+      {
+        AutoRecursiveLock lock(mLock);
+
+        PendingQueriesMap::iterator found = mPendingQueries.find(queryID);
+        if (found == mPendingQueries.end()) {
           return;
+        }
 
-        if (!mCtx)
+        CacheInfoPtr &info = (*found).second;
+
+        bool erased = false;
+
+        for (ResultList::iterator iter = info->mPendingResults.begin(); iter != info->mPendingResults.end(); )
+        {
+          ResultList::iterator current = iter; ++iter;
+
+          IResultPtr &infoResult = (*current);
+
+          if (infoResult != result) continue;
+
+          info->mPendingResults.erase(current);
+          erased = true;
+          break;
+        }
+
+        if (!erased) return;
+
+        // if there are other pending results then don't cancel the result
+        if (info->mPendingResults.size() > 0) return;
+
+        // this was the last pending result so cancel the DNS query
+        mPendingQueries.erase(found);
+
+        if ((mCtx) &&
+            (info->mPendingQuery)) {
+          dns_cancel(mCtx, info->mPendingQuery);
+          info->mPendingQuery = NULL;
+        }
+
+        // since it was cancelled the query can be redone
+        info->mExpires = Time();
+
+        cleanIfNoneOutstanding();
+      }
+      
+      //-----------------------------------------------------------------------
+      void DNSMonitor::submitAQuery(const char *inName, int flags, IResultPtr result)
+      {
+        submitAOrAAAAQuery(true, inName, flags, result);
+      }
+
+      //-----------------------------------------------------------------------
+      void DNSMonitor::submitAAAAQuery(const char *inName, int flags, IResultPtr result)
+      {
+        submitAOrAAAAQuery(false, inName, flags, result);
+      }
+
+      //-----------------------------------------------------------------------
+      void DNSMonitor::submitAOrAAAAQuery(bool aMode, const char *inName, int flags, IResultPtr result)
+      {
+        AutoRecursiveLock lock(mLock);
+        createDNSContext();
+        if (!mCtx) {
+          result->onCancel(); // this result is now bogus
           return;
-
-        dns_cancel(mCtx, query);
-      }
-
-      //-----------------------------------------------------------------------
-      bool DNSMonitor::done(struct dns_query *query)
-      {
-        AutoRecursiveLock lock(mLock);
-
-        ResultMap::iterator iter = mOutstandingQueries.find((PTRNUMBER)query);
-        if (iter != mOutstandingQueries.end()) {
-          mOutstandingQueries.erase(iter);
-          return true;
         }
-        return false;
+
+        String name(inName);
+
+        ACacheInfoPtr useInfo;
+
+        ACacheList &useList = (aMode ? mACacheList : mAAAACacheList);
+
+        for (ACacheList::iterator iter = useList.begin(); iter != useList.end(); ++iter)
+        {
+          ACacheInfoPtr &info = (*iter);
+          if (info->mName != name) continue;
+          if (info->mFlags != flags) continue;
+
+          useInfo = info;
+          break;
+        }
+
+        if (!useInfo) {
+          useInfo = ACacheInfoPtr(new ACacheInfo);
+          useInfo->mName = name;
+          useInfo->mFlags = flags;
+        }
+
+        if (Time() != useInfo->mExpires) {
+          Time tick = zsLib::now();
+          
+          if (tick < useInfo->mExpires) {
+            // use cached result
+            if (aMode) {
+              result->onAResult(useInfo->mResult);
+            } else {
+              result->onAAAAResult(useInfo->mResult);
+            }
+            return;
+          }
+        }
+
+        useInfo->mPendingResults.push_back(result);
+
+        if (useInfo->mPendingQuery) return;  // already have a query outstanding
+
+        QueryID queryID = zsLib::createPUID();
+
+        struct dns_query *query = NULL;
+        if (aMode) {
+          query = dns_submit_a4(mCtx, name, flags, DNSMonitor::dns_query_a4, (void *)((PTRNUMBER)queryID));
+        } else {
+          query = dns_submit_a6(mCtx, name, flags, DNSMonitor::dns_query_a6, (void *)((PTRNUMBER)queryID));
+        }
+        if (NULL != query) {
+          useInfo->mPendingQuery = query;
+          mPendingQueries[queryID] = useInfo;
+        } else {
+          if (aMode) {
+            useInfo->onAResult(NULL, DNS_E_BADQUERY);
+          } else {
+            useInfo->onAAAAResult(NULL, DNS_E_BADQUERY);
+          }
+        }
+        cleanIfNoneOutstanding();
       }
 
       //-----------------------------------------------------------------------
-      struct dns_query *DNSMonitor::submitAQuery(const char *name, int flags, IResultPtr result)
+      void DNSMonitor::submitSRVQuery(const char *inName, const char *inService, const char *inProtocol, int flags, IResultPtr result)
       {
         AutoRecursiveLock lock(mLock);
         createDNSContext();
         if (!mCtx) {
-          result->cancel(); // this result is now bogus
-          return NULL;
+          result->onCancel(); // this result is now bogus
+          return;
         }
 
-        struct dns_query *query = dns_submit_a4(mCtx, name, flags, DNSMonitor::dns_query_a4, result.get());
+        String name(inName);
+        String service(inService);
+        String protocol(inProtocol);
+
+        SRVCacheInfoPtr useInfo;
+
+        for (SRVCacheList::iterator iter = mSRVCacheList.begin(); iter != mSRVCacheList.end(); ++iter)
+        {
+          SRVCacheInfoPtr &info = (*iter);
+          if (info->mName != name) continue;
+          if (info->mService != service) continue;
+          if (info->mProtocol != protocol) continue;
+          if (info->mFlags != flags) continue;
+
+          useInfo = info;
+          break;
+        }
+
+        if (!useInfo) {
+          useInfo = SRVCacheInfoPtr(new SRVCacheInfo);
+          useInfo->mName = name;
+          useInfo->mService = service;
+          useInfo->mProtocol = protocol;
+          useInfo->mFlags = flags;
+        }
+
+        if (Time() != useInfo->mExpires) {
+          Time tick = zsLib::now();
+
+          if (tick < useInfo->mExpires) {
+            // use cached result
+            result->onSRVResult(useInfo->mResult);
+            return;
+          }
+        }
+
+        useInfo->mPendingResults.push_back(result);
+
+        if (useInfo->mPendingQuery) return;  // already have a query outstanding
+
+        QueryID queryID = zsLib::createPUID();
+
+        struct dns_query *query = dns_submit_srv(mCtx, name, service, protocol, flags, DNSMonitor::dns_query_srv, (void *)((PTRNUMBER)queryID));
         if (NULL != query) {
-          mOutstandingQueries[((PTRNUMBER)query)] = result;
-          result->setQuery(query);  // need to retain the query for later lookup
+          useInfo->mPendingQuery = query;
+          mPendingQueries[queryID] = useInfo;
         } else {
-          result->cancel();         // this result is now bogus since the query object could not be created
+          result->onCancel();         // this result is now bogus since the query object could not be created
         }
         cleanIfNoneOutstanding();
-        return query;
-      }
-
-      //-----------------------------------------------------------------------
-      struct dns_query *DNSMonitor::submitAAAAQuery(const char *name, int flags, IResultPtr result)
-      {
-        AutoRecursiveLock lock(mLock);
-        createDNSContext();
-        if (!mCtx) {
-          result->cancel(); // this result is now bogus
-          return NULL;
-        }
-
-        struct dns_query *query = dns_submit_a6(mCtx, name, flags, DNSMonitor::dns_query_a6, result.get());
-        if (NULL != query) {
-          mOutstandingQueries[((PTRNUMBER)query)] = result;
-          result->setQuery(query);  // need to retain the query for later lookup
-        } else {
-          result->cancel();         // this result is now bogus since the query object could not be created
-        }
-        cleanIfNoneOutstanding();
-        return query;
-      }
-
-      //-----------------------------------------------------------------------
-      struct dns_query *DNSMonitor::submitSRVQuery(const char *name, const char *service, const char *protocol, int flags, IResultPtr result)
-      {
-        AutoRecursiveLock lock(mLock);
-        createDNSContext();
-        if (!mCtx) {
-          result->cancel(); // this result is now bogus
-          return NULL;
-        }
-
-        struct dns_query *query = dns_submit_srv(mCtx, name, service, protocol, flags, DNSMonitor::dns_query_srv, result.get());
-        if (NULL != query) {
-          mOutstandingQueries[((PTRNUMBER)query)] = result;
-          result->setQuery(query);  // need to retain the query for later lookup
-        } else {
-          result->cancel();         // this result is now bogus since the query object could not be created
-        }
-        cleanIfNoneOutstanding();
-        return query;
       }
 
       //-----------------------------------------------------------------------
       void DNSMonitor::dns_query_a4(struct dns_ctx *ctx, struct dns_rr_a4 *record, void *data)
       {
-        IResult *result = ((IResult *)data);
+        QueryID queryID = (QueryID)((PTRNUMBER)data);
 
-        DNSMonitorPtr monitor = result->getMonitor();
+        DNSMonitorPtr monitor = singleton();
         if (!monitor) {
           // monitor was destroyed therefor object was already cancelled
-          result->cancel();
           return;
         }
 
-        // notify of the result
-        result->onAResult(record);
+        int status = DNS_E_NOERROR;
+        if (NULL == record) {
+          status = dns_status(ctx);
+        }
 
-        monitor->done(result->getQuery());  // monitor can now forget about this query
-        result->done();                     // this object no longer has a hard reference to itself
+        PendingQueriesMap::iterator found = monitor->mPendingQueries.find(queryID);
+        if (found == monitor->mPendingQueries.end()) {
+          // already cancelled, nothing to do
+          return;
+        }
+
+        CacheInfoPtr &info = (*found).second;
+        info->onAResult(record, status);
+
+        monitor->done(queryID);
       }
 
       //-----------------------------------------------------------------------
       void DNSMonitor::dns_query_a6(struct dns_ctx *ctx, struct dns_rr_a6 *record, void *data)
       {
-        IResult *result = ((IResult *)data);
+        QueryID queryID = (QueryID)((PTRNUMBER)data);
 
-        DNSMonitorPtr monitor = result->getMonitor();
+        DNSMonitorPtr monitor = singleton();
         if (!monitor) {
           // monitor was destroyed therefor object was already cancelled
-          result->cancel();
           return;
         }
 
-        // notify of the result
-        result->onAAAAResult(record);
+        int status = DNS_E_NOERROR;
+        if (NULL == record) {
+          status = dns_status(ctx);
+        }
 
-        monitor->done(result->getQuery());  // monitor can now forget about this query
-        result->done();                     // this object no longer has a hard reference to itself
+        PendingQueriesMap::iterator found = monitor->mPendingQueries.find(queryID);
+        if (found == monitor->mPendingQueries.end()) {
+          // already cancelled, nothing to do
+          return;
+        }
+
+        CacheInfoPtr &info = (*found).second;
+        info->onAAAAResult(record, status);
+
+        monitor->done(queryID);
       }
 
       //-----------------------------------------------------------------------
       void DNSMonitor::dns_query_srv(struct dns_ctx *ctx, struct dns_rr_srv *record, void *data)
       {
-        IResult *result = ((IResult *)data);
+        QueryID queryID = (QueryID)((PTRNUMBER)data);
 
-        DNSMonitorPtr monitor = result->getMonitor();
+        DNSMonitorPtr monitor = singleton();
         if (!monitor) {
           // monitor was destroyed therefor object was already cancelled
-          result->cancel();
           return;
         }
 
-        // notify of the result
-        result->onSRVResult(record);
+        int status = DNS_E_NOERROR;
+        if (NULL == record) {
+          status = dns_status(ctx);
+        }
 
-        monitor->done(result->getQuery());  // monitor can now forget about this query
-        result->done();                     // this object no longer has a hard reference to itself
+        PendingQueriesMap::iterator found = monitor->mPendingQueries.find(queryID);
+        if (found == monitor->mPendingQueries.end()) {
+          // already cancelled, nothing to do
+          return;
+        }
+
+        CacheInfoPtr &info = (*found).second;
+        info->onSRVResult(record, status);
+
+        monitor->done(queryID);
       }
 
       //-----------------------------------------------------------------------
@@ -329,11 +496,21 @@ namespace openpeer
           return;
         }
 
-        for (ResultMap::iterator iter = mOutstandingQueries.begin(); iter != mOutstandingQueries.end(); ++iter)
+        for (PendingQueriesMap::iterator iter = mPendingQueries.begin(); iter != mPendingQueries.end(); ++iter)
         {
-          (*iter).second->cancel();
+          CacheInfoPtr &cacheInfo = (*iter).second;
+          for (ResultList::iterator resultIter = cacheInfo->mPendingResults.begin(); resultIter != cacheInfo->mPendingResults.end(); ++resultIter)
+          {
+            IResultPtr result = (*resultIter);
+            result->onCancel();
+          }
+
+          if (cacheInfo->mPendingQuery) {
+            dns_cancel(mCtx, cacheInfo->mPendingQuery);
+            cacheInfo->mPendingQuery = NULL;
+          }
         }
-        mOutstandingQueries.clear();
+        mPendingQueries.clear();
 
         cleanIfNoneOutstanding();
       }
@@ -354,6 +531,122 @@ namespace openpeer
       {
         return String("DNSMonitor [") + string(mID) + "] " + message;
       }
+
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      #pragma mark
+      #pragma mark DNSMonitor::ACacheInfo
+      #pragma mark
+
+      //-----------------------------------------------------------------------
+      void DNSMonitor::ACacheInfo::onAResult(struct dns_rr_a4 *record, int status)
+      {
+        if (NULL != record) {
+          IDNS::AResultPtr data(new IDNS::AResult);
+
+          data->mName = mName;
+          data->mTTL = record->dnsa4_ttl;
+          for (int loop = 0; loop < record->dnsa4_nrr; ++loop) {
+            IPAddress address(record->dnsa4_addr[loop]);
+            data->mIPAddresses.push_back(address);
+          }
+
+          mResult = data;
+          mExpires = zsLib::now() + Seconds(record->dnsa4_ttl);
+        } else {
+          switch (status) {
+            case DNS_E_TEMPFAIL: mExpires = zsLib::now() + Seconds(OPENPEER_SERVICE_INTERNAL_DNS_TEMP_FAILURE_BACKLIST_IN_SECONDS); break;
+            default:             mExpires = zsLib::now() + Seconds(OPENPEER_SERVICE_INTERNAL_DNS_OTHER_FAILURE_BACKLIST_IN_SECONDS); break;
+          }
+        }
+
+        for (ResultList::iterator iter = mPendingResults.begin(); iter != mPendingResults.end(); ++iter)
+        {
+          IResultPtr &result = (*iter);
+          result->onAResult(mResult);
+        }
+        mPendingResults.clear();
+      }
+
+      //-----------------------------------------------------------------------
+      void DNSMonitor::ACacheInfo::onAAAAResult(struct dns_rr_a6 *record, int status)
+      {
+        if (NULL != record) {
+          IDNS::AAAAResultPtr data(new IDNS::AAAAResult);
+
+          data->mName = mName;
+          data->mTTL = record->dnsa6_ttl;
+          for (int loop = 0; loop < record->dnsa6_nrr; ++loop) {
+            IPAddress address(record->dnsa6_addr[loop]);
+            data->mIPAddresses.push_back(address);
+          }
+
+          mResult = data;
+          mExpires = zsLib::now() + Seconds(record->dnsa6_ttl);
+        } else {
+          switch (status) {
+            case DNS_E_TEMPFAIL: mExpires = zsLib::now() + Seconds(OPENPEER_SERVICE_INTERNAL_DNS_TEMP_FAILURE_BACKLIST_IN_SECONDS); break;
+            default:             mExpires = zsLib::now() + Seconds(OPENPEER_SERVICE_INTERNAL_DNS_OTHER_FAILURE_BACKLIST_IN_SECONDS); break;
+          }
+        }
+
+        for (ResultList::iterator iter = mPendingResults.begin(); iter != mPendingResults.end(); ++iter)
+        {
+          IResultPtr &result = (*iter);
+          result->onAAAAResult(mResult);
+        }
+        mPendingResults.clear();
+      }
+
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      #pragma mark
+      #pragma mark DNSMonitor::SRCCacheInfo
+      #pragma mark
+
+      //-----------------------------------------------------------------------
+      void DNSMonitor::SRVCacheInfo::onSRVResult(struct dns_rr_srv *record, int status)
+      {
+        if (NULL != record) {
+          IDNS::SRVResultPtr data(new IDNS::SRVResult);
+
+          data->mName = mName;
+          data->mService = mService;
+          data->mProtocol = mProtocol;
+          data->mTTL = record->dnssrv_ttl;
+          for (int loop = 0; loop < record->dnssrv_nrr; ++loop) {
+            dns_srv &srv = record->dnssrv_srv[loop];
+
+            IDNS::SRVResult::SRVRecord srvRecord;
+            srvRecord.mPriority = srv.priority;
+            srvRecord.mWeight = srv.weight;
+            srvRecord.mPort = srv.port;
+            srvRecord.mName = srv.name;
+
+            data->mRecords.push_back(srvRecord);
+          }
+
+          mResult = data;
+          mExpires = zsLib::now() + Seconds(record->dnssrv_ttl);
+        } else {
+          switch (status) {
+            case DNS_E_TEMPFAIL: mExpires = zsLib::now() + Seconds(OPENPEER_SERVICE_INTERNAL_DNS_TEMP_FAILURE_BACKLIST_IN_SECONDS); break;
+            default:             mExpires = zsLib::now() + Seconds(OPENPEER_SERVICE_INTERNAL_DNS_OTHER_FAILURE_BACKLIST_IN_SECONDS); break;
+          }
+        }
+
+        for (ResultList::iterator iter = mPendingResults.begin(); iter != mPendingResults.end(); ++iter)
+        {
+          IResultPtr &result = (*iter);
+          result->onSRVResult(mResult);
+        }
+        mPendingResults.clear();
+      }
+      
     }
   }
 }

@@ -344,13 +344,13 @@ namespace openpeer
       {
       protected:
         //---------------------------------------------------------------------
-        virtual void onAResult(struct dns_rr_a4 *record) {}
+        virtual void onAResult(IDNS::AResultPtr result) {}
 
         //---------------------------------------------------------------------
-        virtual void onAAAAResult(struct dns_rr_a6 *record) {}
+        virtual void onAAAAResult(IDNS::AAAAResultPtr result) {}
 
         //---------------------------------------------------------------------
-        virtual void onSRVResult(struct dns_rr_srv *record) {}
+        virtual void onSRVResult(IDNS::SRVResultPtr result) {}
 
       protected:
         //---------------------------------------------------------------------
@@ -381,35 +381,25 @@ namespace openpeer
         public:
           //-------------------------------------------------------------------
           static DNSIndirectReferencePtr create(DNSQueryPtr query) {
-            DNSIndirectReferencePtr object(new DNSIndirectReference);
-            object->mWeakQuery = query;
-            object->mThis = object;
-            object->mQuery = NULL;
-            return object;
+            DNSIndirectReferencePtr pThis(new DNSIndirectReference);
+            pThis->mThisWeak = pThis;
+            pThis->mMonitor = DNSMonitor::singleton();
+            pThis->mOuter = query;
+            pThis->mQueryID = 0;
+            return pThis;
           }
 
           //-------------------------------------------------------------------
-          ~DNSIndirectReference() {}
+          ~DNSIndirectReference()
+          {
+            mThisWeak.reset();
+            cancel();
+          }
 
           //-------------------------------------------------------------------
           #pragma mark
           #pragma mark DNSQuery::DNSIndirectReference => DNSMonitor::IResult
           #pragma mark
-
-          //-------------------------------------------------------------------
-          virtual void setQuery(struct dns_query *query)  { mQuery = query; }
-
-          //-------------------------------------------------------------------
-          virtual struct dns_query *getQuery()            { return mQuery; }
-
-          //-------------------------------------------------------------------
-          virtual DNSMonitorPtr getMonitor() {
-            DNSQueryPtr result = mWeakQuery.lock();
-            if (!result)
-              return DNSMonitorPtr();
-
-            return result->getMonitor();
-          }
 
           //-------------------------------------------------------------------
           // when cleaning out a strong reference to yourself, you must ensure
@@ -418,36 +408,62 @@ namespace openpeer
           virtual PUID getID() const {return mID;}
 
           //-------------------------------------------------------------------
-          virtual void cancel()                           { DNSIndirectReferencePtr tmp(mThis); mThis.reset(); mQuery = NULL; }
+          virtual void cancel()
+          {
+            DNSMonitorPtr monitor = mMonitor.lock();
+            if (!monitor) return;
 
-          //-------------------------------------------------------------------
-          virtual void done()                             { DNSIndirectReferencePtr tmp(mThis); mThis.reset(); mQuery = NULL; }
-
-          //-------------------------------------------------------------------
-          virtual void onAResult(struct dns_rr_a4 *record) {
-            DNSQueryPtr result = mWeakQuery.lock();
-            if (!result)
-              return;
-
-            result->onAResult(record);
+            monitor->cancel(mQueryID, mThisWeak.lock());
           }
 
           //-------------------------------------------------------------------
-          virtual void onAAAAResult(struct dns_rr_a6 *record) {
-            DNSQueryPtr result = mWeakQuery.lock();
-            if (!result)
-              return;
-
-            result->onAAAAResult(record);
+          virtual void setQueryID(QueryID queryID)
+          {
+            mQueryID = queryID;
           }
 
           //-------------------------------------------------------------------
-          virtual void onSRVResult(struct dns_rr_srv *record) {
-            DNSQueryPtr result = mWeakQuery.lock();
-            if (!result)
+          virtual void onCancel()
+          {
+            DNSQueryPtr outer = mOuter.lock();
+            if (!outer)
               return;
 
-            result->onSRVResult(record);
+            outer->cancel();
+            mOuter.reset();
+          }
+
+          //-------------------------------------------------------------------
+          virtual void onAResult(IDNS::AResultPtr result) {
+            DNSQueryPtr outer = mOuter.lock();
+            if (!outer)
+              return;
+
+            outer->onAResult(IDNS::cloneA(result));
+            mOuter.reset();
+          }
+
+          //-------------------------------------------------------------------
+          virtual void onAAAAResult(IDNS::AAAAResultPtr result) {
+            DNSQueryPtr outer = mOuter.lock();
+            if (!outer)
+              return;
+
+            outer->onAAAAResult(IDNS::cloneAAAA(result));
+            mOuter.reset();
+          }
+
+          //-------------------------------------------------------------------
+          virtual void onSRVResult(IDNS::SRVResultPtr result) {
+            DNSQueryPtr outer = mOuter.lock();
+            if (!outer)
+              return;
+
+            result = IDNS::cloneSRV(result);
+            sortSRV(result);
+
+            outer->onSRVResult(result);
+            mOuter.reset();
           }
 
         public:
@@ -457,9 +473,11 @@ namespace openpeer
           #pragma mark
 
           PUID mID;
-          struct dns_query *mQuery;
-          DNSQueryWeakPtr mWeakQuery;
-          DNSIndirectReferencePtr mThis;
+          DNSIndirectReferenceWeakPtr mThisWeak;
+          DNSQueryWeakPtr mOuter;
+
+          DNSMonitorWeakPtr mMonitor;
+          QueryID mQueryID;
         };
 
       protected:
@@ -470,8 +488,7 @@ namespace openpeer
 
         //---------------------------------------------------------------------
         DNSQuery(IDNSDelegatePtr delegate) :
-          mID(zsLib::createPUID()),
-          mQuery(NULL)
+          mID(zsLib::createPUID())
         {
           ZS_THROW_INVALID_USAGE_IF(!delegate)
           IMessageQueuePtr queue = Helper::getServiceQueue();
@@ -487,7 +504,7 @@ namespace openpeer
         }
 
         //---------------------------------------------------------------------
-        ~DNSQuery() { cancel(); }
+        ~DNSQuery() { mThisWeak.reset(); cancel(); }
 
         //---------------------------------------------------------------------
         #pragma mark
@@ -500,14 +517,13 @@ namespace openpeer
         //---------------------------------------------------------------------
         virtual void cancel()
         {
-          AutoRecursiveLock lock(mLock);
-          if (NULL == mQuery)
-            return;
+          AutoRecursiveLock lock(getLock());
           ZS_THROW_BAD_STATE_IF(!mMonitor)
 
-          mMonitor->cancel(mQuery);
-          mMonitor.reset();
-          mQuery = NULL;
+          if (mQuery) {
+            mQuery->cancel();
+            mQuery.reset();
+          }
         }
 
         //---------------------------------------------------------------------
@@ -532,19 +548,15 @@ namespace openpeer
         #pragma mark
 
         //---------------------------------------------------------------------
-        virtual void done()
+        RecursiveLock &getLock() const
         {
-          AutoRecursiveLock lock(mLock);
-
-          mQuery = NULL;
-          mMonitor.reset();
+          return mMonitor->getLock();
         }
 
         //---------------------------------------------------------------------
-        virtual DNSMonitorPtr getMonitor()
+        void done()
         {
-          AutoRecursiveLock lock(mLock);
-          return mMonitor;
+          mQuery.reset();
         }
 
       protected:
@@ -553,14 +565,13 @@ namespace openpeer
         #pragma mark DNSQuery => (data)
         #pragma mark
 
-        RecursiveLock mLock;
-        PUID mID;
-        DNSQueryWeakPtr mThis;
         DNSMonitorPtr mMonitor;
+        PUID mID;
+        DNSQueryWeakPtr mThisWeak;
 
         IDNSDelegatePtr mDelegate;
 
-        struct dns_query *mQuery;
+        DNSIndirectReferencePtr mQuery;
 
         AResultPtr mA;
         AAAAResultPtr mAAAA;
@@ -584,19 +595,13 @@ namespace openpeer
         //---------------------------------------------------------------------
         static DNSAQueryPtr create(IDNSDelegatePtr delegate, const char *name)
         {
-          DNSAQueryPtr result(new DNSAQuery(delegate, name));
-          result->mThis = result;
-          result->mQuery = result->mMonitor->submitAQuery(name, 0, DNSIndirectReference::create(result));
+          DNSAQueryPtr pThis(new DNSAQuery(delegate, name));
+          pThis->mThisWeak = pThis;
+          pThis->mMonitor = DNSMonitor::singleton();
+          pThis->mQuery = DNSIndirectReference::create(pThis);
+          pThis->mMonitor->submitAQuery(name, 0, pThis->mQuery);
 
-          if (!result->mQuery) {
-            try {
-              result->mDelegate->onLookupCompleted(result);
-            }
-            catch (IDNSDelegateProxy::Exceptions::DelegateGone &) {
-            }
-          }
-
-          return result;
+          return pThis;
         }
 
       protected:
@@ -606,31 +611,34 @@ namespace openpeer
         #pragma mark
 
         //---------------------------------------------------------------------
-        virtual void onAResult(struct dns_rr_a4 *record)
+        virtual void onAResult(IDNS::AResultPtr result)
         {
-          AutoRecursiveLock lock(mLock);
+          AutoRecursiveLock lock(getLock());
+          if (!mQuery) {
+            ZS_LOG_WARNING(Detail, String("DNSAQuery [") + string(mID) + "] A record lookup was cancelled before result arrived" + ", name=" + mName)
+            return;
+          }
           done();
 
-          if (NULL != record) {
-            IDNS::AResultPtr data(new IDNS::AResult);
+          mA = result;
 
-            data->mName = mName;
-            data->mTTL = record->dnsa4_ttl;
-            for (int loop = 0; loop < record->dnsa4_nrr; ++loop) {
-              IPAddress address(record->dnsa4_addr[loop]);
-              ZS_LOG_DEBUG("DNS A record found: " + address.string())
-              data->mIPAddresses.push_back(address);
+          if (mA) {
+            for (IDNS::AResult::IPAddressList::iterator iter = mA->mIPAddresses.begin(); iter != mA->mIPAddresses.end(); ++iter)
+            {
+              IPAddress &ipAddress = (*iter);
+              ZS_LOG_DEBUG(String("DNSAQuery [") + string(mID) + "] A record found: " + ipAddress.string())
             }
-            mA = data;
           } else {
-            ZS_LOG_DEBUG(String("DNS A record lookup failed") + ", name=" + mName)
+            ZS_LOG_DEBUG(String("DNSAQuery [") + string(mID) + "] A record lookup failed" + ", name=" + mName)
           }
+
           try {
-            mDelegate->onLookupCompleted(mThis.lock());
+            mDelegate->onLookupCompleted(mThisWeak.lock());
           }
           catch (IDNSDelegateProxy::Exceptions::DelegateGone &) {
           }
         }
+
       protected:
         //---------------------------------------------------------------------
         #pragma mark
@@ -657,19 +665,13 @@ namespace openpeer
         //---------------------------------------------------------------------
         static DNSAAAAQueryPtr create(IDNSDelegatePtr delegate, const char *name)
         {
-          DNSAAAAQueryPtr result(new DNSAAAAQuery(delegate, name));
-          result->mThis = result;
-          result->mQuery = result->mMonitor->submitAAAAQuery(name, 0, DNSIndirectReference::create(result));
+          DNSAAAAQueryPtr pThis(new DNSAAAAQuery(delegate, name));
+          pThis->mThisWeak = pThis;
+          pThis->mMonitor = DNSMonitor::singleton();
+          pThis->mQuery = DNSIndirectReference::create(pThis);
+          pThis->mMonitor->submitAAAAQuery(name, 0, pThis->mQuery);
 
-          if (!result->mQuery) {
-            try {
-              result->mDelegate->onLookupCompleted(result);
-            }
-            catch (IDNSDelegateProxy::Exceptions::DelegateGone &) {
-            }
-          }
-
-          return result;
+          return pThis;
         }
 
       protected:
@@ -679,28 +681,29 @@ namespace openpeer
         #pragma mark
 
         //---------------------------------------------------------------------
-        virtual void onAAAAResult(struct dns_rr_a6 *record)
+        virtual void onAAAAResult(IDNS::AAAAResultPtr result)
         {
-          AutoRecursiveLock lock(mLock);
+          AutoRecursiveLock lock(getLock());
+          if (!mQuery) {
+            ZS_LOG_WARNING(Detail, String("DNSAAAAQuery [") + string(mID) + "] AAAA was cancelled before result arrived" + ", name=" + mName)
+            return;
+          }
           done();
 
-          if (NULL != record) {
-            IDNS::AAAAResultPtr data(new IDNS::AAAAResult);
+          mAAAA = result;
 
-            data->mName = mName;
-            data->mTTL = record->dnsa6_ttl;
-            for (int loop = 0; loop < record->dnsa6_nrr; ++loop) {
-              IPAddress address(record->dnsa6_addr[loop]);
-              ZS_LOG_DEBUG("DNS AAAA record found: " + address.string())
-              data->mIPAddresses.push_back(address);
+          if (mAAAA) {
+            for (IDNS::AResult::IPAddressList::iterator iter = mAAAA->mIPAddresses.begin(); iter != mAAAA->mIPAddresses.end(); ++iter)
+            {
+              IPAddress &ipAddress = (*iter);
+              ZS_LOG_DEBUG(String("DNSAAAAQuery [") + string(mID) + "] AAAA record found: " + ipAddress.string())
             }
-            mAAAA = data;
           } else {
-            ZS_LOG_DEBUG(String("DNS AAAA record lookup failed") + ", name=" + mName)
+            ZS_LOG_DEBUG(String("DNSAAAAQuery [") + string(mID) + "] AAAA record lookup failed" + ", name=" + mName)
           }
 
           try {
-            mDelegate->onLookupCompleted(mThis.lock());
+            mDelegate->onLookupCompleted(mThisWeak.lock());
           }
           catch (IDNSDelegateProxy::Exceptions::DelegateGone &) {
           }
@@ -746,19 +749,12 @@ namespace openpeer
                                      const char *protocol
                                      )
         {
-          DNSSRVQueryPtr result(new DNSSRVQuery(delegate, name, service, protocol));
-          result->mThis = result;
-          result->mQuery = result->mMonitor->submitSRVQuery(name, service, protocol, 0, DNSIndirectReference::create(result));
-
-          if (!result->mQuery) {
-            try {
-              result->mDelegate->onLookupCompleted(result);
-            }
-            catch (IDNSDelegateProxy::Exceptions::DelegateGone &) {
-            }
-          }
-
-          return result;
+          DNSSRVQueryPtr pThis(new DNSSRVQuery(delegate, name, service, protocol));
+          pThis->mThisWeak = pThis;
+          pThis->mMonitor = DNSMonitor::singleton();
+          pThis->mQuery = DNSIndirectReference::create(pThis);
+          pThis->mMonitor->submitSRVQuery(name, service, protocol, 0, pThis->mQuery);
+          return pThis;
         }
 
       protected:
@@ -768,43 +764,34 @@ namespace openpeer
         #pragma mark
 
         //---------------------------------------------------------------------
-        virtual void onSRVResult(struct dns_rr_srv *record)
+        virtual void onSRVResult(IDNS::SRVResultPtr result)
         {
-          AutoRecursiveLock lock(mLock);
+          AutoRecursiveLock lock(getLock());
+          if (!mQuery) {
+            ZS_LOG_WARNING(Detail, String("DNSSRVQuery [") + string(mID) + "] SRV record lookup was cancelled before result arrived, name=" + mName + ", service=" + mService + ", protocol=" + mProtocol)
+            return;
+          }
           done();
 
-          if (NULL != record) {
-            IDNS::SRVResultPtr data(new IDNS::SRVResult);
-
-            data->mName = mName;
-            data->mService = mService;
-            data->mProtocol = mProtocol;
-            data->mTTL = record->dnssrv_ttl;
-            for (int loop = 0; loop < record->dnssrv_nrr; ++loop) {
-              dns_srv &srv = record->dnssrv_srv[loop];
-
-              IDNS::SRVResult::SRVRecord srvRecord;
-              srvRecord.mPriority = srv.priority;
-              srvRecord.mWeight = srv.weight;
-              srvRecord.mPort = srv.port;
-              srvRecord.mName = srv.name;
-
-              ZS_LOG_DEBUG(String("DNS SRV record found: name=") + srvRecord.mName + ", port=" + string(srvRecord.mPort) + ", priority=" + string(srvRecord.mPriority) + ", weight=" + string(srvRecord.mWeight))
-
-              data->mRecords.push_back(srvRecord);
+          mSRV = result;
+          if (mSRV) {
+            ZS_LOG_DEBUG(String("DNSSRVQuery [") + string(mID) + "] SRV completed, name=" + mName + ", service=" + mService + ", protocol=" + mProtocol)
+            for (IDNS::SRVResult::SRVRecordList::iterator iter = mSRV->mRecords.begin(); iter != mSRV->mRecords.end(); ++iter)
+            {
+              SRVResult::SRVRecord &srvRecord = (*iter);
+              ZS_LOG_DEBUG(String("DNSSRVQuery [") + string(mID) + "] SRV record found, name=" + srvRecord.mName + ", port=" + string(srvRecord.mPort) + ", priority=" + string(srvRecord.mPriority) + ", weight=" + string(srvRecord.mWeight))
             }
-            sortSRV(data);
-            mSRV = data;
           } else {
-            ZS_LOG_DEBUG(String("DNS SRV record lookup failed") + ", name=" + mName + ", service=" + mService + ", protocol=" + mProtocol)
+            ZS_LOG_DEBUG(String("DNSSRVQuery [") + string(mID) + "] SRV record lookup failed, name=" + mName + ", service=" + mService + ", protocol=" + mProtocol)
           }
 
           try {
-            mDelegate->onLookupCompleted(mThis.lock());
+            mDelegate->onLookupCompleted(mThisWeak.lock());
           }
           catch (IDNSDelegateProxy::Exceptions::DelegateGone &) {
           }
         }
+
       protected:
         //---------------------------------------------------------------------
         #pragma mark

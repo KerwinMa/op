@@ -32,11 +32,15 @@
 #pragma once
 
 #include <openpeer/services/internal/types.h>
+#include <openpeer/services/IDNS.h>
 
 #include <udns/udns.h>
 #include <zsLib/ISocket.h>
 #include <zsLib/Proxy.h>
 #include <zsLib/Timer.h>
+
+#define OPENPEER_SERVICE_INTERNAL_DNS_TEMP_FAILURE_BACKLIST_IN_SECONDS (15)
+#define OPENPEER_SERVICE_INTERNAL_DNS_OTHER_FAILURE_BACKLIST_IN_SECONDS ((60)*2)
 
 namespace openpeer
 {
@@ -62,23 +66,79 @@ namespace openpeer
         friend class DNSAAAAQuery;
         friend class DNSSRVQuery;
 
+        typedef PUID QueryID;
+
         interaction IResult
         {
-          virtual void setQuery(struct dns_query *query) = 0;
-          virtual struct dns_query *getQuery() = 0;
+          typedef DNSMonitor::QueryID QueryID;
 
-          virtual DNSMonitorPtr getMonitor() = 0;
+          virtual void setQueryID(QueryID queryID) = 0;
 
-          virtual void cancel() = 0;
-          virtual void done() = 0;
+          virtual void onCancel() = 0;
 
-          virtual void onAResult(struct dns_rr_a4 *record) = 0;
-          virtual void onAAAAResult(struct dns_rr_a6 *record) = 0;
-          virtual void onSRVResult(struct dns_rr_srv *record) = 0;
+          virtual void onAResult(IDNS::AResultPtr result) = 0;
+          virtual void onAAAAResult(IDNS::AAAAResultPtr result) = 0;
+          virtual void onSRVResult(IDNS::SRVResultPtr result) = 0;
         };
 
         typedef boost::shared_ptr<IResult> IResultPtr;
         typedef boost::weak_ptr<IResult> IResultWeakPtr;
+
+        typedef std::list<IResultPtr> ResultList;
+
+        struct CacheInfo
+        {
+          dns_query *mPendingQuery;
+          Time mExpires;
+
+          ResultList mPendingResults;
+
+          CacheInfo() : mPendingQuery(NULL) {};
+
+          virtual void onAResult(struct dns_rr_a4 *record, int status) {}
+          virtual void onAAAAResult(struct dns_rr_a6 *record, int status) {}
+          virtual void onSRVResult(struct dns_rr_srv *record, int status) {}
+        };
+
+        struct ACacheInfo : public CacheInfo
+        {
+          String mName;
+          int mFlags;
+
+          IDNS::AResultPtr mResult;
+
+          virtual void onAResult(struct dns_rr_a4 *record, int status);
+          virtual void onAAAAResult(struct dns_rr_a6 *record, int status);
+
+          ACacheInfo() : CacheInfo(), mFlags(0) {};
+        };
+
+        typedef ACacheInfo AAAACacheInfo;
+
+        struct SRVCacheInfo : public CacheInfo
+        {
+          String mName;
+          String mService;
+          String mProtocol;
+          int mFlags;
+
+          IDNS::SRVResultPtr mResult;
+
+          SRVCacheInfo() : CacheInfo(), mFlags(0) {};
+
+          virtual void onSRVResult(struct dns_rr_srv *record, int status);
+        };
+
+        typedef boost::shared_ptr<CacheInfo> CacheInfoPtr;
+        typedef boost::shared_ptr<ACacheInfo> ACacheInfoPtr;
+        typedef boost::shared_ptr<AAAACacheInfo> AAAACacheInfoPtr;
+        typedef boost::shared_ptr<SRVCacheInfo> SRVCacheInfoPtr;
+
+        typedef std::list<ACacheInfoPtr> ACacheList;
+        typedef std::list<AAAACacheInfoPtr> AAAACacheList;
+        typedef std::list<SRVCacheInfoPtr> SRVCacheList;
+
+        typedef std::map<QueryID, CacheInfoPtr> PendingQueriesMap;
 
       protected:
         DNSMonitor(IMessageQueuePtr queue);
@@ -93,11 +153,19 @@ namespace openpeer
       protected:
         void createDNSContext();
         void cleanIfNoneOutstanding();
-        void cancel(struct dns_query *query);
-        bool done(struct dns_query *query);
-        struct dns_query *submitAQuery(const char *name, int flags, IResultPtr result);
-        struct dns_query *submitAAAAQuery(const char *name, int flags, IResultPtr result);
-        struct dns_query *submitSRVQuery(const char *name, const char *service, const char *protocol, int flags, IResultPtr result);
+
+        RecursiveLock &getLock() const {return mLock;}
+
+        CacheInfoPtr done(QueryID queryID);
+        void cancel(
+                    QueryID queryID,
+                    IResultPtr query
+                    );
+        void submitAQuery(const char *name, int flags, IResultPtr result);
+        void submitAAAAQuery(const char *name, int flags, IResultPtr result);
+        void submitSRVQuery(const char *name, const char *service, const char *protocol, int flags, IResultPtr result);
+
+        void submitAOrAAAAQuery(bool aMode, const char *name, int flags, IResultPtr result);
 
         // UDNS callback routines
         static void dns_query_a4(struct dns_ctx *ctx, struct dns_rr_a4 *result, void *data);
@@ -118,15 +186,18 @@ namespace openpeer
       private:
         PUID mID;
 
-        RecursiveLock mLock;
+        mutable RecursiveLock mLock;
         DNSMonitorWeakPtr mThisWeak;
         SocketPtr mSocket;
         TimerPtr mTimer;
 
         dns_ctx *mCtx;
 
-        typedef std::map<PTRNUMBER, IResultPtr> ResultMap;
-        ResultMap mOutstandingQueries;
+        ACacheList mACacheList;
+        AAAACacheList mAAAACacheList;
+        SRVCacheList mSRVCacheList;
+
+        PendingQueriesMap mPendingQueries;
       };
     }
   }
