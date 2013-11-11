@@ -533,7 +533,7 @@ void doTestTCPMessagingLoopback()
 
   // wait for shutdown
   {
-    ULONG count = 0;
+    IMessageQueue::size_type count = 0;
     do
     {
       count = thread->getTotalUnprocessedMessages();

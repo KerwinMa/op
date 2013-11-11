@@ -212,7 +212,7 @@ namespace openpeer
         }
 
         //---------------------------------------------------------------------
-        virtual UINT getTotalUnprocessedMessages() const
+        virtual IMessageQueue::size_type getTotalUnprocessedMessages() const
         {
           AutoLock lock(mLock);
           return mQueue->getTotalUnprocessedMessages();
@@ -554,7 +554,7 @@ namespace openpeer
 
         ZS_THROW_BAD_STATE_IF(!mShutdownCheckAgainDelegate)
 
-        UINT total = 0;
+        IMessageQueue::size_type total = 0;
 
         total = mApplicationThreadQueue->getTotalUnprocessedMessages() +
                 mCoreThreadQueue->getTotalUnprocessedMessages() +

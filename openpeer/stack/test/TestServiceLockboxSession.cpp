@@ -757,7 +757,7 @@ void doTestPeerContactSession()
   testObject.reset();
   // wait for shutdown
   {
-    zsLib::ULONG count = 0;
+    IMessageQueue::size_type count = 0;
     do
     {
       count = 0;
