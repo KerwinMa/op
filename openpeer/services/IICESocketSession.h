@@ -121,7 +121,7 @@ namespace openpeer
 
       virtual bool sendPacket(
                               const BYTE *packet,
-                              ULONG packetLengthInBytes
+                              size_t packetLengthInBytes
                               ) = 0;
 
       //-----------------------------------------------------------------------
@@ -176,7 +176,7 @@ namespace openpeer
       virtual void handleICESocketSessionReceivedPacket(
                                                         IICESocketSessionPtr session,
                                                         const BYTE *buffer,
-                                                        ULONG bufferLengthInBytes
+                                                        size_t bufferLengthInBytes
                                                         ) = 0;
 
       //-----------------------------------------------------------------------
@@ -217,7 +217,7 @@ ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::STUNPacketPtr, STUNPacketPtr)
 ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::IICESocketSessionDelegate::ICESocketSessionStates, ICESocketSessionStates)
 ZS_DECLARE_PROXY_METHOD_2(onICESocketSessionStateChanged, IICESocketSessionPtr, openpeer::services::IICESocketSessionDelegate::ICESocketSessionStates)
 ZS_DECLARE_PROXY_METHOD_1(onICESocketSessionNominationChanged, IICESocketSessionPtr)
-ZS_DECLARE_PROXY_METHOD_SYNC_3(handleICESocketSessionReceivedPacket, IICESocketSessionPtr, const BYTE *, ULONG)
+ZS_DECLARE_PROXY_METHOD_SYNC_3(handleICESocketSessionReceivedPacket, IICESocketSessionPtr, const BYTE *, size_t)
 ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_4(handleICESocketSessionReceivedSTUNPacket, bool, IICESocketSessionPtr, STUNPacketPtr, const String &, const String &)
 ZS_DECLARE_PROXY_METHOD_1(onICESocketSessionWriteReady, openpeer::services::IICESocketSessionPtr)
 ZS_DECLARE_PROXY_END()
@@ -233,7 +233,7 @@ ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_1(onICESocketSessionNominationChanged, IIC
   virtual void handleICESocketSessionReceivedPacket(
                                                     IICESocketSessionPtr session,
                                                     const BYTE *buffer,
-                                                    ULONG bufferLengthInBytes
+                                                    size_t bufferLengthInBytes
                                                     )
   {
     ZS_DECLARE_PROXY_SUBSCRIPTIONS_METHOD_TYPES_AND_VALUES(SubscriptionsMap, subscriptions, SubscriptionsMapKeyType, DelegateTypePtr, DelegateTypeProxy)

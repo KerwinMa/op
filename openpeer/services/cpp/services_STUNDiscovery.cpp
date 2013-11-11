@@ -202,7 +202,7 @@ namespace openpeer
                                                     ISTUNRequesterPtr requester,
                                                     IPAddress destination,
                                                     boost::shared_array<BYTE> packet,
-                                                    ULONG packetLengthInBytes
+                                                    size_t packetLengthInBytes
                                                     )
       {
         AutoRecursiveLock lock(mLock);
@@ -417,18 +417,18 @@ namespace openpeer
                                           )
     {
       ISTUNRequesterPtr requester = ISTUNRequesterManager::handleSTUNPacket(fromIPAddress, stun);
-      return requester;
+      return (bool)requester;
     }
 
     //-------------------------------------------------------------------------
     bool ISTUNDiscovery::handlePacket(
                                       IPAddress fromIPAddress,
                                       BYTE *packet,
-                                      ULONG packetLengthInBytes
+                                      size_t packetLengthInBytes
                                       )
     {
       ISTUNRequesterPtr requester = ISTUNRequesterManager::handlePacket(fromIPAddress, packet, packetLengthInBytes, ISTUNDiscovery::usingRFC());
-      return requester;
+      return (bool)requester;
     }
   }
 }

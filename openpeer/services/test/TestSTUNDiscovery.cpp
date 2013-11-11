@@ -54,6 +54,7 @@ using zsLib::Socket;
 using zsLib::SocketPtr;
 using zsLib::ISocketPtr;
 using zsLib::IPAddress;
+using zsLib::IMessageQueue;
 using openpeer::services::IDNS;
 using openpeer::services::IDNSQuery;
 using openpeer::services::ISTUNDiscovery;
@@ -139,7 +140,7 @@ namespace openpeer
                                                ISTUNDiscoveryPtr discovery,
                                                zsLib::IPAddress destination,
                                                boost::shared_array<zsLib::BYTE> packet,
-                                               zsLib::ULONG packetLengthInBytes
+                                               size_t packetLengthInBytes
                                                )
         {
           zsLib::AutoLock lock(mLock);
@@ -179,9 +180,9 @@ namespace openpeer
 
           IPAddress ip;
           BYTE buffer[1500];
-          ULONG bufferLengthInBytes = sizeof(buffer);
+          size_t bufferLengthInBytes = sizeof(buffer);
 
-          ULONG readBytes = mSocket->receiveFrom(ip, &(buffer[0]), bufferLengthInBytes);
+          size_t readBytes = mSocket->receiveFrom(ip, &(buffer[0]), bufferLengthInBytes);
           BOOST_CHECK(readBytes > 0)
 
           ISTUNDiscovery::handlePacket(ip, &(buffer[0]), readBytes);

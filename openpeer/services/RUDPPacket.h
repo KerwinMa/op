@@ -90,8 +90,8 @@ namespace openpeer
         VectorStates mLastState;
         bool mXORedParityToNow;
         BYTE *mVector;
-        ULONG mVectorFilledLengthInBytes;
-        ULONG mMaxVectorSizeInBytes;
+        size_t mVectorFilledLengthInBytes;
+        size_t mMaxVectorSizeInBytes;
         QWORD mGSNR;
         QWORD mGSNFR;
         QWORD mCurrentSequenceNumber;
@@ -100,8 +100,8 @@ namespace openpeer
       struct VectorDecoderState
       {
         const BYTE *mVector;
-        ULONG mVectorFilledLengthInBytes;
-        ULONG mConsumedRLE;
+        size_t mVectorFilledLengthInBytes;
+        size_t mConsumedRLE;
         BYTE mSpecialCaseVector[2];
       };
 
@@ -110,12 +110,12 @@ namespace openpeer
 
       static RUDPPacketPtr parseIfRUDP(
                                        const BYTE *packet,
-                                       ULONG packetLengthInBytes
+                                       size_t packetLengthInBytes
                                        );
 
       void packetize(
                      boost::shared_array<BYTE> &outBuffer,
-                     ULONG &outBufferLengthInBytes
+                     size_t &outBufferLengthInBytes
                      ) const;
 
       bool isFlagSet(Flags flag) const;
@@ -137,7 +137,7 @@ namespace openpeer
                   QWORD gsnfr  // Greatest Sequence Number Fully Received
                   );
 
-      ULONG getRoomAvailableForData(ULONG maxPacketLengthInBytes) const;
+      size_t getRoomAvailableForData(size_t maxPacketLengthInBytes) const;
 
       void vectorEncoderStart(
                               VectorEncoderState &outVectorState,
@@ -152,7 +152,7 @@ namespace openpeer
                                      QWORD gsnfr,
                                      bool xoredParityToGSNFR,
                                      BYTE *vector,                       // if pointer specified, will encode to an external buffer
-                                     ULONG vectorLengthInBytes           // if external buffer used, specify the max length of the external buffer
+                                     size_t vectorLengthInBytes          // if external buffer used, specify the max length of the external buffer
                                      );
 
       // will return false if there is no more room in the vector for more information
@@ -166,14 +166,14 @@ namespace openpeer
       static void vectorEncoderFinalize(
                                         VectorEncoderState &ioVectorState,
                                         bool &outXORVectorParityFlag,
-                                        ULONG &outVectorLengthInBytes
+                                        size_t &outVectorLengthInBytes
                                         );
 
       void vectorDecoderStart(VectorDecoderState &ioVectorState) const;
       static void vectorDecoderStart(
                                      VectorDecoderState &ioVectorState,
                                      const BYTE *vector,                 // if pointer specified, will encode to an external buffer
-                                     ULONG vectorLengthInBytes,          // if external buffer used, specify the max length of the external buffer
+                                     size_t vectorLengthInBytes,         // if external buffer used, specify the max length of the external buffer
                                      QWORD gsnr,
                                      QWORD gsnfr
                                      );

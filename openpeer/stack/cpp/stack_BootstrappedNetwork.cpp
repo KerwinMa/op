@@ -1085,7 +1085,7 @@ namespace openpeer
                                                           DocumentPtr *outDocument
                                                           )
       {
-        ULONG size = query->getReadDataAvailableInBytes();
+        size_t size = query->getReadDataAvailableInBytes();
         SecureByteBlock buffer;
         buffer.CleanNew(size);
         query->readData(buffer, size);
@@ -1114,7 +1114,7 @@ namespace openpeer
         ZS_THROW_INVALID_ARGUMENT_IF(!url)
 
         DocumentPtr doc = message->encode();
-        ULONG size = 0;
+        size_t size = 0;
         boost::shared_array<char> buffer = doc->writeAsJSON(&size);
 
         ZS_LOG_TRACE(log("posting message") + ", message=" + buffer.get())

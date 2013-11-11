@@ -19,14 +19,12 @@
 		0063C3F216CAA03800E6DB4D /* TestTURNSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0063C29216CAA03800E6DB4D /* TestTURNSocket.cpp */; };
 		0063C47116CAA27000E6DB4D /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0063C47016CAA27000E6DB4D /* CoreFoundation.framework */; };
 		0063C47316CAA28600E6DB4D /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0063C47216CAA28600E6DB4D /* libcurl.dylib */; };
-		0063C49D16CAA46A00E6DB4D /* libboost_date_time.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0063C49A16CAA46A00E6DB4D /* libboost_date_time.a */; };
-		0063C49E16CAA46A00E6DB4D /* libboost_regex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0063C49B16CAA46A00E6DB4D /* libboost_regex.a */; };
-		0063C49F16CAA46A00E6DB4D /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0063C49C16CAA46A00E6DB4D /* libboost_thread.a */; };
 		00ABD44E17A8431D00178078 /* TestTCPMessagingLoopback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00ABD44C17A8431D00178078 /* TestTCPMessagingLoopback.cpp */; };
 		00AD9015177BF88D009590EB /* libhfservices.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0063D2D916CB0A9400E6DB4D /* libhfservices.a */; };
 		00AD9016177BF8EF009590EB /* libcryptopp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C90628177BF5390090BD8B /* libcryptopp.a */; };
 		00AD9017177BF8FE009590EB /* libzsLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C90618177BF4F50090BD8B /* libzsLib.a */; };
 		00AD9018177BF90D009590EB /* libudns.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C90620177BF5140090BD8B /* libudns.a */; };
+		00C82BE41830DA1C005B87E0 /* boost.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C82BE31830DA1B005B87E0 /* boost.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,11 +114,9 @@
 		0063C29216CAA03800E6DB4D /* TestTURNSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestTURNSocket.cpp; sourceTree = "<group>"; };
 		0063C47016CAA27000E6DB4D /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		0063C47216CAA28600E6DB4D /* libcurl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.dylib; path = usr/lib/libcurl.dylib; sourceTree = SDKROOT; };
-		0063C49A16CAA46A00E6DB4D /* libboost_date_time.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_date_time.a; path = ../../../libs/boost/staging/lib/libboost_date_time.a; sourceTree = SOURCE_ROOT; };
-		0063C49B16CAA46A00E6DB4D /* libboost_regex.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_regex.a; path = ../../../libs/boost/staging/lib/libboost_regex.a; sourceTree = SOURCE_ROOT; };
-		0063C49C16CAA46A00E6DB4D /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ../../../libs/boost/staging/lib/libboost_thread.a; sourceTree = SOURCE_ROOT; };
 		0063D2D416CB0A9300E6DB4D /* hfservices.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = hfservices.xcodeproj; path = ../hfservices/hfservices.xcodeproj; sourceTree = "<group>"; };
 		00ABD44C17A8431D00178078 /* TestTCPMessagingLoopback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestTCPMessagingLoopback.cpp; sourceTree = "<group>"; };
+		00C82BE31830DA1B005B87E0 /* boost.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = boost.framework; path = ../../../libs/boost/osx/framework/boost.framework; sourceTree = "<group>"; };
 		00C90613177BF4F50090BD8B /* zsLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = zsLib.xcodeproj; path = ../../../libs/zsLib/projects/xcode/zsLib/zsLib.xcodeproj; sourceTree = "<group>"; };
 		00C9061B177BF5130090BD8B /* udns.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = udns.xcodeproj; path = ../../../libs/udns/projects/xcode/udns/udns.xcodeproj; sourceTree = "<group>"; };
 		00C90623177BF5380090BD8B /* cryptopp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = cryptopp.xcodeproj; path = ../../../libs/cryptopp/projects/xcode/cryptopp/cryptopp.xcodeproj; sourceTree = "<group>"; };
@@ -136,10 +132,8 @@
 				00AD9016177BF8EF009590EB /* libcryptopp.a in Frameworks */,
 				00AD9015177BF88D009590EB /* libhfservices.a in Frameworks */,
 				0063C47316CAA28600E6DB4D /* libcurl.dylib in Frameworks */,
+				00C82BE41830DA1C005B87E0 /* boost.framework in Frameworks */,
 				0063C47116CAA27000E6DB4D /* CoreFoundation.framework in Frameworks */,
-				0063C49D16CAA46A00E6DB4D /* libboost_date_time.a in Frameworks */,
-				0063C49E16CAA46A00E6DB4D /* libboost_regex.a in Frameworks */,
-				0063C49F16CAA46A00E6DB4D /* libboost_thread.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,9 +199,6 @@
 		0063C45E16CAA1B100E6DB4D /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				0063C49A16CAA46A00E6DB4D /* libboost_date_time.a */,
-				0063C49B16CAA46A00E6DB4D /* libboost_regex.a */,
-				0063C49C16CAA46A00E6DB4D /* libboost_thread.a */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -216,6 +207,7 @@
 			isa = PBXGroup;
 			children = (
 				0063C47216CAA28600E6DB4D /* libcurl.dylib */,
+				00C82BE31830DA1B005B87E0 /* boost.framework */,
 				0063C47016CAA27000E6DB4D /* CoreFoundation.framework */,
 			);
 			name = Frameworks;
@@ -413,6 +405,8 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -420,14 +414,15 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = ../../../libs/boost/osx/framework;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					CRYPTOPP_DISABLE_SSE2,
 					"$(inherited)",
+					CRYPTOPP_DISABLE_ASM,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -438,9 +433,8 @@
 					../../..,
 					../../../libs/zsLib,
 					../../../libs,
-					../../../libs/boost/staging/include,
+					../../../libs/boost/osx/framework/boost.framework/Headers,
 				);
-				LIBRARY_SEARCH_PATHS = ../../../libs/boost/staging/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -452,6 +446,8 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -460,13 +456,15 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = ../../../libs/boost/osx/framework;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"NDEBUG=1",
-					CRYPTOPP_DISABLE_SSE2,
 					"$(inherited)",
+					CRYPTOPP_DISABLE_ASM,
 				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
@@ -475,9 +473,8 @@
 					../../..,
 					../../../libs/zsLib,
 					../../../libs,
-					../../../libs/boost/staging/include,
+					../../../libs/boost/osx/framework/boost.framework/Headers,
 				);
-				LIBRARY_SEARCH_PATHS = ../../../libs/boost/staging/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
 			};
@@ -486,8 +483,12 @@
 		0063C1E116CA9F8500E6DB4D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -495,8 +496,12 @@
 		0063C1E216CA9F8500E6DB4D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"NDEBUG=1",
+				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

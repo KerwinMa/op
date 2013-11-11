@@ -95,7 +95,7 @@ namespace openpeer
                                  const char *userAgent,
                                  const char *url,
                                  const BYTE *postData,
-                                 ULONG postDataLengthInBytes,
+                                 size_t postDataLengthInBytes,
                                  const char *postDataMimeType,
                                  Duration timeout
                                  );
@@ -151,7 +151,7 @@ namespace openpeer
                     const char *userAgent,
                     const char *url,
                     const BYTE *postData,
-                    ULONG postDataLengthInBytes,
+                    size_t postDataLengthInBytes,
                     const char *postDataMimeType,
                     Duration timeout
                     );
@@ -175,22 +175,22 @@ namespace openpeer
           virtual HTTPStatusCodes getStatusCode() const;
           virtual long getResponseCode() const;
 
-          virtual ULONG getHeaderReadSizeAvailableInBtytes() const;
-          virtual ULONG readHeader(
-                                   BYTE *outResultData,
-                                   ULONG bytesToRead
-                                   );
+          virtual size_t getHeaderReadSizeAvailableInBytes() const;
+          virtual size_t readHeader(
+                                    BYTE *outResultData,
+                                    size_t bytesToRead
+                                    );
 
-          virtual ULONG readHeaderAsString(String &outHeader);
+          virtual size_t readHeaderAsString(String &outHeader);
 
-          virtual ULONG getReadDataAvailableInBytes() const;
+          virtual size_t getReadDataAvailableInBytes() const;
 
-          virtual ULONG readData(
-                                 BYTE *outResultData,
-                                 ULONG bytesToRead
-                                 );
+          virtual size_t readData(
+                                  BYTE *outResultData,
+                                  size_t bytesToRead
+                                  );
 
-          virtual ULONG readDataAsString(String &outResultData);
+          virtual size_t readDataAsString(String &outResultData);
 
           //-------------------------------------------------------------------
           #pragma mark
@@ -204,7 +204,7 @@ namespace openpeer
                                      const char *userAgent,
                                      const char *url,
                                      const BYTE *postData,
-                                     ULONG postDataLengthInBytes,
+                                     size_t postDataLengthInBytes,
                                      const char *postDataMimeType,
                                      Duration timeout
                                      );
@@ -336,7 +336,7 @@ namespace openpeer
                                    const char *userAgent,
                                    const char *url,
                                    const BYTE *postData,
-                                   ULONG postDataLengthInBytes,
+                                   size_t postDataLengthInBytes,
                                    const char *postDataMimeType,
                                    Duration timeout
                                    );

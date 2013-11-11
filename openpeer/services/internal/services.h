@@ -44,7 +44,6 @@
 #include <openpeer/services/internal/services_RSAPublicKey.h>
 #include <openpeer/services/internal/services_RUDPChannel.h>
 #include <openpeer/services/internal/services_RUDPChannelStream.h>
-#include <openpeer/services/internal/services_RUDPICESocket.h>
 #include <openpeer/services/internal/services_RUDPICESocketSession.h>
 #include <openpeer/services/internal/services_RUDPListener.h>
 #include <openpeer/services/internal/services_RUDPMessaging.h>

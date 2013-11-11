@@ -114,7 +114,7 @@ namespace openpeer
       virtual bool sendPacket(
                               IPAddress destination,
                               const BYTE *buffer,
-                              ULONG bufferLengthInBytes,
+                              size_t bufferLengthInBytes,
                               bool bindChannelIfPossible = false
                               ) = 0;
 
@@ -139,7 +139,7 @@ namespace openpeer
       virtual bool handleChannelData(
                                      IPAddress fromIPAddress,
                                      const BYTE *buffer,
-                                     ULONG bufferLengthInBytes
+                                     size_t bufferLengthInBytes
                                      ) = 0;
 
 
@@ -177,7 +177,7 @@ namespace openpeer
                                                   ITURNSocketPtr socket,
                                                   IPAddress source,
                                                   const BYTE *packet,
-                                                  ULONG packetLengthInBytes
+                                                  size_t packetLengthInBytes
                                                   ) = 0;
 
       //-----------------------------------------------------------------------
@@ -187,7 +187,7 @@ namespace openpeer
                                               ITURNSocketPtr socket,
                                               IPAddress destination,
                                               const BYTE *packet,
-                                              ULONG packetLengthInBytes
+                                              size_t packetLengthInBytes
                                               ) = 0;
 
       virtual void onTURNSocketWriteReady(ITURNSocketPtr socket) = 0;
@@ -199,7 +199,7 @@ ZS_DECLARE_PROXY_BEGIN(openpeer::services::ITURNSocketDelegate)
 ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::ITURNSocketPtr, ITURNSocketPtr)
 ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::ITURNSocketDelegate::TURNSocketStates, TURNSocketStates)
 ZS_DECLARE_PROXY_METHOD_2(onTURNSocketStateChanged, ITURNSocketPtr, TURNSocketStates)
-ZS_DECLARE_PROXY_METHOD_SYNC_4(handleTURNSocketReceivedPacket, ITURNSocketPtr, IPAddress, const BYTE *, ULONG)
-ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_4(notifyTURNSocketSendPacket, bool, ITURNSocketPtr, IPAddress, const BYTE *, ULONG)
+ZS_DECLARE_PROXY_METHOD_SYNC_4(handleTURNSocketReceivedPacket, ITURNSocketPtr, IPAddress, const BYTE *, size_t)
+ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_4(notifyTURNSocketSendPacket, bool, ITURNSocketPtr, IPAddress, const BYTE *, size_t)
 ZS_DECLARE_PROXY_METHOD_1(onTURNSocketWriteReady, openpeer::services::ITURNSocketPtr)
 ZS_DECLARE_PROXY_END()

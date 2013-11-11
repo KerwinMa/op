@@ -171,7 +171,7 @@ namespace openpeer
         virtual bool handlePacket(
                                   RUDPPacketPtr packet,
                                   boost::shared_array<BYTE> originalBuffer,
-                                  ULONG originalBufferLengthInBytes,
+                                  size_t originalBufferLengthInBytes,
                                   bool ecnMarked
                                   ) = 0;
 
@@ -188,7 +188,7 @@ namespace openpeer
                                        QWORD greatestSequenceNumberReceived,       // GSNR
                                        QWORD greatestSequenceNumberFullyReceived,  // GSNFR
                                        const BYTE *externalVector,         // Vector buffer is RLE encoded according to RUDP protocol specification. Pass in NULL if not specified
-                                       ULONG externalVectorLengthInBytes,  // pass in 0 if not specified
+                                       size_t externalVectorLengthInBytes, // pass in 0 if not specified
                                        bool vpFlag,                               // XORed parity of all packets marked as received in the vector
                                        bool pgFlag,                               // parity of GSNR
                                        bool xpFlag,                               // XORed parity of all packets up-to-and-including GSNFR
@@ -203,14 +203,14 @@ namespace openpeer
                               QWORD &outNextSequenceNumber,                   // the next sequence number that will be sent (which has not been sent yet)
                               QWORD &outGreatestSequenceNumberReceived,       // GSNR
                               QWORD &outGreatestSequenceNumberFullyReceived,  // GSNFR
-                              BYTE *outVector,                             // Buffer for output vector. Vector buffer is RLE encoded according to RUDP protocol specification. Pass in NULL to prevent generation of a vector.
-                              ULONG &outVectorSizeInBytes,                 // how much of the vector buffer was filled
-                              ULONG maxVectorSizeInBytes,                  // the maximum size in BYTEs allowed to fill inside the vector
-                              bool &outVPFlag,                                    // XORed parity of all packets marked as received in the vector
-                              bool &outPGFlag,                                    // parity of GSNR
-                              bool &outXPFlag,                                    // XORed parity of all packets up-to-and-including GSNFR
-                              bool &outDPFlag,                                    // duplicate packet was detected
-                              bool &outECFlag                                     // ECN marked packet arrived since last ACK sent
+                              BYTE *outVector,                                // Buffer for output vector. Vector buffer is RLE encoded according to RUDP protocol specification. Pass in NULL to prevent generation of a vector.
+                              size_t &outVectorSizeInBytes,                   // how much of the vector buffer was filled
+                              size_t maxVectorSizeInBytes,                    // the maximum size in BYTEs allowed to fill inside the vector
+                              bool &outVPFlag,                                // XORed parity of all packets marked as received in the vector
+                              bool &outPGFlag,                                // parity of GSNR
+                              bool &outXPFlag,                                // XORed parity of all packets up-to-and-including GSNFR
+                              bool &outDPFlag,                                // duplicate packet was detected
+                              bool &outECFlag                                 // ECN marked packet arrived since last ACK sent
                               ) = 0;
 
         //-----------------------------------------------------------------------
@@ -243,7 +243,7 @@ namespace openpeer
         virtual bool notifyRUDPChannelStreamSendPacket(
                                                        IRUDPChannelStreamPtr stream,
                                                        const BYTE *packet,
-                                                       ULONG packetLengthInBytes
+                                                       size_t packetLengthInBytes
                                                        ) = 0;
 
         //-----------------------------------------------------------------------
@@ -260,6 +260,6 @@ namespace openpeer
 
 ZS_DECLARE_PROXY_BEGIN(openpeer::services::internal::IRUDPChannelStreamDelegate)
 ZS_DECLARE_PROXY_METHOD_2(onRUDPChannelStreamStateChanged, openpeer::services::internal::IRUDPChannelStreamPtr, openpeer::services::internal::IRUDPChannelStreamDelegate::RUDPChannelStreamStates)
-ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_3(notifyRUDPChannelStreamSendPacket, bool, openpeer::services::internal::IRUDPChannelStreamPtr, const zsLib::BYTE *, zsLib::ULONG)
+ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_3(notifyRUDPChannelStreamSendPacket, bool, openpeer::services::internal::IRUDPChannelStreamPtr, const zsLib::BYTE *, size_t)
 ZS_DECLARE_PROXY_METHOD_3(onRUDPChannelStreamSendExternalACKNow, openpeer::services::internal::IRUDPChannelStreamPtr, bool, zsLib::PUID)
 ZS_DECLARE_PROXY_END()

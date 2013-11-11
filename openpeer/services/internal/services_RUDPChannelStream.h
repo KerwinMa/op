@@ -156,7 +156,7 @@ namespace openpeer
         virtual bool handlePacket(
                                   RUDPPacketPtr packet,
                                   boost::shared_array<BYTE> originalBuffer,
-                                  ULONG originalBufferLengthInBytes,
+                                  size_t originalBufferLengthInBytes,
                                   bool ecnMarked
                                   );
 
@@ -168,7 +168,7 @@ namespace openpeer
                                        QWORD greatestSequenceNumberReceived,
                                        QWORD greatestSequenceNumberFullyReceived,
                                        const BYTE *externalVector,
-                                       ULONG externalVectorLengthInBytes,
+                                       size_t externalVectorLengthInBytes,
                                        bool vpFlag,
                                        bool pgFlag,
                                        bool xpFlag,
@@ -181,8 +181,8 @@ namespace openpeer
                               QWORD &greatestSequenceNumberReceived,
                               QWORD &greatestSequenceNumberFullyReceived,
                               BYTE *outVector,
-                              ULONG &outVectorSizeInBytes,
-                              ULONG maxVectorSizeInBytes,
+                              size_t &outVectorSizeInBytes,
+                              size_t maxVectorSizeInBytes,
                               bool &outVPFlag,
                               bool &outPGFlag,
                               bool &outXPFlag,
@@ -232,7 +232,7 @@ namespace openpeer
         bool sendNowHelper(
                            IRUDPChannelStreamDelegatePtr &delegate,
                            const BYTE *buffer,
-                           ULONG packetLengthInBytes
+                           size_t packetLengthInBytes
                            );
         bool sendNow();   // returns true if new packets were sent that weren't sent before
         void sendNowCleanup();
@@ -241,7 +241,7 @@ namespace openpeer
                        QWORD outGreatestSequenceNumberReceived,
                        QWORD outGreatestSequenceNumberFullyReceived,
                        const BYTE *outVector,
-                       ULONG vectorLengthInBytes,
+                       size_t vectorLengthInBytes,
                        bool vpFlag,
                        bool pgFlag,
                        bool xpFlag,
@@ -255,18 +255,18 @@ namespace openpeer
         void handleUnfreezing();
 
         void deliverReadPackets();
-        ULONG getFromWriteBuffer(
-                                 BYTE *outBuffer,
-                                 ULONG maxFillSize
-                                 );
+        size_t getFromWriteBuffer(
+                                  BYTE *outBuffer,
+                                  size_t maxFillSize
+                                  );
 
         void getBuffer(
                        RecycleBuffer &outBuffer,
-                       ULONG &ioBufferAllocLengthInBytes
+                       size_t &ioBufferAllocLengthInBytes
                        );
         void freeBuffer(
                         RecycleBuffer &ioBuffer,
-                        ULONG bufferAllocLengthInBytes
+                        size_t bufferAllocLengthInBytes
                         );
 
         bool getRandomFlag();
@@ -300,7 +300,7 @@ namespace openpeer
 
           RUDPPacketPtr mRUDPPacket;
           boost::shared_array<BYTE> mPacket;
-          ULONG mPacketLengthInBytes;
+          size_t mPacketLengthInBytes;
 
           // used for sending packets
           bool mXORedParityToNow;               // only used on buffered packets being sent over the wire to keep track of the current parity state to "this" packet
@@ -365,7 +365,7 @@ namespace openpeer
 
         RecycleBufferList mRecycleBuffers;
 
-        AutoULONG mRandomPoolPos;
+        AutoSizeT mRandomPoolPos;
         BYTE mRandomPool[256];
 
         AutoULONG mTotalPacketsToResend;

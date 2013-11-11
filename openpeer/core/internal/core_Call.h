@@ -112,7 +112,7 @@ namespace openpeer
                                    PUID toLocationID,
                                    SocketTypes type,
                                    const BYTE *packet,
-                                   ULONG packetLengthInBytes
+                                   size_t packetLengthInBytes
                                    ) = 0;
       };
 
@@ -257,7 +257,7 @@ namespace openpeer
                                    PUID toLocationID,
                                    SocketTypes type,
                                    const BYTE *packet,
-                                   ULONG packetLengthInBytes
+                                   size_t packetLengthInBytes
                                    );
 
         //---------------------------------------------------------------------
@@ -327,7 +327,7 @@ namespace openpeer
                                              PUID locationID,
                                              SocketTypes type,
                                              const BYTE *buffer,
-                                             ULONG bufferLengthInBytes
+                                             size_t bufferLengthInBytes
                                              );
 
         void notifyStateChanged(
@@ -516,7 +516,7 @@ namespace openpeer
           bool sendRTPPacket(
                              SocketTypes type,
                              const BYTE *packet,
-                             ULONG packetLengthInBytes
+                             size_t packetLengthInBytes
                              );
 
           //-------------------------------------------------------------------
@@ -534,7 +534,7 @@ namespace openpeer
           virtual void handleICESocketSessionReceivedPacket(
                                                             IICESocketSessionPtr session,
                                                             const BYTE *buffer,
-                                                            ULONG bufferLengthInBytes
+                                                            size_t bufferLengthInBytes
                                                             );
 
           virtual bool handleICESocketSessionReceivedSTUNPacket(

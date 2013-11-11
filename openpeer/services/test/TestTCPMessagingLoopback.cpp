@@ -59,6 +59,7 @@ using zsLib::ISocket;
 using zsLib::ISocketPtr;
 using zsLib::AutoRecursiveLock;
 using zsLib::RecursiveLock;
+using zsLib::IMessageQueue;
 
 using namespace openpeer::services;
 using namespace openpeer::services::test;

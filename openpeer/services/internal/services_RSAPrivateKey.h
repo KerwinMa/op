@@ -93,7 +93,7 @@ namespace openpeer
 
         static RSAPrivateKeyPtr generate(
                                          RSAPublicKeyPtr &outPublicKey,
-                                         ULONG keySizeInBites = OPENPEER_SERVICES_RSA_PRIVATE_KEY_GENERATION_SIZE
+                                         size_t keySizeInBits = OPENPEER_SERVICES_RSA_PRIVATE_KEY_GENERATION_SIZE
                                          );
 
         static RSAPrivateKeyPtr load(const SecureByteBlock &buffer);
@@ -144,7 +144,7 @@ namespace openpeer
 
         virtual RSAPrivateKeyPtr generate(
                                           RSAPublicKeyPtr &outPublicKey,
-                                          ULONG keySizeInBites = OPENPEER_SERVICES_RSA_PRIVATE_KEY_GENERATION_SIZE
+                                          size_t keySizeInBits = OPENPEER_SERVICES_RSA_PRIVATE_KEY_GENERATION_SIZE
                                           );
 
         virtual RSAPrivateKeyPtr loadPrivateKey(const SecureByteBlock &buffer);

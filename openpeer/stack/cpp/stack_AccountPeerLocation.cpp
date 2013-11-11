@@ -350,7 +350,7 @@ namespace openpeer
         DocumentPtr document = message->encode();
 
         boost::shared_array<char> output;
-        ULONG length = 0;
+        size_t length = 0;
         output = document->writeAsJSON(&length);
 
         ZS_LOG_DETAIL(log("-------------------------------------------------------------------------------------------"))

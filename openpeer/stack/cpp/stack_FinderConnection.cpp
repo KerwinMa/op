@@ -1117,7 +1117,7 @@ namespace openpeer
 
         DocumentPtr doc = request->encode();
 
-        ULONG outputLength = 0;
+        size_t outputLength = 0;
         GeneratorPtr generator = Generator::createJSONGenerator();
         boost::shared_array<char> output = generator->write(doc, &outputLength);
 

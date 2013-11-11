@@ -348,7 +348,7 @@ namespace openpeer
                                                   PUID locationID,
                                                   SocketTypes type,
                                                   const BYTE *buffer,
-                                                  ULONG bufferLengthInBytes
+                                                  size_t bufferLengthInBytes
                                                   )
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!buffer)
@@ -476,7 +476,7 @@ namespace openpeer
           }
         }
 
-        return (call->forCallTransport().sendRTPPacket(locationID, type, (const BYTE *)data, (ULONG)len) ? len : 0);
+        return (call->forCallTransport().sendRTPPacket(locationID, type, (const BYTE *)data, (size_t)len) ? len : 0);
       }
 
       //-----------------------------------------------------------------------
@@ -523,12 +523,12 @@ namespace openpeer
       class CallTransport_EnsureDecrementOnReturn
       {
       public:
-        typedef zsLib::ULONG ULONG;
+        typedef zsLib::ULONG size_type;
         typedef zsLib::RecursiveLock RecursiveLock;
 
         CallTransport_EnsureDecrementOnReturn(
                                               RecursiveLock &lock,
-                                              ULONG &refCount
+                                              size_type &refCount
                                               ) :
           mLock(lock),
           mRefCount(refCount)
@@ -543,7 +543,7 @@ namespace openpeer
 
       private:
         RecursiveLock &mLock;
-        ULONG &mRefCount;
+        size_type &mRefCount;
       };
 
       //-----------------------------------------------------------------------

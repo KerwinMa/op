@@ -93,7 +93,7 @@ namespace openpeer
                                              IRUDPMessagingDelegatePtr delegate,
                                              ITransportStreamPtr receiveStream,
                                              ITransportStreamPtr sendStream,
-                                             ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_IRDUPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                                             size_t maxMessageSizeInBytes = OPENPEER_SERVICES_IRDUPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                                              );
 
       //-----------------------------------------------------------------------
@@ -107,7 +107,7 @@ namespace openpeer
                                              IRUDPMessagingDelegatePtr delegate,
                                              ITransportStreamPtr receiveStream,
                                              ITransportStreamPtr sendStream,
-                                             ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_IRDUPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                                             size_t maxMessageSizeInBytes = OPENPEER_SERVICES_IRDUPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                                              );
 
       //-----------------------------------------------------------------------
@@ -122,7 +122,7 @@ namespace openpeer
                                            const char *connectionInfo,
                                            ITransportStreamPtr receiveStream,
                                            ITransportStreamPtr sendStream,
-                                           ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_IRDUPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                                           size_t maxMessageSizeInBytes = OPENPEER_SERVICES_IRDUPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                                            );
 
       virtual PUID getID() const = 0;
@@ -146,7 +146,7 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       // PURPOSE: Set the maximum size of a message expecting to receive
-      virtual void setMaxMessageSizeInBytes(ULONG maxMessageSizeInBytes) = 0;
+      virtual void setMaxMessageSizeInBytes(size_t maxMessageSizeInBytes) = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Get the IP address of the connected remote party.

@@ -54,6 +54,7 @@ namespace openpeer
       using zsLib::AutoDWORD;
       using zsLib::AutoQWORD;
       using zsLib::AutoULONG;
+      using zsLib::AutoSizeT;
       using zsLib::Noop;
       using zsLib::AutoRecursiveLock;
       using zsLib::CSTR;

@@ -150,7 +150,7 @@ namespace openpeer
                                     const char *userAgent,
                                     const char *url,
                                     const BYTE *postData,
-                                    ULONG postDataLengthInBytes,
+                                    size_t postDataLengthInBytes,
                                     const char *postDataMimeType,
                                     Duration timeout
                                     )
@@ -647,7 +647,7 @@ namespace openpeer
                                  const char *userAgent,
                                  const char *url,
                                  const BYTE *postData,
-                                 ULONG postDataLengthInBytes,
+                                 size_t postDataLengthInBytes,
                                  const char *postDataMimeType,
                                  Duration timeout
                                  ) :
@@ -764,24 +764,24 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG HTTP::HTTPQuery::getHeaderReadSizeAvailableInBtytes() const
+      size_t HTTP::HTTPQuery::getHeaderReadSizeAvailableInBytes() const
       {
         AutoRecursiveLock lock(getLock());
-        return mHeader.MaxRetrievable();
+        return static_cast<size_t>(mHeader.MaxRetrievable());
       }
 
       //-----------------------------------------------------------------------
-      ULONG HTTP::HTTPQuery::readHeader(
-                                        BYTE *outResultData,
-                                        ULONG bytesToRead
-                                        )
+      size_t HTTP::HTTPQuery::readHeader(
+                                         BYTE *outResultData,
+                                         size_t bytesToRead
+                                         )
       {
         AutoRecursiveLock lock(getLock());
         return mHeader.Get(outResultData, bytesToRead);
       }
 
       //-----------------------------------------------------------------------
-      ULONG HTTP::HTTPQuery::readHeaderAsString(String &outHeader)
+      size_t HTTP::HTTPQuery::readHeaderAsString(String &outHeader)
       {
         outHeader.clear();
 
@@ -790,32 +790,32 @@ namespace openpeer
         if (0 == available) return 0;
 
         SecureByteBlock data;
-        data.CleanNew(available);
-        mHeader.Get(data.BytePtr(), available);
+        data.CleanNew(static_cast<SecureByteBlock::size_type>(available));
+        mHeader.Get(data.BytePtr(), static_cast<size_t>(available));
 
         outHeader = (const char *)data.BytePtr();
         return strlen(outHeader);
       }
 
       //-----------------------------------------------------------------------
-      ULONG HTTP::HTTPQuery::getReadDataAvailableInBytes() const
+      size_t HTTP::HTTPQuery::getReadDataAvailableInBytes() const
       {
         AutoRecursiveLock lock(getLock());
-        return mBody.MaxRetrievable();
+        return static_cast<size_t>(mBody.MaxRetrievable());
       }
 
       //-----------------------------------------------------------------------
-      ULONG HTTP::HTTPQuery::readData(
-                                      BYTE *outResultData,
-                                      ULONG bytesToRead
-                                      )
+      size_t HTTP::HTTPQuery::readData(
+                                       BYTE *outResultData,
+                                       size_t bytesToRead
+                                       )
       {
         AutoRecursiveLock lock(getLock());
         return mBody.Get(outResultData, bytesToRead);
       }
 
       //-----------------------------------------------------------------------
-      ULONG HTTP::HTTPQuery::readDataAsString(String &outResultData)
+      size_t HTTP::HTTPQuery::readDataAsString(String &outResultData)
       {
         outResultData.clear();
 
@@ -824,8 +824,8 @@ namespace openpeer
         if (0 == available) return 0;
 
         SecureByteBlock data;
-        data.CleanNew(available);
-        mBody.Get(data.BytePtr(), available);
+        data.CleanNew(static_cast<SecureByteBlock::size_type>(available));
+        mBody.Get(data.BytePtr(), static_cast<size_t>(available));
 
         outResultData = (const char *)data.BytePtr();
         return strlen(outResultData);
@@ -846,7 +846,7 @@ namespace openpeer
                                                  const char *userAgent,
                                                  const char *url,
                                                  const BYTE *postData,
-                                                 ULONG postDataLengthInBytes,
+                                                 size_t postDataLengthInBytes,
                                                  const char *postDataMimeType,
                                                  Duration timeout
                                                  )
@@ -1364,7 +1364,7 @@ namespace openpeer
                               const char *userAgent,
                               const char *url,
                               const BYTE *postData,
-                              ULONG postDataLengthInBytes,
+                              size_t postDataLengthInBytes,
                               const char *postDataMimeType,
                               Duration timeout
                               )

@@ -439,7 +439,7 @@ namespace openpeer
                                PUID toLocationID,
                                SocketTypes type,
                                const BYTE *packet,
-                               ULONG packetLengthInBytes
+                               size_t packetLengthInBytes
                                )
       {
         CallLocationPtr callLocation;
@@ -702,7 +702,7 @@ namespace openpeer
                                          PUID locationID,
                                          SocketTypes type,
                                          const BYTE *buffer,
-                                         ULONG bufferLengthInBytes
+                                         size_t bufferLengthInBytes
                                          )
       {
         // scope:
@@ -2288,7 +2288,7 @@ namespace openpeer
       bool Call::CallLocation::sendRTPPacket(
                                              SocketTypes type,
                                              const BYTE *packet,
-                                             ULONG packetLengthInBytes
+                                             size_t packetLengthInBytes
                                              )
       {
         IICESocketSessionPtr session;
@@ -2362,7 +2362,7 @@ namespace openpeer
       void Call::CallLocation::handleICESocketSessionReceivedPacket(
                                                                     IICESocketSessionPtr inSession,
                                                                     const zsLib::BYTE *buffer,
-                                                                    ULONG bufferLengthInBytes
+                                                                    size_t bufferLengthInBytes
                                                                     )
       {
         CallPtr outer = mOuter.lock();

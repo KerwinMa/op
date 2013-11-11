@@ -72,7 +72,7 @@ namespace openpeer
                      ITransportStreamPtr receiveStream,
                      ITransportStreamPtr sendStream,
                      bool framesHaveChannelNumber,
-                     ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                     size_t maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                      );
 
         TCPMessaging(Noop) :
@@ -100,7 +100,7 @@ namespace openpeer
                                       ITransportStreamPtr sendStream,
                                       bool framesHaveChannelNumber,
                                       SocketPtr socket,
-                                      ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                                      size_t maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                                       );
 
         static TCPMessagingPtr connect(
@@ -109,7 +109,7 @@ namespace openpeer
                                        ITransportStreamPtr sendStream,
                                        bool framesHaveChannelNumber,
                                        IPAddress remoteIP,
-                                       ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                                       size_t maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                                        );
 
         virtual PUID getID() const {return mID;}
@@ -127,7 +127,7 @@ namespace openpeer
 
         virtual IPAddress getRemoteIP() const;
 
-        virtual void setMaxMessageSizeInBytes(ULONG maxMessageSizeInBytes);
+        virtual void setMaxMessageSizeInBytes(size_t maxMessageSizeInBytes);
 
         //---------------------------------------------------------------------
         #pragma mark
@@ -197,7 +197,7 @@ namespace openpeer
         ITransportStreamReaderSubscriptionPtr mSendStreamSubscription;
 
         bool mFramesHaveChannelNumber;
-        ULONG mMaxMessageSizeInBytes;
+        size_t mMaxMessageSizeInBytes;
 
         AutoBool mConnectIssued;
         AutoBool mTCPWriteReady;
@@ -227,7 +227,7 @@ namespace openpeer
                                        ITransportStreamPtr sendStream,
                                        bool framesHaveChannelNumber,
                                        SocketPtr socket,
-                                       ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                                       size_t maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                                        );
 
         virtual TCPMessagingPtr connect(
@@ -236,7 +236,7 @@ namespace openpeer
                                         ITransportStreamPtr sendStream,
                                         bool framesHaveChannelNumber,
                                         IPAddress remoteIP,
-                                        ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                                        size_t maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                                         );
       };
       

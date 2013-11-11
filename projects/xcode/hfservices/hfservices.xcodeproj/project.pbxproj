@@ -22,7 +22,6 @@
 		0095DAD316CA83EB005F53D3 /* services_ICESocketSession.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0095D92416CA83EA005F53D3 /* services_ICESocketSession.cpp */; };
 		0095DAD416CA83EB005F53D3 /* services_RUDPChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0095D92516CA83EA005F53D3 /* services_RUDPChannel.cpp */; };
 		0095DAD516CA83EB005F53D3 /* services_RUDPChannelStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0095D92616CA83EA005F53D3 /* services_RUDPChannelStream.cpp */; };
-		0095DAD616CA83EB005F53D3 /* services_RUDPICESocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0095D92716CA83EA005F53D3 /* services_RUDPICESocket.cpp */; };
 		0095DAD716CA83EB005F53D3 /* services_RUDPICESocketSession.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0095D92816CA83EA005F53D3 /* services_RUDPICESocketSession.cpp */; };
 		0095DAD816CA83EB005F53D3 /* services_RUDPListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0095D92916CA83EA005F53D3 /* services_RUDPListener.cpp */; };
 		0095DAD916CA83EB005F53D3 /* services_RUDPMessaging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0095D92A16CA83EA005F53D3 /* services_RUDPMessaging.cpp */; };
@@ -63,7 +62,6 @@
 		0095D92416CA83EA005F53D3 /* services_ICESocketSession.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = services_ICESocketSession.cpp; sourceTree = "<group>"; };
 		0095D92516CA83EA005F53D3 /* services_RUDPChannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = services_RUDPChannel.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		0095D92616CA83EA005F53D3 /* services_RUDPChannelStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = services_RUDPChannelStream.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
-		0095D92716CA83EA005F53D3 /* services_RUDPICESocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = services_RUDPICESocket.cpp; sourceTree = "<group>"; };
 		0095D92816CA83EA005F53D3 /* services_RUDPICESocketSession.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = services_RUDPICESocketSession.cpp; sourceTree = "<group>"; };
 		0095D92916CA83EA005F53D3 /* services_RUDPListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = services_RUDPListener.cpp; sourceTree = "<group>"; };
 		0095D92A16CA83EA005F53D3 /* services_RUDPMessaging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = services_RUDPMessaging.cpp; sourceTree = "<group>"; };
@@ -92,7 +90,6 @@
 		0095D94216CA83EA005F53D3 /* services_IRUDPChannelStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = services_IRUDPChannelStream.h; sourceTree = "<group>"; };
 		0095D94316CA83EA005F53D3 /* services_RUDPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = services_RUDPChannel.h; sourceTree = "<group>"; };
 		0095D94416CA83EA005F53D3 /* services_RUDPChannelStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = services_RUDPChannelStream.h; sourceTree = "<group>"; };
-		0095D94516CA83EA005F53D3 /* services_RUDPICESocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = services_RUDPICESocket.h; sourceTree = "<group>"; };
 		0095D94616CA83EA005F53D3 /* services_RUDPICESocketSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = services_RUDPICESocketSession.h; sourceTree = "<group>"; };
 		0095D94716CA83EA005F53D3 /* services_RUDPListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = services_RUDPListener.h; sourceTree = "<group>"; };
 		0095D94816CA83EA005F53D3 /* services_RUDPMessaging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = services_RUDPMessaging.h; sourceTree = "<group>"; };
@@ -102,7 +99,6 @@
 		0095D94C16CA83EA005F53D3 /* services_TURNSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = services_TURNSocket.h; sourceTree = "<group>"; };
 		0095D94D16CA83EA005F53D3 /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 		0095D94E16CA83EA005F53D3 /* IRUDPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRUDPChannel.h; sourceTree = "<group>"; };
-		0095D94F16CA83EA005F53D3 /* IRUDPICESocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRUDPICESocket.h; sourceTree = "<group>"; };
 		0095D95016CA83EA005F53D3 /* IRUDPICESocketSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRUDPICESocketSession.h; sourceTree = "<group>"; };
 		0095D95116CA83EA005F53D3 /* IRUDPListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRUDPListener.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		0095D95216CA83EA005F53D3 /* IRUDPMessaging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRUDPMessaging.h; sourceTree = "<group>"; };
@@ -175,7 +171,6 @@
 				003BEDCE17A606E80002EB47 /* IRSAPrivateKey.h */,
 				003BEDCF17A606E80002EB47 /* IRSAPublicKey.h */,
 				0095D94E16CA83EA005F53D3 /* IRUDPChannel.h */,
-				0095D94F16CA83EA005F53D3 /* IRUDPICESocket.h */,
 				0095D95016CA83EA005F53D3 /* IRUDPICESocketSession.h */,
 				0095D95116CA83EA005F53D3 /* IRUDPListener.h */,
 				0095D95216CA83EA005F53D3 /* IRUDPMessaging.h */,
@@ -211,7 +206,6 @@
 				003BEDD517A607190002EB47 /* services_RSAPublicKey.cpp */,
 				0095D92516CA83EA005F53D3 /* services_RUDPChannel.cpp */,
 				0095D92616CA83EA005F53D3 /* services_RUDPChannelStream.cpp */,
-				0095D92716CA83EA005F53D3 /* services_RUDPICESocket.cpp */,
 				0095D92816CA83EA005F53D3 /* services_RUDPICESocketSession.cpp */,
 				0095D92916CA83EA005F53D3 /* services_RUDPListener.cpp */,
 				0095D92A16CA83EA005F53D3 /* services_RUDPMessaging.cpp */,
@@ -247,7 +241,6 @@
 				0095D94216CA83EA005F53D3 /* services_IRUDPChannelStream.h */,
 				0095D94316CA83EA005F53D3 /* services_RUDPChannel.h */,
 				0095D94416CA83EA005F53D3 /* services_RUDPChannelStream.h */,
-				0095D94516CA83EA005F53D3 /* services_RUDPICESocket.h */,
 				0095D94616CA83EA005F53D3 /* services_RUDPICESocketSession.h */,
 				0095D94716CA83EA005F53D3 /* services_RUDPListener.h */,
 				0095D94816CA83EA005F53D3 /* services_RUDPMessaging.h */,
@@ -332,7 +325,6 @@
 				0095DAD316CA83EB005F53D3 /* services_ICESocketSession.cpp in Sources */,
 				0095DAD416CA83EB005F53D3 /* services_RUDPChannel.cpp in Sources */,
 				0095DAD516CA83EB005F53D3 /* services_RUDPChannelStream.cpp in Sources */,
-				0095DAD616CA83EB005F53D3 /* services_RUDPICESocket.cpp in Sources */,
 				0095DAD716CA83EB005F53D3 /* services_RUDPICESocketSession.cpp in Sources */,
 				0095DAD816CA83EB005F53D3 /* services_RUDPListener.cpp in Sources */,
 				0095DAD916CA83EB005F53D3 /* services_RUDPMessaging.cpp in Sources */,
@@ -360,6 +352,8 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -370,11 +364,11 @@
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					CRYPTOPP_DISABLE_SSE2,
 					"$(inherited)",
+					CRYPTOPP_DISABLE_ASM,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -385,7 +379,7 @@
 					../../..,
 					../../../libs/zsLib,
 					../../../libs,
-					../../../libs/boost/staging/include,
+					../../../libs/boost/osx/framework/boost.framework/Headers,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
@@ -398,6 +392,8 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -408,10 +404,10 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"NDEBUG=1",
-					CRYPTOPP_DISABLE_SSE2,
 					"$(inherited)",
+					CRYPTOPP_DISABLE_ASM,
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -421,7 +417,7 @@
 					../../..,
 					../../../libs/zsLib,
 					../../../libs,
-					../../../libs/boost/staging/include,
+					../../../libs/boost/osx/framework/boost.framework/Headers,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
@@ -432,6 +428,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -441,6 +441,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"NDEBUG=1",
+				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

@@ -70,7 +70,7 @@ namespace openpeer
                      IRUDPMessagingDelegatePtr delegate,
                       ITransportStreamPtr receiveStream,
                       ITransportStreamPtr sendStream,
-                      ULONG maxMessageSizeInBytes
+                      size_t maxMessageSizeInBytes
                      );
         
         RUDPMessaging(Noop) : Noop(true), MessageQueueAssociator(IMessageQueuePtr()) {};
@@ -96,7 +96,7 @@ namespace openpeer
                                               IRUDPMessagingDelegatePtr delegate,
                                               ITransportStreamPtr receiveStream,
                                               ITransportStreamPtr sendStream,
-                                              ULONG maxMessageSizeInBytes
+                                              size_t maxMessageSizeInBytes
                                               );
 
         static RUDPMessagingPtr acceptChannel(
@@ -105,7 +105,7 @@ namespace openpeer
                                               IRUDPMessagingDelegatePtr delegate,
                                               ITransportStreamPtr receiveStream,
                                               ITransportStreamPtr sendStream,
-                                              ULONG maxMessageSizeInBytes
+                                              size_t maxMessageSizeInBytes
                                               );
 
         static RUDPMessagingPtr openChannel(
@@ -115,7 +115,7 @@ namespace openpeer
                                             const char *connectionInfo,
                                             ITransportStreamPtr receiveStream,
                                             ITransportStreamPtr sendStream,
-                                            ULONG maxMessageSizeInBytes
+                                            size_t maxMessageSizeInBytes
                                             );
 
         virtual PUID getID() const {return mID;}
@@ -129,7 +129,7 @@ namespace openpeer
 
         virtual void shutdownDirection(Shutdown state);
 
-        virtual void setMaxMessageSizeInBytes(ULONG maxMessageSizeInBytes);
+        virtual void setMaxMessageSizeInBytes(size_t maxMessageSizeInBytes);
 
         virtual IPAddress getConnectedRemoteIP();
 
@@ -219,7 +219,7 @@ namespace openpeer
 
         AutoDWORD mNextMessageSizeInBytes;
 
-        ULONG mMaxMessageSizeInBytes;
+        size_t mMaxMessageSizeInBytes;
       };
 
       //-----------------------------------------------------------------------
@@ -240,7 +240,7 @@ namespace openpeer
                                                IRUDPMessagingDelegatePtr delegate,
                                                ITransportStreamPtr receiveStream,
                                                ITransportStreamPtr sendStream,
-                                               ULONG maxMessageSizeInBytes
+                                               size_t maxMessageSizeInBytes
                                                );
 
         virtual RUDPMessagingPtr acceptChannel(
@@ -249,7 +249,7 @@ namespace openpeer
                                                IRUDPMessagingDelegatePtr delegate,
                                                ITransportStreamPtr receiveStream,
                                                ITransportStreamPtr sendStream,
-                                               ULONG maxMessageSizeInBytes
+                                               size_t maxMessageSizeInBytes
                                                );
 
         virtual RUDPMessagingPtr openChannel(
@@ -259,7 +259,7 @@ namespace openpeer
                                              const char *connectionInfo,
                                              ITransportStreamPtr receiveStream,
                                              ITransportStreamPtr sendStream,
-                                             ULONG maxMessageSizeInBytes
+                                             size_t maxMessageSizeInBytes
                                              );
       };
       

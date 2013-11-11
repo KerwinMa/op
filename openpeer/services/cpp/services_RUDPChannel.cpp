@@ -670,7 +670,7 @@ namespace openpeer
       void RUDPChannel::handleRUDP(
                                    RUDPPacketPtr rudp,
                                    const BYTE *buffer,
-                                   ULONG bufferLengthInBytes
+                                   size_t bufferLengthInBytes
                                    )
       {
         IRUDPChannelStreamPtr stream;
@@ -938,7 +938,7 @@ namespace openpeer
       bool RUDPChannel::notifyRUDPChannelStreamSendPacket(
                                                           IRUDPChannelStreamPtr stream,
                                                           const BYTE *packet,
-                                                          ULONG packetLengthInBytes
+                                                          size_t packetLengthInBytes
                                                           )
       {
         ZS_LOG_DEBUG(log("notify channel stream send packet") + ", stream ID=" + string(stream->getID()) + ", length=" + string(packetLengthInBytes))
@@ -976,7 +976,7 @@ namespace openpeer
 
         IPAddress remoteIP;
         boost::shared_array<BYTE> packet;
-        ULONG packetLengthInBytes = 0;
+        size_t packetLengthInBytes = 0;
 
         {
           AutoRecursiveLock lock(mLock);
@@ -1029,7 +1029,7 @@ namespace openpeer
                                                   ISTUNRequesterPtr requester,
                                                   IPAddress destination,
                                                   boost::shared_array<BYTE> packet,
-                                                  ULONG packetLengthInBytes
+                                                  size_t packetLengthInBytes
                                                   )
       {
         ZS_LOG_DEBUG(log("notify requester send packet") + ", ip=" + destination.string() + ", length=" + string(packetLengthInBytes))
@@ -1624,7 +1624,7 @@ namespace openpeer
         outSTUN->mReliabilityFlagsIncluded = true;
         outSTUN->mReliabilityFlags = 0;
 
-        ULONG available = outSTUN->getTotalRoomAvailableForData(OPENPEER_SERVICES_RUDP_MAX_PACKET_SIZE_WHEN_PMTU_IS_NOT_KNOWN, STUNPacket::RFC_draft_RUDP);
+        size_t available = outSTUN->getTotalRoomAvailableForData(OPENPEER_SERVICES_RUDP_MAX_PACKET_SIZE_WHEN_PMTU_IS_NOT_KNOWN, STUNPacket::RFC_draft_RUDP);
 
         boost::shared_array<BYTE> vector;
         if (available > 0) {
@@ -1634,7 +1634,7 @@ namespace openpeer
         QWORD nextSequenceNumber = 0;
         QWORD gsnr = 0;
         QWORD gsnfr = 0;
-        ULONG vectorOutputSize = 0;
+        size_t vectorOutputSize = 0;
         bool vpFlag = false;
         bool pgFlag = false;
         bool xpFlag = false;

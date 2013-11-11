@@ -182,7 +182,7 @@ namespace openpeer
         virtual bool sendPacket(
                                 IPAddress destination,
                                 const BYTE *buffer,
-                                ULONG bufferLengthInBytes,
+                                size_t bufferLengthInBytes,
                                 bool bindChannelIfPossible = false
                                 );
 
@@ -197,7 +197,7 @@ namespace openpeer
         virtual bool handleChannelData(
                                        IPAddress fromIPAddress,
                                        const BYTE *buffer,
-                                       ULONG bufferLengthInBytes
+                                       size_t bufferLengthInBytes
                                        );
 
         virtual void notifyWriteReady();
@@ -218,7 +218,7 @@ namespace openpeer
                                                ISTUNRequesterPtr requester,
                                                IPAddress destination,
                                                boost::shared_array<BYTE> packet,
-                                               ULONG packetLengthInBytes
+                                               size_t packetLengthInBytes
                                                );
 
         virtual bool handleSTUNRequesterResponse(
@@ -277,7 +277,7 @@ namespace openpeer
 
         void consumeBuffer(
                            ServerPtr &server,
-                           ULONG bufferSizeInBytes
+                           size_t bufferSizeInBytes
                            );
 
         bool handleAllocateRequester(
@@ -313,13 +313,13 @@ namespace openpeer
         bool sendPacketOrDopPacketIfBufferFull(
                                                ServerPtr server,
                                                const BYTE *buffer,
-                                               ULONG bufferSizeInBytes
+                                               size_t bufferSizeInBytes
                                                );
 
         bool sendPacketOverTCPOrDropIfBufferFull(
                                                  ServerPtr server,
                                                  const BYTE *buffer,
-                                                 ULONG bufferSizeInBytes
+                                                 size_t bufferSizeInBytes
                                                  );
 
         void informWriteReady();
@@ -371,10 +371,10 @@ namespace openpeer
           ISTUNRequesterPtr mAllocateRequester;
 
           BYTE mReadBuffer[OPENPEER_SERVICES_TURN_MAX_CHANNEL_DATA_IN_BYTES+sizeof(DWORD)];
-          ULONG mReadBufferFilledSizeInBytes;
+          size_t mReadBufferFilledSizeInBytes;
 
           BYTE mWriteBuffer[OPENPEER_SERVICES_TURN_MAX_CHANNEL_DATA_IN_BYTES+sizeof(DWORD)];
-          ULONG mWriteBufferFilledSizeInBytes;
+          size_t mWriteBufferFilledSizeInBytes;
         };
 
         //---------------------------------------------------------------------
@@ -401,7 +401,7 @@ namespace openpeer
           Time mLastSentDataAt;
           ISTUNRequesterPtr mInstallingWithRequester;
 
-          typedef std::list< std::pair<boost::shared_array<BYTE>, ULONG> > PendingDataList;
+          typedef std::list< std::pair<boost::shared_array<BYTE>, size_t> > PendingDataList;
           PendingDataList mPendingData;
         };
 

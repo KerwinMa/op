@@ -93,7 +93,7 @@ namespace openpeer
         GeneratorPtr generator = Generator::createJSONGenerator();
 
         boost::shared_array<char> output;
-        ULONG length = 0;
+        size_t length = 0;
         output = generator->write(node, &length);
 
         return (CSTR)output.get();
@@ -707,7 +707,7 @@ namespace openpeer
       void Publication::getDiffVersionsOutputSize(
                                                   ULONG fromVersionNumber,
                                                   ULONG toVersionNumber,
-                                                  ULONG &outOutputSizeInBytes,
+                                                  size_t &outOutputSizeInBytes,
                                                   bool rawSizeOkay
                                                   ) const
       {
@@ -755,7 +755,7 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       void Publication::getEntirePublicationOutputSize(
-                                                       ULONG &outOutputSizeInBytes,
+                                                       size_t &outOutputSizeInBytes,
                                                        bool rawSizeOkay
                                                        ) const
       {

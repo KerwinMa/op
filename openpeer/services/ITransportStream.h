@@ -53,7 +53,6 @@ namespace openpeer
       };
       typedef boost::shared_ptr<StreamHeader> StreamHeaderPtr;
       typedef boost::weak_ptr<StreamHeader> StreamHeaderWeakPtr;
-      typedef ULONG BufferLength;
 
       enum Endians
       {
@@ -113,7 +112,7 @@ namespace openpeer
       // PURPOSE: Write buffer into the stream
       virtual void write(
                          const BYTE *buffer,
-                         ULONG bufferLengthInBytes,
+                         size_t bufferLengthInBytes,
                          StreamHeaderPtr header = StreamHeaderPtr()   // not always needed
                          ) = 0;
 
@@ -196,6 +195,7 @@ namespace openpeer
 
     interaction ITransportStreamReader
     {
+      typedef ULONG size_type;
       typedef ITransportStream::StreamHeader StreamHeader;
       typedef ITransportStream::StreamHeaderPtr StreamHeaderPtr;
       typedef ITransportStream::StreamHeaderWeakPtr StreamHeaderWeakPtr;
@@ -246,7 +246,7 @@ namespace openpeer
       //          if there are any buffers available or not for reading.
       //          Instead use "getTotalReadBuffersAvailable" to determine if
       //          buffers are available for reading.
-      virtual ULONG getNextReadSizeInBytes() const = 0;
+      virtual size_t getNextReadSizeInBytes() const = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Obtains the header for the next FIFO buffer written
@@ -257,7 +257,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       // PURPOSE: Obtains the total number of the buffers "written" to the
       //          FIFO write stream that are still available to read.
-      virtual ULONG getTotalReadBuffersAvailable() const = 0;
+      virtual size_type getTotalReadBuffersAvailable() const = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Obtains the size of all data "written" buffer available to
@@ -265,7 +265,7 @@ namespace openpeer
       // NOTE:    This buffer will match the sum of all FIFO buffered data
       //          written to the ITransportWriter (and not any individual
       //          written buffer).
-      virtual ULONG getTotalReadSizeAvailableInBytes() const = 0;
+      virtual size_t getTotalReadSizeAvailableInBytes() const = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Reads buffered data written to the stream.
@@ -278,11 +278,11 @@ namespace openpeer
       //          size is greater than the next FIFO buffer, it will read
       //          beyond the next available FIFO buffer but return the header
       //          of only the first available FIFO buffer.
-      virtual ULONG read(
-                        BYTE *outBuffer,
-                        ULONG bufferLengthInBytes,
-                        StreamHeaderPtr *outHeader = NULL
-                        ) = 0;
+      virtual size_t read(
+                          BYTE *outBuffer,
+                          size_t bufferLengthInBytes,
+                          StreamHeaderPtr *outHeader = NULL
+                          ) = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Reads buffered data written to the write buffer with exactly
@@ -294,63 +294,63 @@ namespace openpeer
       //-----------------------------------------------------------------------
       // PURPOSE: Reads a WORD of buffered data written to the stream.
       // NOTE:    returns sizeof(WORD) if successful
-      virtual ULONG read(
-                         WORD &outResult,
-                         StreamHeaderPtr *outHeader = NULL,
-                         Endians endian = ITransportStream::Endian_Big
-                         ) = 0;
+      virtual size_t read(
+                          WORD &outResult,
+                          StreamHeaderPtr *outHeader = NULL,
+                          Endians endian = ITransportStream::Endian_Big
+                          ) = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Reads buffered data written to the stream.
       // NOTE:    returns sizeof(DWORD) if successful
-      virtual ULONG read(
-                         DWORD &outResult,
-                         StreamHeaderPtr *outHeader = NULL,
-                         Endians endian = ITransportStream::Endian_Big
-                         ) = 0;
+      virtual size_t read(
+                          DWORD &outResult,
+                          StreamHeaderPtr *outHeader = NULL,
+                          Endians endian = ITransportStream::Endian_Big
+                          ) = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Peeks ahead at the buffered data written to the stream
       //          but still allows it to be read later.
-      virtual ULONG peek(
-                         BYTE *outBuffer,
-                         ULONG bufferLengthInBytes,
-                         StreamHeaderPtr *outHeader = NULL,
-                         ULONG offsetInBytes = 0
-                         ) = 0;
+      virtual size_t peek(
+                          BYTE *outBuffer,
+                          size_t bufferLengthInBytes,
+                          StreamHeaderPtr *outHeader = NULL,
+                          size_t offsetInBytes = 0
+                          ) = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Peeks ahead at the buffered data written to the stream
       //          but still allows it to be read later.
       virtual SecureByteBlockPtr peek(
-                                      ULONG bufferLengthInBytes = 0,
+                                      size_t bufferLengthInBytes = 0,
                                       StreamHeaderPtr *outHeader = NULL,
-                                      ULONG offsetInBytes = 0
+                                      size_t offsetInBytes = 0
                                       ) = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Peeks a WORD of buffered data written to the stream.
       // NOTE:    returns sizeof(WORD) if successful
-      virtual ULONG peek(
-                         WORD &outResult,
-                         StreamHeaderPtr *outHeader = NULL,
-                         ULONG offsetInBytes = 0,
-                         Endians endian = ITransportStream::Endian_Big
-                         ) = 0;
+      virtual size_t peek(
+                          WORD &outResult,
+                          StreamHeaderPtr *outHeader = NULL,
+                          size_t offsetInBytes = 0,
+                          Endians endian = ITransportStream::Endian_Big
+                          ) = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Peeks buffered data written to the stream.
       // NOTE:    returns sizeof(DWORD) if successful
-      virtual ULONG peek(
-                         DWORD &outResult,
-                         StreamHeaderPtr *outHeader = NULL,
-                         ULONG offsetInBytes = 0,
-                         Endians endian = ITransportStream::Endian_Big
-                         ) = 0;
+      virtual size_t peek(
+                          DWORD &outResult,
+                          StreamHeaderPtr *outHeader = NULL,
+                          size_t offsetInBytes = 0,
+                          Endians endian = ITransportStream::Endian_Big
+                          ) = 0;
 
       //-----------------------------------------------------------------------
       // PURPOSE: Flushes the FIFO by the data offset specified.
-      virtual ULONG skip(ULONG offsetInBytes) = 0;
+      virtual size_t skip(size_t offsetInBytes) = 0;
     };
 
     //-------------------------------------------------------------------------

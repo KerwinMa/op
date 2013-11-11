@@ -314,7 +314,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      SecureByteBlockPtr Helper::random(UINT lengthInBytes)
+      SecureByteBlockPtr Helper::random(size_t lengthInBytes)
       {
         SecureByteBlockPtr output(new SecureByteBlock);
         AutoSeededRandomPool rng;
@@ -411,7 +411,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       SecureByteBlockPtr Helper::convertToBuffer(
                                                  const BYTE *buffer,
-                                                 ULONG bufferLengthInBytes
+                                                 size_t bufferLengthInBytes
                                                  )
       {
         SecureByteBlockPtr output(new SecureByteBlock);
@@ -428,7 +428,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       String Helper::convertToBase64(
                                      const BYTE *buffer,
-                                     ULONG bufferLengthInBytes
+                                     size_t bufferLengthInBytes
                                      )
       {
         String result;
@@ -478,7 +478,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       String Helper::convertToHex(
                                   const BYTE *buffer,
-                                  ULONG bufferLengthInBytes,
+                                  size_t bufferLengthInBytes,
                                   bool outputUpperCase
                                   )
       {
@@ -1139,7 +1139,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       String Helper::getDebugString(
                                     const BYTE *buffer,
-                                    ULONG bufferSizeInBytes,
+                                    size_t bufferSizeInBytes,
                                     ULONG bytesPerGroup,
                                     ULONG maxLineLength
                                     )
@@ -1174,14 +1174,14 @@ namespace openpeer
         while (bufferSizeInBytes > 0) {
 
           const BYTE *start = buffer;
-          ULONG totalBytesWritten = 0;
+          size_t totalBytesWritten = 0;
 
           char *fill = fillLine;
 
           for (ULONG groups = 0; (groups < groupsPerLine); ++groups) {
-            ULONG bytesInNextGroup = (bufferSizeInBytes < bytesPerGroup ? bufferSizeInBytes : bytesPerGroup);
-            ULONG bytesMissingInGroup = bytesPerGroup - bytesInNextGroup;
-            for (ULONG pos = 0; pos < bytesInNextGroup; ++pos, ++buffer, ++totalBytesWritten) {
+            size_t bytesInNextGroup = (bufferSizeInBytes < bytesPerGroup ? bufferSizeInBytes : bytesPerGroup);
+            size_t bytesMissingInGroup = bytesPerGroup - bytesInNextGroup;
+            for (size_t pos = 0; pos < bytesInNextGroup; ++pos, ++buffer, ++totalBytesWritten) {
               BYTE value = *buffer;
 
               *fill = convertArray[value / 16];
@@ -1191,7 +1191,7 @@ namespace openpeer
             }
 
             if (!firstLine) {
-              for (ULONG pos = 0; pos < bytesMissingInGroup; ++pos) {
+              for (size_t pos = 0; pos < bytesMissingInGroup; ++pos) {
                 // no more bytes available in the group thus insert two spaces per byte instead
                 *fill = ' ';
                 ++fill;
@@ -1207,7 +1207,7 @@ namespace openpeer
           }
 
           buffer = start;
-          for (ULONG pos = 0; pos < totalBytesWritten; ++pos, ++buffer) {
+          for (size_t pos = 0; pos < totalBytesWritten; ++pos, ++buffer) {
             if (isprint(*buffer)) {
               *fill = *buffer;
             } else {
@@ -1279,7 +1279,7 @@ namespace openpeer
     }
 
     //-------------------------------------------------------------------------
-    SecureByteBlockPtr IHelper::random(UINT lengthInBytes)
+    SecureByteBlockPtr IHelper::random(size_t lengthInBytes)
     {
       return internal::Helper::random(lengthInBytes);
     }
@@ -1332,7 +1332,7 @@ namespace openpeer
     //-------------------------------------------------------------------------
     SecureByteBlockPtr IHelper::convertToBuffer(
                                                 const BYTE *buffer,
-                                                ULONG bufferLengthInBytes
+                                                size_t bufferLengthInBytes
                                                 )
     {
       return internal::Helper::convertToBuffer(buffer, bufferLengthInBytes);
@@ -1341,7 +1341,7 @@ namespace openpeer
     //-------------------------------------------------------------------------
     String IHelper::convertToBase64(
                                     const BYTE *buffer,
-                                    ULONG bufferLengthInBytes
+                                    size_t bufferLengthInBytes
                                     )
     {
       return internal::Helper::convertToBase64(buffer, bufferLengthInBytes);
@@ -1374,7 +1374,7 @@ namespace openpeer
     //-------------------------------------------------------------------------
     String IHelper::convertToHex(
                                  const BYTE *buffer,
-                                 ULONG bufferLengthInBytes,
+                                 size_t bufferLengthInBytes,
                                  bool outputUpperCase
                                  )
     {
@@ -1602,7 +1602,7 @@ namespace openpeer
     //-------------------------------------------------------------------------
     String IHelper::getDebugString(
                                    const BYTE *buffer,
-                                   ULONG bufferSizeInBytes,
+                                   size_t bufferSizeInBytes,
                                    ULONG bytesPerGroup,
                                    ULONG maxLineLength
                                    )

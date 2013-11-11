@@ -252,7 +252,7 @@ namespace openpeer
                                                        )
       {
         DocumentPtr doc = message->encode();
-        ULONG postDataLengthInBytes = 0;
+        size_t postDataLengthInBytes = 0;
         boost::shared_array<char> postData = doc->writeAsJSON(&postDataLengthInBytes);
         
         
@@ -868,7 +868,7 @@ namespace openpeer
                                              const char *userAgent,
                                              const char *url,
                                              const BYTE *postData,
-                                             ULONG postDataLengthInBytes,
+                                             size_t postDataLengthInBytes,
                                              const char *postDataMimeType,
                                              Duration timeout
                                              )

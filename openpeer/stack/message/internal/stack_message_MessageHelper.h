@@ -77,7 +77,7 @@ namespace openpeer
           static DocumentPtr createDocument(
                                             Message &msg,
                                             IPublicationMetaDataPtr publicationMetaData,
-                                            ULONG *notifyPeerPublishMaxDocumentSizeInBytes = NULL,
+                                            size_t *notifyPeerPublishMaxDocumentSizeInBytes = NULL,
                                             IPublicationRepositoryPeerCachePtr peerCache = IPublicationRepositoryPeerCachePtr()
                                             );
 

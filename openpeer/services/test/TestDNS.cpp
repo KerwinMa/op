@@ -51,6 +51,7 @@
 namespace openpeer { namespace services { namespace test { ZS_DECLARE_SUBSYSTEM(openpeer_services_test) } } }
 
 using zsLib::ULONG;
+using zsLib::IMessageQueue;
 using openpeer::services::IDNS;
 using openpeer::services::IDNSPtr;
 using openpeer::services::IDNSQuery;

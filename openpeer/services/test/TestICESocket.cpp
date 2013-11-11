@@ -63,6 +63,7 @@ using zsLib::SocketPtr;
 using zsLib::ISocketPtr;
 using zsLib::IPAddress;
 using zsLib::String;
+using zsLib::IMessageQueue;
 using openpeer::services::IDNS;
 using openpeer::services::IDNSQuery;
 using openpeer::services::ITURNSocket;
@@ -252,7 +253,7 @@ namespace openpeer
         virtual void handleICESocketSessionReceivedPacket(
                                                           IICESocketSessionPtr session,
                                                           const zsLib::BYTE *buffer,
-                                                          zsLib::ULONG bufferLengthInBytes
+                                                          size_t bufferLengthInBytes
                                                           )
         {
           zsLib::AutoRecursiveLock lock(getLock());

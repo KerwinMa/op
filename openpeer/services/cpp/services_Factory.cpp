@@ -172,7 +172,7 @@ namespace openpeer
                                        const char *userAgent,
                                        const char *url,
                                        const BYTE *postData,
-                                       ULONG postDataLengthInBytes,
+                                       size_t postDataLengthInBytes,
                                        const char *postDataMimeType,
                                        Duration timeout
                                        )
@@ -280,10 +280,10 @@ namespace openpeer
       //-----------------------------------------------------------------------
       RSAPrivateKeyPtr IRSAPrivateKeyFactory::generate(
                                                        RSAPublicKeyPtr &outPublicKey,
-                                                       ULONG keySizeInBites
+                                                       size_t keySizeInBits
                                                        )
       {
-        return RSAPrivateKey::generate(outPublicKey, keySizeInBites);
+        return RSAPrivateKey::generate(outPublicKey, keySizeInBits);
       }
 
       //-----------------------------------------------------------------------
@@ -473,7 +473,7 @@ namespace openpeer
                                                             IRUDPMessagingDelegatePtr delegate,
                                                             ITransportStreamPtr receiveStream,
                                                             ITransportStreamPtr sendStream,
-                                                            ULONG maxMessageSizeInBytes
+                                                            size_t maxMessageSizeInBytes
                                                             )
       {
         return RUDPMessaging::acceptChannel(queue, listener, delegate, receiveStream, sendStream, maxMessageSizeInBytes);
@@ -486,7 +486,7 @@ namespace openpeer
                                                             IRUDPMessagingDelegatePtr delegate,
                                                             ITransportStreamPtr receiveStream,
                                                             ITransportStreamPtr sendStream,
-                                                            ULONG maxMessageSizeInBytes
+                                                            size_t maxMessageSizeInBytes
                                                             )
       {
         return RUDPMessaging::acceptChannel(queue, session, delegate, receiveStream, sendStream, maxMessageSizeInBytes);
@@ -500,7 +500,7 @@ namespace openpeer
                                                           const char *connectionInfo,
                                                           ITransportStreamPtr receiveStream,
                                                           ITransportStreamPtr sendStream,
-                                                          ULONG maxMessageSizeInBytes
+                                                          size_t maxMessageSizeInBytes
                                                           )
       {
         return RUDPMessaging::openChannel(queue, session, delegate, connectionInfo, receiveStream, sendStream, maxMessageSizeInBytes);
@@ -608,7 +608,7 @@ namespace openpeer
                                                    ITransportStreamPtr sendStream,
                                                    bool framesHaveChannelNumber,
                                                    SocketPtr socket,
-                                                   ULONG maxMessageSizeInBytes
+                                                   size_t maxMessageSizeInBytes
                                                    )
       {
         return internal::TCPMessaging::accept(delegate, receiveStream, sendStream, framesHaveChannelNumber, socket, maxMessageSizeInBytes);
@@ -621,7 +621,7 @@ namespace openpeer
                                                     ITransportStreamPtr sendStream,
                                                     bool framesHaveChannelNumber,
                                                     IPAddress remoteIP,
-                                                    ULONG maxMessageSizeInBytes
+                                                    size_t maxMessageSizeInBytes
                                                     )
       {
         return internal::TCPMessaging::connect(delegate, receiveStream, sendStream, framesHaveChannelNumber, remoteIP, maxMessageSizeInBytes);

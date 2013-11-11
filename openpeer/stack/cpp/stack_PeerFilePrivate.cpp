@@ -561,7 +561,7 @@ namespace openpeer
 
             GeneratorPtr generator = Generator::createJSONGenerator();
 
-            ULONG length = 0;
+            size_t length = 0;
             ElementPtr canoncialSectionBundleEl = IHelper::cloneAsCanonicalJSON(sectionBundleEl);
             boost::shared_array<char> sectionAsJSON = generator->write(canoncialSectionBundleEl, &length);
 

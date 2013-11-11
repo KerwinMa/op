@@ -76,7 +76,7 @@ namespace openpeer
       #pragma mark
 
       //-----------------------------------------------------------------------
-      static ULONG dwordBoundary(ULONG length)
+      static size_t dwordBoundary(size_t length)
       {
         if (0 == (length % sizeof(DWORD)))
           return length;
@@ -312,7 +312,7 @@ namespace openpeer
       bool TURNSocket::sendPacket(
                                   IPAddress destination,
                                   const BYTE *buffer,
-                                  ULONG bufferLengthInBytes,
+                                  size_t bufferLengthInBytes,
                                   bool bindChannelIfPossible
                                   )
       {
@@ -341,7 +341,7 @@ namespace openpeer
         }
 
         boost::shared_array<BYTE> packet;
-        ULONG packetLengthInBytes = 0;
+        size_t packetLengthInBytes = 0;
         ServerPtr server;
 
         do
@@ -423,7 +423,7 @@ namespace openpeer
               PermissionPtr permission = Permission::create();
 
               permission->mPeerAddress = destination;
-              permission->mPendingData.push_back(std::pair<boost::shared_array<BYTE>, ULONG>(packet, packetLengthInBytes));
+              permission->mPendingData.push_back(std::pair<boost::shared_array<BYTE>, size_t>(packet, packetLengthInBytes));
 
               mPermissions[destination] = permission;
 
@@ -437,7 +437,7 @@ namespace openpeer
 
             if (!permission->mInstalled) {
               // the permission hasn't been installed yet so we still can't send the data...
-              permission->mPendingData.push_back(std::pair<boost::shared_array<BYTE>, ULONG>(packet, packetLengthInBytes));
+              permission->mPendingData.push_back(std::pair<boost::shared_array<BYTE>, size_t>(packet, packetLengthInBytes));
               return true;
             }
           }
@@ -471,7 +471,7 @@ namespace openpeer
 
         if (STUNPacket::Method_Data != turnPacket->mMethod) {
           // see if the ISTUNRequesterManager can handle this packet...
-          return ISTUNRequesterManager::handleSTUNPacket(fromIPAddress, turnPacket);
+          return (bool)ISTUNRequesterManager::handleSTUNPacket(fromIPAddress, turnPacket);
         }
 
         if (!turnPacket->isLegal(STUNPacket::RFC_5766_TURN)) return false;    // ignore if this isn't legal for TURN
@@ -502,7 +502,7 @@ namespace openpeer
       bool TURNSocket::handleChannelData(
                                          IPAddress fromIPAddress,
                                          const BYTE *buffer,
-                                         ULONG bufferLengthInBytes
+                                         size_t bufferLengthInBytes
                                          )
       {
         // WARNING: Do not call any delegates synchronously from within this
@@ -609,7 +609,7 @@ namespace openpeer
                                                  ISTUNRequesterPtr requester,
                                                  IPAddress destination,
                                                  boost::shared_array<BYTE> packet,
-                                                 ULONG packetLengthInBytes
+                                                 size_t packetLengthInBytes
                                                  )
       {
         ServerPtr server;
@@ -824,8 +824,8 @@ namespace openpeer
 
               try {
                 bool wouldBlock = false;
-                ULONG bytesRead = 0;
-                ULONG bytesAvailable = sizeof(server->mReadBuffer) - server->mReadBufferFilledSizeInBytes;
+                size_t bytesRead = 0;
+                size_t bytesAvailable = sizeof(server->mReadBuffer) - server->mReadBufferFilledSizeInBytes;
 
                 if (0 != bytesAvailable) {
                   bytesRead = server->mTCPSocket->receive(&(server->mReadBuffer[server->mReadBufferFilledSizeInBytes]), bytesAvailable, &wouldBlock);
@@ -856,7 +856,7 @@ namespace openpeer
               {
                 AutoRecursiveLock lock(mLock);
 
-                ULONG consumedBytes = 0;
+                size_t consumedBytes = 0;
                 ahead = STUNPacket::parseStreamIfSTUN(stun, consumedBytes, &(server->mReadBuffer[0]), server->mReadBufferFilledSizeInBytes, STUNPacket::RFC_5766_TURN, false, "TURNSocket", mID);
                 if (0 != consumedBytes) {
                   // the STUN packet is going to have it's parsed pointing into the read buffer which is about to be consumed, fix the pointers now...
@@ -899,11 +899,11 @@ namespace openpeer
                     WORD channel = ntohs(((WORD *)(server->mReadBuffer))[0]);
                     length = ntohs(((WORD *)(server->mReadBuffer))[1]);;
 
-                    ULONG lengthAsULONG = length;
+                    size_t lengthAsSizeT = length;
 
                     if ((channel < mLimitChannelToRangeStart) ||
                         (channel > mLimitChannelToRangeEnd) ||
-                        (lengthAsULONG > OPENPEER_SERVICES_TURN_MAX_CHANNEL_DATA_IN_BYTES)) {
+                        (lengthAsSizeT > OPENPEER_SERVICES_TURN_MAX_CHANNEL_DATA_IN_BYTES)) {
                       ZS_LOG_ERROR(Basic, log("socket received bogus data and is being shutdown"))
                       // this socket has bogus data in it...
                       mLastError = TURNSocketError_BogusDataOnSocketReceived;
@@ -911,7 +911,7 @@ namespace openpeer
                       return;
                     }
 
-                    if (server->mReadBufferFilledSizeInBytes < sizeof(DWORD) + dwordBoundary(((ULONG)length))) {
+                    if (server->mReadBufferFilledSizeInBytes < sizeof(DWORD) + dwordBoundary(((size_t)length))) {
                       // this is channel data, but we have not read enough data to parse it
                       parseAgain = false;
                       continue;
@@ -1663,7 +1663,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       void TURNSocket::consumeBuffer(
                                      ServerPtr &server,
-                                     ULONG consumeSizeInBytes
+                                     size_t consumeSizeInBytes
                                      )
       {
         size_t remaining = (server->mReadBufferFilledSizeInBytes > consumeSizeInBytes ? server->mReadBufferFilledSizeInBytes - consumeSizeInBytes : 0);
@@ -1911,7 +1911,7 @@ namespace openpeer
               // we have to deliver any pending packets now...
               for (Permission::PendingDataList::iterator pendingIter = (*iter).second->mPendingData.begin(); pendingIter != (*iter).second->mPendingData.end(); ++pendingIter) {
                 // this is in a format ready to go (post STUN encoded already)...
-                tempList.push_back(std::pair<boost::shared_array<BYTE>, ULONG>((*pendingIter).first, (*pendingIter).second));
+                tempList.push_back(std::pair<boost::shared_array<BYTE>, size_t>((*pendingIter).first, (*pendingIter).second));
               }
               // clear out all the pending data, we have sent what we possibly can...
               (*iter).second->mPendingData.clear();
@@ -2116,7 +2116,7 @@ namespace openpeer
       bool TURNSocket::sendPacketOrDopPacketIfBufferFull(
                                                          ServerPtr server,
                                                          const BYTE *buffer,
-                                                         ULONG bufferSizeInBytes
+                                                         size_t bufferSizeInBytes
                                                          )
       {
         ITURNSocketDelegatePtr delegate;
@@ -2163,7 +2163,7 @@ namespace openpeer
       bool TURNSocket::sendPacketOverTCPOrDropIfBufferFull(
                                                            ServerPtr server,
                                                            const BYTE *buffer,
-                                                           ULONG bufferSizeInBytes
+                                                           size_t bufferSizeInBytes
                                                            )
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!server)
@@ -2194,7 +2194,7 @@ namespace openpeer
             try {
               bool wouldBlock = false;
               mLastSentDataToServer = zsLib::now();
-              ULONG sent = server->mTCPSocket->send(buffer, bufferSizeInBytes, &wouldBlock);
+              size_t sent = server->mTCPSocket->send(buffer, bufferSizeInBytes, &wouldBlock);
               if (sent != bufferSizeInBytes) {
                 server->mWriteBufferFilledSizeInBytes = (bufferSizeInBytes - sent);
 
@@ -2244,7 +2244,7 @@ namespace openpeer
         try {
           bool wouldBlock = false;
           mLastSentDataToServer = zsLib::now();
-          ULONG sent = server->mTCPSocket->send(&(server->mWriteBuffer[0]), server->mWriteBufferFilledSizeInBytes, &wouldBlock);
+          size_t sent = server->mTCPSocket->send(&(server->mWriteBuffer[0]), server->mWriteBufferFilledSizeInBytes, &wouldBlock);
           if (sent == server->mWriteBufferFilledSizeInBytes) {
             // we have exhasted the send buffer - horray! nothing more to do now...
             server->mWriteBufferFilledSizeInBytes = 0;

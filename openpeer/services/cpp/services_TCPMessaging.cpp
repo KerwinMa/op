@@ -76,7 +76,7 @@ namespace openpeer
                                  ITransportStreamPtr receiveStream,
                                  ITransportStreamPtr sendStream,
                                  bool framesHaveChannelNumber,
-                                 ULONG maxMessageSizeInBytes
+                                 size_t maxMessageSizeInBytes
                                  ) :
         zsLib::MessageQueueAssociator(queue),
         mCurrentState(SessionState_Pending),
@@ -137,7 +137,7 @@ namespace openpeer
                                            ITransportStreamPtr sendStream,
                                            bool framesHaveChannelNumber,
                                            SocketPtr socket,
-                                           ULONG maxMessageSizeInBytes
+                                           size_t maxMessageSizeInBytes
                                            )
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!delegate)
@@ -170,7 +170,7 @@ namespace openpeer
                                             ITransportStreamPtr sendStream,
                                             bool framesHaveChannelNumber,
                                             IPAddress remoteIP,
-                                            ULONG maxMessageSizeInBytes
+                                            size_t maxMessageSizeInBytes
                                             )
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!delegate)
@@ -289,7 +289,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      void TCPMessaging::setMaxMessageSizeInBytes(ULONG maxMessageSizeInBytes)
+      void TCPMessaging::setMaxMessageSizeInBytes(size_t maxMessageSizeInBytes)
       {
         AutoRecursiveLock lock(getLock());
         mMaxMessageSizeInBytes = maxMessageSizeInBytes;
@@ -347,7 +347,7 @@ namespace openpeer
         try {
           SecureByteBlock buffer(OPENPEER_SERVICES_TCPMESSAGING_DEFAULT_RECEIVE_SIZE_IN_BYTES);
           bool wouldBlock = false;
-          ULONG bytesRead = mSocket->receive(buffer.BytePtr(), OPENPEER_SERVICES_TCPMESSAGING_DEFAULT_RECEIVE_SIZE_IN_BYTES, &wouldBlock);
+          size_t bytesRead = mSocket->receive(buffer.BytePtr(), OPENPEER_SERVICES_TCPMESSAGING_DEFAULT_RECEIVE_SIZE_IN_BYTES, &wouldBlock);
 
           if (0 == bytesRead) {
             ZS_LOG_WARNING(Detail, log("notified of data to read but no data available to read") + ", would block=" + string(wouldBlock))
@@ -673,7 +673,7 @@ namespace openpeer
             ZS_LOG_TRACE(log("queuing data to send data over TCP") + ", message size=" + string(buffer->SizeInBytes()))
           }
 
-          mSendingQueue->PutWord32(buffer->SizeInBytes());
+          mSendingQueue->PutWord32(static_cast<CryptoPP::word32>(buffer->SizeInBytes()));
           if (buffer->SizeInBytes() > 0) {
             mSendingQueue->Put(buffer->BytePtr(), buffer->SizeInBytes());
           }
@@ -706,7 +706,7 @@ namespace openpeer
         try {
           ZS_LOG_TRACE(log("attempting to send data over TCP") + ", size=" + string(size))
           bool wouldBlock = false;
-          ULONG sent = mSocket->send(buffer.BytePtr(), size, &wouldBlock);
+          size_t sent = mSocket->send(buffer.BytePtr(), size, &wouldBlock);
           outSent = sent;
           if (0 != sent) {
             if (ZS_IS_LOGGING(Insane)) {
@@ -772,7 +772,7 @@ namespace openpeer
                                    ITransportStreamPtr sendStream,
                                    bool framesHaveChannelNumber,
                                    SocketPtr socket,
-                                   ULONG maxMessageSizeInBytes
+                                   size_t maxMessageSizeInBytes
                                    )
     {
       return internal::ITCPMessagingFactory::singleton().accept(delegate, receiveStream, sendStream, framesHaveChannelNumber, socket, maxMessageSizeInBytes);
@@ -785,7 +785,7 @@ namespace openpeer
                                             ITransportStreamPtr sendStream,
                                             bool framesHaveChannelNumber,
                                             IPAddress remoteIP,
-                                            ULONG maxMessageSizeInBytes
+                                            size_t maxMessageSizeInBytes
                                             )
     {
       return internal::ITCPMessagingFactory::singleton().connect(delegate, receiveStream, sendStream, framesHaveChannelNumber, remoteIP, maxMessageSizeInBytes);

@@ -71,7 +71,7 @@ namespace openpeer
           Buffer() : mRead(0) {}
 
           SecureByteBlockPtr mBuffer;
-          ULONG mRead;
+          size_t mRead;
           StreamHeaderPtr mHeader;
         };
 
@@ -128,7 +128,7 @@ namespace openpeer
 
         virtual void write(
                            const BYTE *buffer,
-                           ULONG bufferLengthInBytes,
+                           size_t bufferLengthInBytes,
                            StreamHeaderPtr header = StreamHeaderPtr()   // not always needed
                            );
 
@@ -164,62 +164,62 @@ namespace openpeer
 
         virtual void notifyReaderReadyToRead();
 
-        virtual ULONG getNextReadSizeInBytes() const;
+        virtual size_t getNextReadSizeInBytes() const;
 
         virtual StreamHeaderPtr getNextReadHeader() const;
 
-        virtual ULONG getTotalReadBuffersAvailable() const;
+        virtual size_t getTotalReadBuffersAvailable() const;
 
-        virtual ULONG getTotalReadSizeAvailableInBytes() const;
+        virtual size_t getTotalReadSizeAvailableInBytes() const;
 
-        virtual ULONG read(
-                          BYTE *outBuffer,
-                          ULONG bufferLengthInBytes,
-                          StreamHeaderPtr *outHeader = NULL
-                          );
+        virtual size_t read(
+                            BYTE *outBuffer,
+                            size_t bufferLengthInBytes,
+                            StreamHeaderPtr *outHeader = NULL
+                            );
 
         virtual SecureByteBlockPtr read(StreamHeaderPtr *outHeader = NULL);
 
-        virtual ULONG read(
-                           WORD &outResult,
-                           StreamHeaderPtr *outHeader = NULL,
-                           Endians endian = ITransportStream::Endian_Big
-                           );
+        virtual size_t read(
+                            WORD &outResult,
+                            StreamHeaderPtr *outHeader = NULL,
+                            Endians endian = ITransportStream::Endian_Big
+                            );
 
-        virtual ULONG read(
-                           DWORD &outResult,
-                           StreamHeaderPtr *outHeader = NULL,
-                           Endians endian = ITransportStream::Endian_Big
-                           );
+        virtual size_t read(
+                            DWORD &outResult,
+                            StreamHeaderPtr *outHeader = NULL,
+                            Endians endian = ITransportStream::Endian_Big
+                            );
 
-        virtual ULONG peek(
-                           BYTE *outBuffer,
-                           ULONG bufferLengthInBytes,
-                           StreamHeaderPtr *outHeader = NULL,
-                           ULONG offsetInBytes = 0
-                           );
+        virtual size_t peek(
+                            BYTE *outBuffer,
+                            size_t bufferLengthInBytes,
+                            StreamHeaderPtr *outHeader = NULL,
+                            size_t offsetInBytes = 0
+                            );
 
         virtual SecureByteBlockPtr peek(
-                                        ULONG bufferLengthInBytes = 0,
+                                        size_t bufferLengthInBytes = 0,
                                         StreamHeaderPtr *outHeader = NULL,
-                                        ULONG offsetInBytes = 0
+                                        size_t offsetInBytes = 0
                                         );
 
-        virtual ULONG peek(
-                           WORD &outResult,
-                           StreamHeaderPtr *outHeader = NULL,
-                           ULONG offsetInBytes = 0,
-                           Endians endian = ITransportStream::Endian_Big
-                           );
+        virtual size_t peek(
+                            WORD &outResult,
+                            StreamHeaderPtr *outHeader = NULL,
+                            size_t offsetInBytes = 0,
+                            Endians endian = ITransportStream::Endian_Big
+                            );
 
-        virtual ULONG peek(
-                           DWORD &outResult,
-                           StreamHeaderPtr *outHeader = NULL,
-                           ULONG offsetInBytes = 0,
-                           Endians endian = ITransportStream::Endian_Big
-                           );
+        virtual size_t peek(
+                            DWORD &outResult,
+                            StreamHeaderPtr *outHeader = NULL,
+                            size_t offsetInBytes = 0,
+                            Endians endian = ITransportStream::Endian_Big
+                            );
 
-        virtual ULONG skip(ULONG offsetInBytes);
+        virtual size_t skip(size_t offsetInBytes);
 
       protected:
         //---------------------------------------------------------------------

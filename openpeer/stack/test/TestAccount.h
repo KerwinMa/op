@@ -114,7 +114,7 @@ namespace openpeer
                       const char *userAgent,
                       const char *url,
                       const BYTE *postData,
-                      ULONG postDataLengthInBytes,
+                      size_t postDataLengthInBytes,
                       const char *postDataMimeType,
                       Duration timeout
                       ) : HTTPQuery(outer, delegate, isPost, userAgent, url, postData, postDataLengthInBytes, postDataMimeType, timeout){}
@@ -127,7 +127,7 @@ namespace openpeer
                                        const char *userAgent,
                                        const char *url,
                                        const BYTE *postData,
-                                       ULONG postDataLengthInBytes,
+                                       size_t postDataLengthInBytes,
                                        const char *postDataMimeType,
                                        Duration timeout
                                        );

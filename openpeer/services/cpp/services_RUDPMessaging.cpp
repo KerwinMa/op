@@ -67,7 +67,7 @@ namespace openpeer
                                    IRUDPMessagingDelegatePtr delegate,
                                    ITransportStreamPtr receiveStream,
                                    ITransportStreamPtr sendStream,
-                                   ULONG maxMessageSizeInBytes
+                                   size_t maxMessageSizeInBytes
                                    ) :
         MessageQueueAssociator(queue),
         mCurrentState(RUDPMessagingState_Connecting),
@@ -131,7 +131,7 @@ namespace openpeer
                                                     IRUDPMessagingDelegatePtr delegate,
                                                     ITransportStreamPtr receiveStream,
                                                     ITransportStreamPtr sendStream,
-                                                    ULONG maxMessageSizeInBytes
+                                                    size_t maxMessageSizeInBytes
                                                     )
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!listener)
@@ -160,7 +160,7 @@ namespace openpeer
                                                     IRUDPMessagingDelegatePtr delegate,
                                                     ITransportStreamPtr receiveStream,
                                                     ITransportStreamPtr sendStream,
-                                                    ULONG maxMessageSizeInBytes
+                                                    size_t maxMessageSizeInBytes
                                                     )
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!session)
@@ -190,7 +190,7 @@ namespace openpeer
                                                   const char *connectionInfo,
                                                   ITransportStreamPtr receiveStream,
                                                   ITransportStreamPtr sendStream,
-                                                  ULONG maxMessageSizeInBytes
+                                                  size_t maxMessageSizeInBytes
                                                   )
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!session)
@@ -240,7 +240,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      void RUDPMessaging::setMaxMessageSizeInBytes(ULONG maxMessageSizeInBytes)
+      void RUDPMessaging::setMaxMessageSizeInBytes(size_t maxMessageSizeInBytes)
       {
         AutoRecursiveLock lock(mLock);
         mMaxMessageSizeInBytes = maxMessageSizeInBytes;
@@ -462,13 +462,13 @@ namespace openpeer
 
           DWORD bufferSize = 0;
 
-          ULONG read = mWireReceiveStream->peek(bufferSize);
+          size_t read = mWireReceiveStream->peek(bufferSize);
           if (read != sizeof(bufferSize)) {
             ZS_LOG_TRACE(log("not enough data available to read"))
             break;
           }
 
-          ULONG available = mWireReceiveStream->getTotalReadSizeAvailableInBytes();
+          size_t available = mWireReceiveStream->getTotalReadSizeAvailableInBytes();
 
           if (available < sizeof(DWORD) + bufferSize) {
             ZS_LOG_TRACE(log("not enough data available to read") + ", available=" + string(available) + ", buffer size=" + string(bufferSize))
@@ -623,7 +623,7 @@ namespace openpeer
                                                     IRUDPMessagingDelegatePtr delegate,
                                                     ITransportStreamPtr receiveStream,
                                                     ITransportStreamPtr sendStream,
-                                                    ULONG maxMessageSizeInBytes
+                                                    size_t maxMessageSizeInBytes
                                                     )
     {
       return internal::IRUDPMessagingFactory::singleton().acceptChannel(queue, listener, delegate, receiveStream, sendStream, maxMessageSizeInBytes);
@@ -636,7 +636,7 @@ namespace openpeer
                                                     IRUDPMessagingDelegatePtr delegate,
                                                     ITransportStreamPtr receiveStream,
                                                     ITransportStreamPtr sendStream,
-                                                    ULONG maxMessageSizeInBytes
+                                                    size_t maxMessageSizeInBytes
                                                     )
     {
       return internal::IRUDPMessagingFactory::singleton().acceptChannel(queue, session, delegate, receiveStream, sendStream, maxMessageSizeInBytes);
@@ -650,7 +650,7 @@ namespace openpeer
                                                   const char *connectionInfo,
                                                   ITransportStreamPtr receiveStream,
                                                   ITransportStreamPtr sendStream,
-                                                  ULONG maxMessageSizeInBytes
+                                                  size_t maxMessageSizeInBytes
                                                   )
     {
       return internal::IRUDPMessagingFactory::singleton().openChannel(queue, session, delegate, connectionInfo, receiveStream, sendStream, maxMessageSizeInBytes);

@@ -106,7 +106,7 @@ namespace openpeer
         virtual void handleRUDP(
                                 RUDPPacketPtr rudp,
                                 const BYTE *buffer,
-                                ULONG bufferLengthInBytes
+                                size_t bufferLengthInBytes
                                 ) = 0;
 
         virtual void notifyWriteReady() = 0;
@@ -157,7 +157,7 @@ namespace openpeer
         virtual void handleRUDP(
                                 RUDPPacketPtr rudp,
                                 const BYTE *buffer,
-                                ULONG bufferLengthInBytes
+                                size_t bufferLengthInBytes
                                 ) = 0;
 
         virtual void notifyWriteReady() = 0;
@@ -190,7 +190,7 @@ namespace openpeer
         typedef PUID ACKRequestID;
         typedef std::map<ACKRequestID, ISTUNRequesterPtr> ACKRequestMap;
 
-        typedef std::pair<boost::shared_array<BYTE>, ULONG> PendingSendBuffer;
+        typedef std::pair<boost::shared_array<BYTE>, size_t> PendingSendBuffer;
         typedef std::list<PendingSendBuffer> PendingSendBufferList;
 
       protected:
@@ -294,7 +294,7 @@ namespace openpeer
         virtual void handleRUDP(
                                 RUDPPacketPtr rudp,
                                 const BYTE *buffer,
-                                ULONG bufferLengthInBytes
+                                size_t bufferLengthInBytes
                                 );
 
         virtual void notifyWriteReady();
@@ -337,7 +337,7 @@ namespace openpeer
         // (duplicate) virtual void handleRUDP(
         //                                     RUDPPacketPtr rudp,
         //                                     const BYTE *buffer,
-        //                                     ULONG bufferLengthInBytes
+        //                                     size_t bufferLengthInBytes
         //                                     );
 
         // (duplicate) virtual void notifyWriteReady();
@@ -364,7 +364,7 @@ namespace openpeer
         virtual bool notifyRUDPChannelStreamSendPacket(
                                                        IRUDPChannelStreamPtr stream,
                                                        const BYTE *packet,
-                                                       ULONG packetLengthInBytes
+                                                       size_t packetLengthInBytes
                                                        );
 
         virtual void onRUDPChannelStreamSendExternalACKNow(
@@ -382,7 +382,7 @@ namespace openpeer
                                                ISTUNRequesterPtr requester,
                                                IPAddress destination,
                                                boost::shared_array<BYTE> packet,
-                                               ULONG packetLengthInBytes
+                                               size_t packetLengthInBytes
                                                );
 
         virtual bool handleSTUNRequesterResponse(
@@ -509,7 +509,7 @@ namespace openpeer
                                                  RUDPChannelPtr channel,
                                                  const IPAddress &remoteIP,
                                                  const BYTE *packet,
-                                                 ULONG packetLengthInBytes
+                                                 size_t packetLengthInBytes
                                                  ) = 0;
       };
 
@@ -572,5 +572,5 @@ ZS_DECLARE_PROXY_BEGIN(openpeer::services::internal::IRUDPChannelDelegateForSess
 ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::internal::RUDPChannelPtr, RUDPChannelPtr)
 ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::internal::IRUDPChannelDelegateForSessionAndListener::RUDPChannelStates, RUDPChannelStates)
 ZS_DECLARE_PROXY_METHOD_2(onRUDPChannelStateChanged, RUDPChannelPtr, RUDPChannelStates)
-ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_4(notifyRUDPChannelSendPacket, bool, RUDPChannelPtr, const IPAddress &, const BYTE *, ULONG)
+ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_4(notifyRUDPChannelSendPacket, bool, RUDPChannelPtr, const IPAddress &, const BYTE *, size_t)
 ZS_DECLARE_PROXY_END()

@@ -72,7 +72,7 @@ namespace openpeer
                             const IICESocket::Candidate &viaLocalCandidate,
                             const IPAddress &destination,
                             const BYTE *buffer,
-                            ULONG bufferLengthInBytes,
+                            size_t bufferLengthInBytes,
                             bool isUserData
                             ) = 0;
 
@@ -268,7 +268,7 @@ namespace openpeer
                             const Candidate &viaLocalCandidate,
                             const IPAddress &destination,
                             const BYTE *buffer,
-                            ULONG bufferLengthInBytes,
+                            size_t bufferLengthInBytes,
                             bool isUserData
                             );
 
@@ -300,14 +300,14 @@ namespace openpeer
                                                     ITURNSocketPtr socket,
                                                     IPAddress source,
                                                     const BYTE *packet,
-                                                    ULONG packetLengthInBytes
+                                                    size_t packetLengthInBytes
                                                     );
 
         virtual bool notifyTURNSocketSendPacket(
                                                 ITURNSocketPtr socket,
                                                 IPAddress destination,
                                                 const BYTE *packet,
-                                                ULONG packetLengthInBytes
+                                                size_t packetLengthInBytes
                                                 );
 
         virtual void onTURNSocketWriteReady(ITURNSocketPtr socket);
@@ -321,7 +321,7 @@ namespace openpeer
                                                ISTUNDiscoveryPtr discovery,
                                                IPAddress destination,
                                                boost::shared_array<BYTE> packet,
-                                               ULONG packetLengthInBytes
+                                               size_t packetLengthInBytes
                                                );
 
         virtual void onSTUNDiscoveryCompleted(ISTUNDiscoveryPtr discovery);
@@ -368,7 +368,7 @@ namespace openpeer
                                   const Candidate &viaCandidate,
                                   const IPAddress &source,
                                   const BYTE *buffer,
-                                  ULONG bufferLengthInBytes
+                                  size_t bufferLengthInBytes
                                   );
 
         void getBuffer(RecycledPacketBuffer &outBuffer);
@@ -475,7 +475,7 @@ ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::IICESocketPtr, IICESocketPtr)
 ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::IICESocket, IICESocket)
 ZS_DECLARE_PROXY_METHOD_SYNC_CONST_RETURN_0(getSocket, IICESocketPtr)
 ZS_DECLARE_PROXY_METHOD_SYNC_CONST_RETURN_0(getLock, RecursiveLock &)
-ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_5(sendTo, bool, const IICESocket::Candidate &, const IPAddress &, const BYTE *, ULONG, bool)
+ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_5(sendTo, bool, const IICESocket::Candidate &, const IPAddress &, const BYTE *, size_t, bool)
 ZS_DECLARE_PROXY_METHOD_1(onICESocketSessionClosed, PUID)
 ZS_DECLARE_PROXY_METHOD_SYNC_2(addRoute, openpeer::services::internal::ICESocketSessionPtr, const IPAddress &)
 ZS_DECLARE_PROXY_METHOD_SYNC_1(removeRoute, openpeer::services::internal::ICESocketSessionPtr)

@@ -144,7 +144,7 @@ namespace openpeer
                                                  RUDPChannelPtr channel,
                                                  const IPAddress &remoteIP,
                                                  const BYTE *packet,
-                                                 ULONG packetLengthInBytes
+                                                 size_t packetLengthInBytes
                                                  );
 
       protected:
@@ -172,7 +172,7 @@ namespace openpeer
         bool sendTo(
                     const IPAddress &destination,
                     const BYTE *buffer,
-                    ULONG bufferLengthInBytes
+                    size_t bufferLengthInBytes
                     );
 
         bool handledNonce(

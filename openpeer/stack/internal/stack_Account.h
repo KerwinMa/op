@@ -128,7 +128,7 @@ namespace openpeer
                                   const String &peerURI,
                                   AccountPeerLocationPtr peerLocation,
                                   const BYTE *buffer,
-                                  ULONG bufferSizeInBytes
+                                  size_t bufferSizeInBytes
                                   ) const = 0;
       };
 
@@ -434,7 +434,7 @@ namespace openpeer
                                   const String &peerURI,
                                   AccountPeerLocationPtr peerLocation,
                                   const BYTE *buffer,
-                                  ULONG bufferSizeInBytes
+                                  size_t bufferSizeInBytes
                                   ) const;
 
         //---------------------------------------------------------------------

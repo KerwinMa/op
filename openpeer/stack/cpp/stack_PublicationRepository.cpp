@@ -1817,7 +1817,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       bool PublicationRepository::PeerCache::getNextVersionToNotifyAboutAndMarkNotified(
                                                                                         IPublicationPtr inPublication,
-                                                                                        ULONG &ioMaxSizeAvailableInBytes,
+                                                                                        size_t &ioMaxSizeAvailableInBytes,
                                                                                         ULONG &outNotifyFromVersion,
                                                                                         ULONG &outNotifyToVersion
                                                                                         )
@@ -1841,7 +1841,7 @@ namespace openpeer
             return false;
           }
 
-          ULONG outputSize = 0;
+          size_t outputSize = 0;
           publication->forRepo().getDiffVersionsOutputSize(nextVersionToNotify, publication->forRepo().getVersion(), outputSize);
 
           if (outputSize > ioMaxSizeAvailableInBytes) {
@@ -1864,7 +1864,7 @@ namespace openpeer
           return true;
         }
 
-        ULONG outputSize = 0;
+        size_t outputSize = 0;
         publication->forRepo().getEntirePublicationOutputSize(outputSize);
 
         if (outputSize > ioMaxSizeAvailableInBytes) {

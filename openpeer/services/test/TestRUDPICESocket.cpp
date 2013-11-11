@@ -34,7 +34,8 @@
 #include <zsLib/Exception.h>
 #include <zsLib/Socket.h>
 #include <zsLib/Timer.h>
-#include <openpeer/services/IRUDPICESocket.h>
+#include <openpeer/services/IICESocket.h>
+#include <openpeer/services/IICESocketSession.h>
 #include <openpeer/services/IRUDPICESocketSession.h>
 #include <openpeer/services/IRUDPMessaging.h>
 #include <openpeer/services/ITransportStream.h>
@@ -55,9 +56,13 @@ using zsLib::SocketPtr;
 using zsLib::ISocketPtr;
 using zsLib::IPAddress;
 using zsLib::AutoRecursiveLock;
-using openpeer::services::IRUDPICESocket;
-using openpeer::services::IRUDPICESocketPtr;
-using openpeer::services::IRUDPICESocketDelegate;
+using zsLib::IMessageQueue;
+using openpeer::services::IICESocket;
+using openpeer::services::IICESocketPtr;
+using openpeer::services::IICESocketDelegate;
+using openpeer::services::IICESocketSession;
+using openpeer::services::IICESocketSessionPtr;
+using openpeer::services::IICESocketSessionDelegate;
 using openpeer::services::IRUDPICESocketSession;
 using openpeer::services::IRUDPICESocketSessionPtr;
 using openpeer::services::IRUDPICESocketSessionDelegate;
@@ -253,7 +258,7 @@ namespace openpeer
             SecureByteBlockPtr buffer = mReceiveStream->read();
             if (!buffer) return;
 
-            zsLib::ULONG messageSize = buffer->SizeInBytes() - sizeof(char);
+            size_t messageSize = buffer->SizeInBytes() - sizeof(char);
 
             zsLib::String str = (CSTR)(buffer->BytePtr());
             ZS_LOG_BASIC("-------------------------------------------------------------------------------")
@@ -266,7 +271,7 @@ namespace openpeer
 
             zsLib::String add = "<SOCKET->" + IHelper::randomString(1000) + ">";
 
-            zsLib::ULONG newMessageSize = messageSize + add.length();
+            size_t newMessageSize = messageSize + add.length();
             SecureByteBlockPtr newBuffer(new SecureByteBlock(newMessageSize));
 
             memcpy(newBuffer->BytePtr(), buffer->BytePtr(), messageSize);

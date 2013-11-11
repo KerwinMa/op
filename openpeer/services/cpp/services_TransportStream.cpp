@@ -208,7 +208,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       void TransportStream::write(
                                   const BYTE *inBuffer,
-                                  ULONG bufferLengthInBytes,
+                                  size_t bufferLengthInBytes,
                                   StreamHeaderPtr header
                                   )
       {
@@ -417,7 +417,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG TransportStream::TransportStream::getNextReadSizeInBytes() const
+      size_t TransportStream::TransportStream::getNextReadSizeInBytes() const
       {
         AutoRecursiveLock lock(getLock());
 
@@ -428,7 +428,7 @@ namespace openpeer
 
         const Buffer &buffer = mBuffers.front();
 
-        ULONG readSize = (buffer.mBuffer->SizeInBytes() - buffer.mRead);
+        size_t readSize = (buffer.mBuffer->SizeInBytes() - buffer.mRead);
 
         ZS_LOG_TRACE(log("read size") + ", read size=" + string(readSize))
 
@@ -453,18 +453,18 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG TransportStream::getTotalReadBuffersAvailable() const
+      size_t TransportStream::getTotalReadBuffersAvailable() const
       {
         AutoRecursiveLock lock(getLock());
         return mBuffers.size();
       }
       
       //-----------------------------------------------------------------------
-      ULONG TransportStream::getTotalReadSizeAvailableInBytes() const
+      size_t TransportStream::getTotalReadSizeAvailableInBytes() const
       {
         AutoRecursiveLock lock(getLock());
 
-        ULONG total = 0;
+        size_t total = 0;
         for (BufferList::const_iterator iter = mBuffers.begin(); iter != mBuffers.end(); ++iter)
         {
           const Buffer &buffer = (*iter);
@@ -477,11 +477,11 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG TransportStream::read(
-                                  BYTE *outBuffer,
-                                  ULONG bufferLengthInBytes,
-                                  StreamHeaderPtr *outHeader
-                                  )
+      size_t TransportStream::read(
+                                   BYTE *outBuffer,
+                                   size_t bufferLengthInBytes,
+                                   StreamHeaderPtr *outHeader
+                                   )
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!outBuffer)
 
@@ -522,7 +522,7 @@ namespace openpeer
 
         BYTE *dest = outBuffer;
 
-        ULONG totalRead = 0;
+        size_t totalRead = 0;
         bool first = true;
 
         while (0 != bufferLengthInBytes)
@@ -541,9 +541,9 @@ namespace openpeer
             first = false;
           }
 
-          ULONG available = (buffer.mBuffer->SizeInBytes() - buffer.mRead);
+          size_t available = (buffer.mBuffer->SizeInBytes() - buffer.mRead);
 
-          ULONG consume = (bufferLengthInBytes > available ? available : bufferLengthInBytes);
+          size_t consume = (bufferLengthInBytes > available ? available : bufferLengthInBytes);
 
           const BYTE *source = buffer.mBuffer->BytePtr() + buffer.mRead;
 
@@ -595,7 +595,7 @@ namespace openpeer
             *outHeader = buffer.mHeader;
           }
           if (buffer.mRead > 0) {
-            ULONG resultSize = result->SizeInBytes() - buffer.mRead;
+            size_t resultSize = result->SizeInBytes() - buffer.mRead;
 
             SecureByteBlockPtr temp(new SecureByteBlock(resultSize));
             memcpy(temp->BytePtr(), result->BytePtr() + buffer.mRead, resultSize);
@@ -614,16 +614,16 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG TransportStream::read(
-                                  WORD &outResult,
-                                  StreamHeaderPtr *outHeader,
-                                  Endians endian
-                                  )
+      size_t TransportStream::read(
+                                   WORD &outResult,
+                                   StreamHeaderPtr *outHeader,
+                                   Endians endian
+                                   )
       {
         outResult = 0;
 
         BYTE buffer[sizeof(WORD)] = {0,0};
-        ULONG totalRead = read((&(buffer[0])), sizeof(buffer), outHeader);
+        size_t totalRead = read((&(buffer[0])), sizeof(buffer), outHeader);
 
         if (Endian_Big == endian)
           outResult = (((WORD)buffer[0]) << 8) | buffer[1];
@@ -634,16 +634,16 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG TransportStream::read(
-                                  DWORD &outResult,
-                                  StreamHeaderPtr *outHeader,
-                                  Endians endian
-                                  )
+      size_t TransportStream::read(
+                                   DWORD &outResult,
+                                   StreamHeaderPtr *outHeader,
+                                   Endians endian
+                                   )
       {
         outResult = 0;
 
         BYTE buffer[sizeof(DWORD)] = {0,0,0,0};
-        ULONG totalRead = read((&(buffer[0])), sizeof(buffer), outHeader);
+        size_t totalRead = read((&(buffer[0])), sizeof(buffer), outHeader);
 
         if (Endian_Big == endian)
           outResult = (((DWORD)buffer[0]) << 24) | (((DWORD)buffer[1]) << 16) | (((DWORD)buffer[2]) << 8) | buffer[3];
@@ -654,12 +654,12 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG TransportStream::peek(
-                                  BYTE *outBuffer,
-                                  ULONG bufferLengthInBytes,
-                                  StreamHeaderPtr *outHeader,
-                                  ULONG offsetInBytes
-                                  )
+      size_t TransportStream::peek(
+                                   BYTE *outBuffer,
+                                   size_t bufferLengthInBytes,
+                                   StreamHeaderPtr *outHeader,
+                                   size_t offsetInBytes
+                                   )
       {
         if (0 != bufferLengthInBytes) {
           ZS_THROW_INVALID_ARGUMENT_IF(!outBuffer)
@@ -682,7 +682,7 @@ namespace openpeer
 
         bool didHeader = false;
 
-        ULONG totalRead = 0;
+        size_t totalRead = 0;
         BYTE *dest = outBuffer;
 
         BufferList::iterator iter = mBuffers.begin();
@@ -696,14 +696,14 @@ namespace openpeer
 
           Buffer &buffer = (*iter);
 
-          ULONG read = buffer.mRead;
-          ULONG available = buffer.mBuffer->SizeInBytes() - buffer.mRead;
+          size_t read = buffer.mRead;
+          size_t available = buffer.mBuffer->SizeInBytes() - buffer.mRead;
 
           ZS_LOG_TRACE(log("next peek buffer found") + ", size=" + string(buffer.mBuffer->SizeInBytes()) + ", read=" + string(read) + ", available=" + string(available))
 
           if (offsetInBytes > 0) {
             // first consume the offset
-            ULONG consume = offsetInBytes > available ? available : offsetInBytes;
+            size_t consume = offsetInBytes > available ? available : offsetInBytes;
             offsetInBytes -= consume;
             read += consume;
             available -= consume;
@@ -727,7 +727,7 @@ namespace openpeer
 
           if (0 == bufferLengthInBytes) break;
 
-          ULONG consume = bufferLengthInBytes > available ? available : bufferLengthInBytes;
+          size_t consume = bufferLengthInBytes > available ? available : bufferLengthInBytes;
 
           memcpy(dest, buffer.mBuffer->BytePtr() + read, consume);
 
@@ -753,9 +753,9 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       SecureByteBlockPtr TransportStream::peek(
-                                               ULONG bufferLengthInBytes,
+                                               size_t bufferLengthInBytes,
                                                StreamHeaderPtr *outHeader,
-                                               ULONG offsetInBytes
+                                               size_t offsetInBytes
                                                )
       {
         if (0 == bufferLengthInBytes) {
@@ -768,7 +768,7 @@ namespace openpeer
 
         SecureByteBlockPtr result(new SecureByteBlock(bufferLengthInBytes));
 
-        ULONG read = peek(0 != bufferLengthInBytes ? result->BytePtr() : NULL, bufferLengthInBytes, outHeader);
+        size_t read = peek(0 != bufferLengthInBytes ? result->BytePtr() : NULL, bufferLengthInBytes, outHeader);
 
         if (0 == read) {
           ZS_LOG_TRACE(log("peek found no buffered data so returning NULL buffer"))
@@ -790,17 +790,17 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG TransportStream::peek(
-                                  WORD &outResult,
-                                  StreamHeaderPtr *outHeader,
-                                  ULONG offsetInBytes,
-                                  Endians endian
-                                  )
+      size_t TransportStream::peek(
+                                   WORD &outResult,
+                                   StreamHeaderPtr *outHeader,
+                                   size_t offsetInBytes,
+                                   Endians endian
+                                   )
       {
         outResult = 0;
 
         BYTE buffer[sizeof(WORD)] = {0,0};
-        ULONG totalRead = peek((&(buffer[0])), sizeof(buffer), outHeader, offsetInBytes);
+        size_t totalRead = peek((&(buffer[0])), sizeof(buffer), outHeader, offsetInBytes);
 
         if (Endian_Big == endian)
           outResult = (((WORD)buffer[0]) << 8) | buffer[1];
@@ -811,17 +811,17 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG TransportStream::peek(
-                                  DWORD &outResult,
-                                  StreamHeaderPtr *outHeader,
-                                  ULONG offsetInBytes,
-                                  Endians endian
-                                  )
+      size_t TransportStream::peek(
+                                   DWORD &outResult,
+                                   StreamHeaderPtr *outHeader,
+                                   size_t offsetInBytes,
+                                   Endians endian
+                                   )
       {
         outResult = 0;
 
         BYTE buffer[sizeof(DWORD)] = {0,0,0,0};
-        ULONG totalRead = peek((&(buffer[0])), sizeof(buffer), outHeader, offsetInBytes);
+        size_t totalRead = peek((&(buffer[0])), sizeof(buffer), outHeader, offsetInBytes);
 
         if (Endian_Big == endian)
           outResult = (((DWORD)buffer[0]) << 24) | (((DWORD)buffer[1]) << 16) | (((DWORD)buffer[2]) << 8) | buffer[3];
@@ -830,9 +830,9 @@ namespace openpeer
         
         return totalRead;
       }
-      
+
       //-----------------------------------------------------------------------
-      ULONG TransportStream::skip(ULONG offsetInBytes)
+      size_t TransportStream::skip(size_t offsetInBytes)
       {
         ZS_LOG_TRACE(log("skip called") + ", skip=" + string(offsetInBytes))
 
@@ -848,7 +848,7 @@ namespace openpeer
           return 0;
         }
 
-        ULONG totalRead = 0;
+        size_t totalRead = 0;
 
         while (0 != offsetInBytes)
         {
@@ -859,9 +859,9 @@ namespace openpeer
 
           Buffer &buffer = mBuffers.front();
 
-          ULONG available = (buffer.mBuffer->SizeInBytes() - buffer.mRead);
+          size_t available = (buffer.mBuffer->SizeInBytes() - buffer.mRead);
 
-          ULONG consume = (offsetInBytes > available ? available : offsetInBytes);
+          size_t consume = (offsetInBytes > available ? available : offsetInBytes);
 
           buffer.mRead += consume;
           totalRead += consume;

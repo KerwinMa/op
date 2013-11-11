@@ -441,7 +441,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       bool ICESocketSession::sendPacket(
                                         const BYTE *packet,
-                                        ULONG packetLengthInBytes
+                                        size_t packetLengthInBytes
                                         )
       {
         AutoRecursiveLock lock(getLock());
@@ -695,7 +695,7 @@ namespace openpeer
             response->mCredentialMechanism = STUNPacket::CredentialMechanisms_ShortTerm;
 
             boost::shared_array<BYTE> buffer;
-            ULONG bufferLengthInBytes = 0;
+            size_t bufferLengthInBytes = 0;
             response->packetize(buffer, bufferLengthInBytes, STUNPacket::RFC_5245_ICE);
             sendTo(viaLocalCandidate, source, buffer.get(), bufferLengthInBytes, false);
           }
@@ -800,7 +800,7 @@ namespace openpeer
                                           const IICESocket::Candidate &viaLocalCandidate,
                                           const IPAddress &source,
                                           const BYTE *packet,
-                                          ULONG packetLengthInBytes
+                                          size_t packetLengthInBytes
                                           )
       {
         // WARNING: This method calls a delegate synchronously thus must
@@ -957,7 +957,7 @@ namespace openpeer
                                                        ISTUNRequesterPtr requester,
                                                        IPAddress destination,
                                                        boost::shared_array<BYTE> packet,
-                                                       ULONG packetLengthInBytes
+                                                       size_t packetLengthInBytes
                                                        )
       {
         ZS_LOG_TRACE(log("on stun requester send packet"))
@@ -1316,7 +1316,7 @@ namespace openpeer
           }
 
           boost::shared_array<BYTE> buffer;
-          ULONG length = 0;
+          size_t length = 0;
           indication->packetize(buffer, length, STUNPacket::RFC_5245_ICE);
           sendTo(mNominated->mLocal, mNominated->mRemote.mIPAddress, buffer.get(), length, true);
         }
@@ -2162,7 +2162,7 @@ namespace openpeer
                                     const IICESocket::Candidate &viaLocalCandidate,
                                     const IPAddress &destination,
                                     const BYTE *buffer,
-                                    ULONG bufferLengthInBytes,
+                                    size_t bufferLengthInBytes,
                                     bool isUserData
                                     )
       {

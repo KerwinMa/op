@@ -362,7 +362,7 @@ namespace openpeer
 
           // send off the packet NOW
           boost::shared_array<BYTE> packet;
-          ULONG packetLengthInBytes = 0;
+          size_t packetLengthInBytes = 0;
           mSTUNRequest->packetize(packet, packetLengthInBytes, mUsingRFC);
 
           try {
@@ -405,11 +405,11 @@ namespace openpeer
     bool ISTUNRequester::handlePacket(
                                       IPAddress fromIPAddress,
                                       const BYTE *packet,
-                                      ULONG packetLengthInBytes,
+                                      size_t packetLengthInBytes,
                                       STUNPacket::RFCs allowedRFCs
                                       )
     {
-      return ISTUNRequesterManager::handlePacket(fromIPAddress, packet, packetLengthInBytes, allowedRFCs);
+      return (bool)ISTUNRequesterManager::handlePacket(fromIPAddress, packet, packetLengthInBytes, allowedRFCs);
     }
 
     //-------------------------------------------------------------------------
@@ -418,7 +418,7 @@ namespace openpeer
                                           STUNPacketPtr stun
                                           )
     {
-      return ISTUNRequesterManager::handleSTUNPacket(fromIPAddress, stun);
+      return (bool)ISTUNRequesterManager::handleSTUNPacket(fromIPAddress, stun);
     }
   }
 }

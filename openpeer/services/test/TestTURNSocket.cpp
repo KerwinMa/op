@@ -52,13 +52,14 @@
 
 namespace openpeer { namespace services { namespace test { ZS_DECLARE_SUBSYSTEM(openpeer_services_test) } } }
 
-typedef zsLib::ULONG ULONG;
-typedef zsLib::MessageQueueAssociator MessageQueueAssociator;
-typedef zsLib::ISocketDelegate ISocketDelegate;
-typedef zsLib::ITimerDelegate ITimerDelegate;
-typedef zsLib::MessageQueueThread MessageQueueThread;
-typedef zsLib::Seconds Seconds;
-typedef zsLib::MessageQueueThreadPtr MessageQueueThreadPtr;
+using zsLib::IMessageQueue;
+using zsLib::ULONG;
+using zsLib::MessageQueueAssociator;
+using zsLib::ISocketDelegate;
+using zsLib::ITimerDelegate;
+using zsLib::MessageQueueThread;
+using zsLib::Seconds;
+using zsLib::MessageQueueThreadPtr;
 
 namespace openpeer
 {
@@ -222,7 +223,7 @@ namespace openpeer
                                                     ITURNSocketPtr socket,
                                                     IPAddress source,
                                                     const BYTE *packet,
-                                                    ULONG packetLengthInBytes
+                                                    size_t packetLengthInBytes
                                                     )
         {
           AutoRecursiveLock lock(mLock);
@@ -246,7 +247,7 @@ namespace openpeer
                                                ISTUNDiscoveryPtr discovery,
                                                IPAddress destination,
                                                boost::shared_array<BYTE> packet,
-                                               ULONG packetLengthInBytes
+                                               size_t packetLengthInBytes
                                                )
         {
           AutoRecursiveLock lock(mLock);
@@ -278,7 +279,7 @@ namespace openpeer
                                                 ITURNSocketPtr socket,
                                                 IPAddress destination,
                                                 const BYTE *packet,
-                                                ULONG packetLengthInBytes
+                                                size_t packetLengthInBytes
                                                 )
         {
           AutoRecursiveLock lock(mLock);
@@ -363,9 +364,9 @@ namespace openpeer
 
           IPAddress ip;
           BYTE buffer[1500];
-          ULONG bufferLengthInBytes = sizeof(buffer);
+          size_t bufferLengthInBytes = sizeof(buffer);
 
-          ULONG readBytes = mSocket->receiveFrom(ip, &(buffer[0]), bufferLengthInBytes);
+          size_t readBytes = mSocket->receiveFrom(ip, &(buffer[0]), bufferLengthInBytes);
           BOOST_CHECK(readBytes > 0);
 
           if (mTURNSocket->handleChannelData(ip, &(buffer[0]), readBytes)) return;
@@ -397,11 +398,11 @@ namespace openpeer
 
           if (mShutdownCalled) return;
 
-          ULONG length = (rand()%500)+1;
+          size_t length = (rand()%500)+1;
           boost::shared_array<BYTE> buffer(new BYTE[length]);
 
           // fill the buffer with random data
-          for (ULONG loop = 0; loop < length; ++loop) {
+          for (size_t loop = 0; loop < length; ++loop) {
             (buffer.get())[loop] = rand()%(sizeof(BYTE) << 8);
           }
 
@@ -526,7 +527,7 @@ namespace openpeer
 
         ULONG mTotalReceived;
 
-        typedef std::pair< boost::shared_array<BYTE>, ULONG> DataPair;
+        typedef std::pair< boost::shared_array<BYTE>, size_t> DataPair;
         typedef std::list<DataPair> DataList;
         DataList mSentData;
       };

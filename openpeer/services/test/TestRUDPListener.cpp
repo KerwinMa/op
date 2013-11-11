@@ -54,6 +54,7 @@ using zsLib::Socket;
 using zsLib::SocketPtr;
 using zsLib::ISocketPtr;
 using zsLib::IPAddress;
+using zsLib::IMessageQueue;
 using zsLib::AutoRecursiveLock;
 using openpeer::services::IRUDPListener;
 using openpeer::services::IRUDPListenerPtr;
@@ -169,9 +170,9 @@ namespace openpeer
 
             zsLib::String add = "(SERVER->" + IHelper::randomString(10) + ")";
 
-            ULONG messageSize = buffer->SizeInBytes() - sizeof(char);
+            size_t messageSize = buffer->SizeInBytes() - sizeof(char);
 
-            zsLib::ULONG newMessageSize = messageSize + add.length();
+            size_t newMessageSize = messageSize + add.length();
             SecureByteBlockPtr newBuffer(new SecureByteBlock(newMessageSize));
 
             memcpy(newBuffer->BytePtr(), buffer->BytePtr(), messageSize);

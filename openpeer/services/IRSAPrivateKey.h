@@ -52,7 +52,7 @@ namespace openpeer
     {
       static IRSAPrivateKeyPtr generate(
                                         IRSAPublicKeyPtr &outPublicKey,
-                                        ULONG keySizeInBites = OPENPEER_SERVICES_RSA_PRIVATE_KEY_GENERATION_SIZE
+                                        size_t keySizeInBits = OPENPEER_SERVICES_RSA_PRIVATE_KEY_GENERATION_SIZE
                                         );
 
       static IRSAPrivateKeyPtr load(const SecureByteBlock &buffer);

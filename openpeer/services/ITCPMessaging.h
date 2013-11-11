@@ -93,7 +93,7 @@ namespace openpeer
                                      ITransportStreamPtr sendStream,
                                      bool messagesHaveChannelNumber,
                                      SocketPtr socket,
-                                     ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                                     size_t maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                                      );
 
       //-----------------------------------------------------------------------
@@ -105,7 +105,7 @@ namespace openpeer
                                       ITransportStreamPtr sendStream,
                                       bool messagesHaveChannelNumber,
                                       IPAddress remoteIP,
-                                      ULONG maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
+                                      size_t maxMessageSizeInBytes = OPENPEER_SERVICES_ITCPMESSAGING_MAX_MESSAGE_SIZE_IN_BYTES
                                       );
 
       virtual PUID getID() const = 0;
@@ -135,7 +135,7 @@ namespace openpeer
 
       //-----------------------------------------------------------------------
       // PURPOSE: Set the maximum size of a message expecting to receive
-      virtual void setMaxMessageSizeInBytes(ULONG maxMessageSizeInBytes) = 0;
+      virtual void setMaxMessageSizeInBytes(size_t maxMessageSizeInBytes) = 0;
     };
 
     //-------------------------------------------------------------------------

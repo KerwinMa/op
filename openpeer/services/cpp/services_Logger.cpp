@@ -905,7 +905,7 @@ namespace openpeer
         bool isListening()
         {
           AutoRecursiveLock lock(mLock);
-          return mListenSocket;
+          return (bool)mListenSocket;
         }
 
         //---------------------------------------------------------------------
@@ -983,7 +983,7 @@ namespace openpeer
               return;
 
             bool wouldBlock = false;
-            ULONG sent = 0;
+            size_t sent = 0;
 
             String output;
             if (mColorizeOutput) {
@@ -1011,7 +1011,7 @@ namespace openpeer
 
             if (sent < output.length()) {
               // we need to buffer the data for later...
-              ULONG length = (output.length() - sent);
+              size_t length = (output.length() - sent);
               BufferedData data;
               boost::shared_array<BYTE> buffer(new BYTE[length]);
               memcpy(&(buffer[0]), output.c_str() + sent, length);
@@ -1062,7 +1062,7 @@ namespace openpeer
             if (inSocket == mTelnetSocket) {
               char buffer[1024+1];
               memset(&(buffer[0]), 0, sizeof(buffer));
-              ULONG length = 0;
+              size_t length = 0;
 
               bool wouldBlock = false;
               int errorCode = 0;
@@ -1117,7 +1117,7 @@ namespace openpeer
 
             if (!mStringToSendUponConnection.isEmpty()) {
 
-              ULONG length = mStringToSendUponConnection.length();
+              size_t length = mStringToSendUponConnection.length();
 
               BufferedData data;
               boost::shared_array<BYTE> buffer(new BYTE[length]);
@@ -1134,7 +1134,7 @@ namespace openpeer
             while (mBufferedList.size() > 0) {
               BufferedData &data = mBufferedList.front();
               bool wouldBlock = false;
-              ULONG sent = 0;
+              size_t sent = 0;
 
               int errorCode = 0;
               sent = mTelnetSocket->send(data.first.get(), data.second, &wouldBlock, 0, &errorCode);
@@ -1150,7 +1150,7 @@ namespace openpeer
                 continue;
               }
               
-              ULONG length = (data.second - sent);
+              size_t length = (data.second - sent);
               memcpy(data.first.get() + sent, data.first.get(), length);
               data.second = length;
               break;
@@ -1408,7 +1408,7 @@ namespace openpeer
 
         String mCommand;
 
-        typedef std::pair< boost::shared_array<BYTE>, ULONG> BufferedData;
+        typedef std::pair< boost::shared_array<BYTE>, size_t> BufferedData;
         typedef std::list<BufferedData> BufferedDataList;
 
         BufferedDataList mBufferedList;

@@ -153,12 +153,12 @@ namespace openpeer
         virtual void getDiffVersionsOutputSize(
                                                ULONG fromVersionNumber,
                                                ULONG toVersionNumber,
-                                               ULONG &outOutputSizeInBytes,
+                                               size_t &outOutputSizeInBytes,
                                                bool rawSizeOkay = true
                                                ) const = 0;
 
         virtual void getEntirePublicationOutputSize(
-                                                    ULONG &outOutputSizeInBytes,
+                                                    size_t &outOutputSizeInBytes,
                                                     bool rawSizeOkay = true
                                                     ) const = 0;
 
@@ -413,12 +413,12 @@ namespace openpeer
         virtual void getDiffVersionsOutputSize(
                                                ULONG fromVersionNumber,
                                                ULONG toVersionNumber,
-                                               ULONG &outOutputSizeInBytes,
+                                               size_t &outOutputSizeInBytes,
                                                bool rawSizeOkay = true
                                                ) const;
 
         virtual void getEntirePublicationOutputSize(
-                                                    ULONG &outOutputSizeInBytes,
+                                                    size_t &outOutputSizeInBytes,
                                                     bool rawSizeOkay = true
                                                     ) const;
 

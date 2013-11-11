@@ -34,7 +34,8 @@
 #include <zsLib/Exception.h>
 #include <zsLib/Socket.h>
 #include <zsLib/Timer.h>
-#include <openpeer/services/IRUDPICESocket.h>
+#include <openpeer/services/IICESocket.h>
+#include <openpeer/services/IICESocketSession.h>
 #include <openpeer/services/IRUDPICESocketSession.h>
 #include <openpeer/services/IRUDPMessaging.h>
 #include <openpeer/services/ITransportStream.h>
@@ -72,8 +73,8 @@ using openpeer::services::ITURNSocket;
 using openpeer::services::ITURNSocketPtr;
 using openpeer::services::ITURNSocketDelegate;
 using openpeer::services::IICESocket;
-using openpeer::services::IRUDPICESocket;
-using openpeer::services::IRUDPICESocketPtr;
+using openpeer::services::IICESocketSession;
+using openpeer::services::IICESocketPtr;
 using openpeer::services::IRUDPMessaging;
 using openpeer::services::IRUDPMessagingPtr;
 using namespace openpeer::services::test;
@@ -341,7 +342,7 @@ namespace openpeer
           SecureByteBlockPtr buffer = mReceiveStream->read();
           if (!buffer) return;
 
-          ULONG size = buffer->SizeInBytes() - sizeof(char);
+          size_t size = buffer->SizeInBytes() - sizeof(char);
 
           ZS_LOG_BASIC("---------------------------------------------------------------");
           ZS_LOG_BASIC("---------------------------------------------------------------");

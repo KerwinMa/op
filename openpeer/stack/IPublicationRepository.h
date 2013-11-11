@@ -261,7 +261,7 @@ namespace openpeer
 
       virtual bool getNextVersionToNotifyAboutAndMarkNotified(
                                                               IPublicationPtr publication,
-                                                              ULONG &ioMaxSizeAvailableInBytes,
+                                                              size_t &ioMaxSizeAvailableInBytes,
                                                               ULONG &outNotifyFromVersion,
                                                               ULONG &outNotifyToVersion
                                                               ) = 0;

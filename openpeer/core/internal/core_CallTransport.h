@@ -155,7 +155,7 @@ namespace openpeer
                                              PUID locationID,
                                              SocketTypes type,
                                              const BYTE *buffer,
-                                             ULONG bufferLengthInBytes
+                                             size_t bufferLengthInBytes
                                              ) = 0;
       };
 
@@ -266,7 +266,7 @@ namespace openpeer
                                              PUID locationID,
                                              SocketTypes type,
                                              const BYTE *buffer,
-                                             ULONG bufferLengthInBytes
+                                             size_t bufferLengthInBytes
                                              );
 
         //---------------------------------------------------------------------

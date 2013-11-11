@@ -1278,7 +1278,7 @@ namespace openpeer
           ZS_THROW_INVALID_USAGE_IF(!signatureEl)
 
           // signature has been applied
-          ULONG outputLength = 0;
+          size_t outputLength = 0;
           GeneratorPtr generator = Generator::createJSONGenerator();
           boost::shared_array<char> output = generator->write(mSendKeyingNeedingToSignDoc, &outputLength);
 

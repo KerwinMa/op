@@ -30,7 +30,6 @@
  */
 
 #include <openpeer/services/internal/services_RUDPICESocketSession.h>
-#include <openpeer/services/internal/services_RUDPICESocket.h>
 #include <openpeer/services/internal/services_RUDPChannel.h>
 #include <openpeer/services/internal/services_Helper.h>
 
@@ -334,7 +333,7 @@ namespace openpeer
       void RUDPICESocketSession::handleICESocketSessionReceivedPacket(
                                                                       IICESocketSessionPtr ignore,
                                                                       const BYTE *buffer,
-                                                                      ULONG bufferLengthInBytes
+                                                                      size_t bufferLengthInBytes
                                                                       )
       {
         if (ZS_IS_LOGGING(Insane)) {
@@ -451,7 +450,7 @@ namespace openpeer
           if (!session) return false;
 
           boost::shared_array<BYTE> packetized;
-          ULONG packetizedLength = 0;
+          size_t packetizedLength = 0;
           response->packetize(packetized, packetizedLength, STUNPacket::RFC_draft_RUDP);
 
           mICESession->sendPacket(packetized.get(), packetizedLength);
@@ -530,7 +529,7 @@ namespace openpeer
                                                              RUDPChannelPtr channel,
                                                              const IPAddress &remoteIP,
                                                              const BYTE *packet,
-                                                             ULONG packetLengthInBytes
+                                                             size_t packetLengthInBytes
                                                              )
       {
         IICESocketSessionPtr session = getICESession();
@@ -822,7 +821,7 @@ namespace openpeer
           mSubscriptions.delegate()->onRUDPICESocketSessionChannelWaiting(mThisWeak.lock());
         } while (false);  // using as a scope rather than as a loop
 
-        return response;
+        return (bool)response;
       }
 
       //-----------------------------------------------------------------------

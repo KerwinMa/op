@@ -122,7 +122,7 @@ namespace openpeer
                                                ISTUNRequesterPtr requester,
                                                IPAddress destination,
                                                boost::shared_array<BYTE> packet,
-                                               ULONG packetLengthInBytes
+                                               size_t packetLengthInBytes
                                                );
 
         virtual bool handleSTUNRequesterResponse(

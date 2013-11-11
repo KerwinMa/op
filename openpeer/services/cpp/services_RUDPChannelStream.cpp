@@ -437,7 +437,7 @@ namespace openpeer
       bool RUDPChannelStream::handlePacket(
                                            RUDPPacketPtr packet,
                                            boost::shared_array<BYTE> originalBuffer,
-                                           ULONG originalBufferLengthInBytes,
+                                           size_t originalBufferLengthInBytes,
                                            bool ecnMarked
                                            )
       {
@@ -593,7 +593,7 @@ namespace openpeer
                                                 QWORD greatestSequenceNumberReceived,
                                                 QWORD greatestSequenceNumberFullyReceived,
                                                 const BYTE *externalVector,
-                                                ULONG externalVectorLengthInBytes,
+                                                size_t externalVectorLengthInBytes,
                                                 bool vpFlag,
                                                 bool pgFlag,
                                                 bool xpFlag,
@@ -698,8 +698,8 @@ namespace openpeer
                                        QWORD &outGreatestSequenceNumberReceived,
                                        QWORD &outGreatestSequenceNumberFullyReceived,
                                        BYTE *outVector,
-                                       ULONG &outVectorSizeInBytes,
-                                       ULONG maxVectorSizeInBytes,
+                                       size_t &outVectorSizeInBytes,
+                                       size_t maxVectorSizeInBytes,
                                        bool &outVPFlag,
                                        bool &outPGFlag,
                                        bool &outXPFlag,
@@ -1063,7 +1063,7 @@ namespace openpeer
       bool RUDPChannelStream::sendNowHelper(
                                             IRUDPChannelStreamDelegatePtr &delegate,
                                             const BYTE *buffer,
-                                            ULONG packetLengthInBytes
+                                            size_t packetLengthInBytes
                                             )
       {
 #ifdef OPENPEER_INDUCE_FAKE_PACKET_LOSS
@@ -1170,7 +1170,7 @@ namespace openpeer
           {
             BufferedPacketPtr attemptToDeliver;
             boost::shared_array<BYTE> attemptToDeliverBuffer;
-            ULONG attemptToDeliverBufferSizeInBytes = 0;
+            size_t attemptToDeliverBufferSizeInBytes = 0;
 
             // scope: grab the next buffer to be resent over the wire
             {
@@ -1280,9 +1280,9 @@ namespace openpeer
 
               BYTE temp[OPENPEER_SERVICES_RUDP_MAX_PACKET_SIZE_WHEN_PMTU_IS_NOT_KNOWN];
 
-              ULONG availableBytes = newPacket->getRoomAvailableForData(OPENPEER_SERVICES_RUDP_MAX_PACKET_SIZE_WHEN_PMTU_IS_NOT_KNOWN);
+              size_t availableBytes = newPacket->getRoomAvailableForData(OPENPEER_SERVICES_RUDP_MAX_PACKET_SIZE_WHEN_PMTU_IS_NOT_KNOWN);
 
-              ULONG bytesRead = getFromWriteBuffer(&(temp[0]), availableBytes);
+              size_t bytesRead = getFromWriteBuffer(&(temp[0]), availableBytes);
               newPacket->mData = &(temp[0]);
               newPacket->mDataLengthInBytes = static_cast<WORD>(bytesRead);
 
@@ -1298,7 +1298,7 @@ namespace openpeer
               }
 
               boost::shared_array<BYTE> packetizedBuffer;
-              ULONG packetizedLength = 0;
+              size_t packetizedLength = 0;
               newPacket->packetize(packetizedBuffer, packetizedLength);
 
               BufferedPacketPtr bufferedPacket = BufferedPacket::create();
@@ -1394,7 +1394,7 @@ namespace openpeer
         }
         sendNowCleanup();
 
-        return firstPacketCreated;
+        return (bool)firstPacketCreated;
       }
 
       //-----------------------------------------------------------------------
@@ -1583,7 +1583,7 @@ namespace openpeer
                                         QWORD gsnr,
                                         QWORD gsnfr,
                                         const BYTE *externalVector,
-                                        ULONG externalVectorLengthInBytes,
+                                        size_t externalVectorLengthInBytes,
                                         bool vpFlag,
                                         bool pgFlag,
                                         bool xpFlag,
@@ -1961,7 +1961,7 @@ namespace openpeer
               (0 == (IRUDPChannel::Shutdown_Receive & mShutdownState))) {
 
             const BYTE *pos = bufferedPacket->mRUDPPacket->mData;
-            ULONG bytes = bufferedPacket->mRUDPPacket->mDataLengthInBytes;
+            size_t bytes = bufferedPacket->mRUDPPacket->mDataLengthInBytes;
 
             totalDelivered += bytes;
 
@@ -1987,16 +1987,16 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      ULONG RUDPChannelStream::getFromWriteBuffer(
+      size_t RUDPChannelStream::getFromWriteBuffer(
                                                   BYTE *outBuffer,
-                                                  ULONG maxFillSize
+                                                  size_t maxFillSize
                                                   )
       {
         ZS_LOG_TRACE(log("get from write buffer") + ", max size=" + string(maxFillSize))
 
         if (!mSendStream) return 0;
 
-        ULONG read = mSendStream->read(outBuffer, maxFillSize);
+        size_t read = mSendStream->read(outBuffer, maxFillSize);
 
         ZS_LOG_TRACE(log("get from write buffer") + ", max size=" + string(maxFillSize) + ", read size=" + string(read))
         return read;
@@ -2005,7 +2005,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       void RUDPChannelStream::getBuffer(
                                         RecycleBuffer &outBuffer,
-                                        ULONG &ioBufferAllocLengthInBytes
+                                        size_t &ioBufferAllocLengthInBytes
                                         )
       {
         if (ioBufferAllocLengthInBytes < OPENPEER_SERVICES_MINIMUM_DATA_BUFFER_LENGTH_ALLOCATED_IN_BYTES)
@@ -2024,7 +2024,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       void RUDPChannelStream::freeBuffer(
                                          RecycleBuffer &ioBuffer,
-                                         ULONG bufferAllocLengthInBytes
+                                         size_t bufferAllocLengthInBytes
                                          )
       {
         if ((OPENPEER_SERVICES_MINIMUM_DATA_BUFFER_LENGTH_ALLOCATED_IN_BYTES != bufferAllocLengthInBytes) ||
@@ -2047,7 +2047,7 @@ namespace openpeer
           rng.GenerateBlock(&(mRandomPool[0]), sizeof(mRandomPool));
         }
 
-        ULONG posByte = mRandomPoolPos / 8;
+        size_t posByte = mRandomPoolPos / 8;
         ULONG posBit = mRandomPoolPos % 8;
         return (0 != (mRandomPool[posByte] & (1 << posBit)));
       }
@@ -2103,7 +2103,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      void RUDPChannelStream::BufferedPacket::flagForResending(ULONG &ioTotalPacketsToResend)
+      void RUDPChannelStream::BufferedPacket::flagForResending(size_t &ioTotalPacketsToResend)
       {
         if (!mPacket) return;
         if (mFlagForResendingInNextBurst) return;

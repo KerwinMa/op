@@ -63,7 +63,7 @@ namespace openpeer
         static String randomString(UINT lengthInChars);
         static ULONG random(ULONG minValue, ULONG maxValue);
 
-        static SecureByteBlockPtr random(UINT lengthInBytes);
+        static SecureByteBlockPtr random(size_t lengthInBytes);
 
         static IMessageQueuePtr getServiceQueue();
 
@@ -78,12 +78,12 @@ namespace openpeer
         static SecureByteBlockPtr convertToBuffer(const char *input);
         static SecureByteBlockPtr convertToBuffer(
                                                   const BYTE *buffer,
-                                                  ULONG bufferLengthInBytes
+                                                  size_t bufferLengthInBytes
                                                   );
 
         static String convertToBase64(
                                       const BYTE *buffer,
-                                      ULONG bufferLengthInBytes
+                                      size_t bufferLengthInBytes
                                       );
 
         static String convertToBase64(const SecureByteBlock &input);
@@ -94,7 +94,7 @@ namespace openpeer
 
         static String convertToHex(
                                    const BYTE *buffer,
-                                   ULONG bufferLengthInBytes,
+                                   size_t bufferLengthInBytes,
                                    bool outputUpperCase = false
                                    );
 
@@ -202,7 +202,7 @@ namespace openpeer
 
         static String getDebugString(
                                      const BYTE *buffer,
-                                     ULONG bufferSizeInBytes,
+                                     size_t bufferSizeInBytes,
                                      ULONG bytesPerGroup = 4,
                                      ULONG maxLineLength = 160
                                      );

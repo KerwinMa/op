@@ -62,10 +62,10 @@ namespace openpeer
       #pragma mark
 
       //-----------------------------------------------------------------------
-      String convertToHex(const BYTE *buffer, ULONG bufferLengthInBytes);
+      String convertToHex(const BYTE *buffer, size_t bufferLengthInBytes);
 
       //-----------------------------------------------------------------------
-      static ULONG dwordBoundary(ULONG length) {
+      static size_t dwordBoundary(size_t length) {
         if (0 == (length % sizeof(DWORD)))
           return length;
         return length + (sizeof(DWORD) - (length % sizeof(DWORD)));
@@ -156,7 +156,7 @@ namespace openpeer
     //-------------------------------------------------------------------------
     RUDPPacketPtr RUDPPacket::parseIfRUDP(
                                           const BYTE *packet,
-                                          ULONG packetLengthInBytes
+                                          size_t packetLengthInBytes
                                           )
     {
       ZS_THROW_INVALID_USAGE_IF(!packet)
@@ -188,7 +188,7 @@ namespace openpeer
       }
 
       // has to have enough room to contain vector, extended header and all data
-      if (packetLengthInBytes < OPENPEER_SERVICES_MINIMUM_PACKET_LENGTH_IN_BYTES + ((!eqFlag) ? sizeof(DWORD) : 0) + internal::dwordBoundary(vectorSize) + ((ULONG)dataLength)) return RUDPPacketPtr();  // does not meet the minimum size expectations so it can't be RUDP
+      if (packetLengthInBytes < OPENPEER_SERVICES_MINIMUM_PACKET_LENGTH_IN_BYTES + ((!eqFlag) ? sizeof(DWORD) : 0) + internal::dwordBoundary(vectorSize) + ((size_t)dataLength)) return RUDPPacketPtr();  // does not meet the minimum size expectations so it can't be RUDP
 
       // this appears to be RUDP
       RUDPPacketPtr pThis = create();
@@ -214,7 +214,7 @@ namespace openpeer
     //-------------------------------------------------------------------------
     void RUDPPacket::packetize(
                                boost::shared_array<BYTE> &outBuffer,
-                               ULONG &outBufferLengthInBytes
+                               size_t &outBufferLengthInBytes
                                ) const
     {
       log(Log::Trace, "packetize");
@@ -223,7 +223,7 @@ namespace openpeer
       bool eqFlag = (0 != (mFlags & Flag_EQ_GSNREqualsGSNFR));
       ZS_THROW_BAD_STATE_IF(eqFlag && ((mGSNR & 0xFFFFFF) != (mGSNFR & 0xFFFFFF))) // they must match if the EQ flag is set to true or this is illegal
 
-      ULONG length = OPENPEER_SERVICES_MINIMUM_PACKET_LENGTH_IN_BYTES + ((!eqFlag) ? sizeof(DWORD) : 0) + internal::dwordBoundary(mVectorLengthInBytes) + mDataLengthInBytes;
+      size_t length = OPENPEER_SERVICES_MINIMUM_PACKET_LENGTH_IN_BYTES + ((!eqFlag) ? sizeof(DWORD) : 0) + internal::dwordBoundary(mVectorLengthInBytes) + mDataLengthInBytes;
 
       outBuffer = boost::shared_array<BYTE>(new BYTE[length]);
       outBufferLengthInBytes = length;
@@ -352,12 +352,12 @@ namespace openpeer
       mGSNFR = ((DWORD)(gsnfr & 0xFFFFFF));
     }
 
-    ULONG RUDPPacket::getRoomAvailableForData(ULONG maxPacketLengthInBytes) const
+    size_t RUDPPacket::getRoomAvailableForData(size_t maxPacketLengthInBytes) const
     {
       bool eqFlag = (0 != (mFlags & Flag_EQ_GSNREqualsGSNFR));
       ZS_THROW_BAD_STATE_IF(eqFlag & ((mGSNR & 0xFFFFFF) != (mGSNFR & 0xFFFFFF))) // they must match if the EQ flag is set to true or this is illegal
 
-      ULONG length = OPENPEER_SERVICES_MINIMUM_PACKET_LENGTH_IN_BYTES + ((!eqFlag) ? sizeof(DWORD) : 0) + internal::dwordBoundary(mVectorLengthInBytes);
+      size_t length = OPENPEER_SERVICES_MINIMUM_PACKET_LENGTH_IN_BYTES + ((!eqFlag) ? sizeof(DWORD) : 0) + internal::dwordBoundary(mVectorLengthInBytes);
       if (length > maxPacketLengthInBytes) return 0;
 
       return maxPacketLengthInBytes - length;
@@ -382,7 +382,7 @@ namespace openpeer
                                         QWORD gsnfr,
                                         bool xoredParityToGSNFR,
                                         BYTE *vector,
-                                        ULONG vectorLengthInBytes
+                                        size_t vectorLengthInBytes
                                         )
     {
       ZS_THROW_INVALID_USAGE_IF(NULL == vector)
@@ -456,7 +456,7 @@ namespace openpeer
       ZS_THROW_INVALID_ASSUMPTION_IF(NULL == ioVectorState.mVector)
 
       bool xorParity = false;
-      ULONG vectorLengthInBytes = 0;
+      size_t vectorLengthInBytes = 0;
       vectorEncoderFinalize(ioVectorState, xorParity, vectorLengthInBytes);
 
       setFlag(Flag_VP_VectorParity, xorParity);
@@ -467,7 +467,7 @@ namespace openpeer
     void RUDPPacket::vectorEncoderFinalize(
                                            VectorEncoderState &ioVectorState,
                                            bool &outXORVectorParityFlag,
-                                           ULONG &outVectorLengthInBytes
+                                           size_t &outVectorLengthInBytes
                                            )
     {
       ZS_THROW_INVALID_ASSUMPTION_IF(NULL == ioVectorState.mVector)
@@ -510,7 +510,7 @@ namespace openpeer
     void RUDPPacket::vectorDecoderStart(
                                         VectorDecoderState &outVectorState,
                                         const BYTE *vector,
-                                        ULONG vectorLengthInBytes,
+                                        size_t vectorLengthInBytes,
                                         QWORD gsnr,
                                         QWORD gsnfr
                                         )
@@ -541,7 +541,7 @@ namespace openpeer
       VectorStates state = static_cast<VectorStates>(ioVectorState.mVector[0] & 0xC0);
       ++ioVectorState.mConsumedRLE;
 
-      if (ioVectorState.mConsumedRLE >= static_cast<ULONG>(((ioVectorState.mVector[0]) & 0x3F))) {
+      if (ioVectorState.mConsumedRLE >= static_cast<size_t>(((ioVectorState.mVector[0]) & 0x3F))) {
         // pull the next BYTE off the queue...
         ++ioVectorState.mVector;
         --ioVectorState.mVectorFilledLengthInBytes;

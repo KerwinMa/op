@@ -112,7 +112,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       RSAPrivateKeyPtr RSAPrivateKey::generate(
                                                RSAPublicKeyPtr &outPublicKey,
-                                               ULONG keySizeInBites
+                                               size_t keySizeInBits
                                                )
       {
         AutoSeededRandomPool rng;
@@ -120,7 +120,7 @@ namespace openpeer
 
         RSAPrivateKeyPtr pThis(new RSAPrivateKey);
 
-        pThis->mPrivateKey.GenerateRandomWithKeySize(rng, keySizeInBites);
+        pThis->mPrivateKey.GenerateRandomWithKeySize(rng, static_cast<unsigned int>(keySizeInBits));
         if (!pThis->mPrivateKey.Validate(rng, 3)) {
           ZS_LOG_ERROR(Basic, "failed to generate a new private key")
           return RSAPrivateKeyPtr();
@@ -266,11 +266,11 @@ namespace openpeer
     //-------------------------------------------------------------------------
     IRSAPrivateKeyPtr IRSAPrivateKey::generate(
                                                IRSAPublicKeyPtr &outPublicKey,
-                                               ULONG keySizeInBites
+                                               size_t keySizeInBits
                                                )
     {
       internal::RSAPublicKeyPtr publicKey;
-      IRSAPrivateKeyPtr result = internal::IRSAPrivateKeyFactory::singleton().generate(publicKey, keySizeInBites);
+      IRSAPrivateKeyPtr result = internal::IRSAPrivateKeyFactory::singleton().generate(publicKey, keySizeInBits);
       outPublicKey = publicKey;
       return result;
     }

@@ -799,7 +799,7 @@ namespace openpeer
         DocumentPtr MessageHelper::createDocument(
                                                   Message &msg,
                                                   IPublicationMetaDataPtr publicationMetaData,
-                                                  ULONG *notifyPeerPublishMaxDocumentSizeInBytes,
+                                                  size_t *notifyPeerPublishMaxDocumentSizeInBytes,
                                                   IPublicationRepositoryPeerCachePtr peerCache
                                                   )
         {
@@ -864,8 +864,8 @@ namespace openpeer
             {
               if (publication) {
                 if (peerCache) {
-                  ULONG bogusFillSize = 0;
-                  ULONG &maxFillSize = (notifyPeerPublishMaxDocumentSizeInBytes ? *notifyPeerPublishMaxDocumentSizeInBytes : bogusFillSize);
+                  size_t bogusFillSize = 0;
+                  size_t &maxFillSize = (notifyPeerPublishMaxDocumentSizeInBytes ? *notifyPeerPublishMaxDocumentSizeInBytes : bogusFillSize);
                   if (peerCache->getNextVersionToNotifyAboutAndMarkNotified(publication, maxFillSize, fromVersion, toVersion)) {
                     break;
                   }

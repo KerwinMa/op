@@ -82,7 +82,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       String convertToHex(
                           const BYTE *buffer,
-                          ULONG bufferLengthInBytes
+                          size_t bufferLengthInBytes
                           )
       {
         std::string output;
@@ -119,7 +119,7 @@ namespace openpeer
                             const IPAddress &remoteIP,
                             STUNPacketPtr &stun,
                             const BYTE *magic,
-                            ULONG magicLengthInBytes
+                            size_t magicLengthInBytes
                             )
       {
         MD5 md5;
@@ -147,7 +147,7 @@ namespace openpeer
                         const IPAddress &remoteIP,
                         STUNPacketPtr &stun,
                         const BYTE *magic,
-                        ULONG magicLengthInBytes
+                        size_t magicLengthInBytes
                         )
       {
         String nonce = stun->mNonce;
@@ -175,7 +175,7 @@ namespace openpeer
                          const IPAddress &remoteIP,
                          STUNPacketPtr &stun,
                          const BYTE *magic,
-                         ULONG magicLengthInBytes
+                         size_t magicLengthInBytes
                          )
       {
         BYTE output[sizeof(time_t) + 16];
@@ -319,7 +319,7 @@ namespace openpeer
         STUNPacketPtr stun;
         RecycledPacketBuffer buffer;
         AutoRecycleBuffer autoRecycle(*this, buffer);
-        ULONG bytesRead = 0;
+        size_t bytesRead = 0;
 
         // scope: read from the socket
         {
@@ -539,7 +539,7 @@ namespace openpeer
                                                      RUDPChannelPtr channel,
                                                      const IPAddress &remoteIP,
                                                      const BYTE *packet,
-                                                     ULONG packetLengthInBytes
+                                                     size_t packetLengthInBytes
                                                      )
       {
         AutoRecursiveLock lock(mLock);
@@ -663,7 +663,7 @@ namespace openpeer
         AutoRecursiveLock lock(mLock);
 
         boost::shared_array<BYTE> packetized;
-        ULONG packetizedLength = 0;
+        size_t packetizedLength = 0;
         stun->packetize(packetized, packetizedLength, STUNPacket::Method_Binding == stun->mMethod ? (stun->mPriorityIncluded ? STUNPacket::RFC_5245_ICE : STUNPacket::RFC_5389_STUN) : STUNPacket::RFC_draft_RUDP);
 
         return sendTo(destination, packetized.get(), packetizedLength);
@@ -673,7 +673,7 @@ namespace openpeer
       bool RUDPListener::sendTo(
                                 const IPAddress &destination,
                                 const BYTE *buffer,
-                                ULONG bufferLengthInBytes
+                                size_t bufferLengthInBytes
                                 )
       {
         ZS_THROW_INVALID_USAGE_IF(!buffer)
@@ -682,7 +682,7 @@ namespace openpeer
 
         try {
           bool wouldBlock = false;
-          ULONG bytesSent = mUDPSocket->sendTo(destination, buffer, bufferLengthInBytes, &wouldBlock);
+          size_t bytesSent = mUDPSocket->sendTo(destination, buffer, bufferLengthInBytes, &wouldBlock);
           ZS_LOG_TRACE(log("sendTo called") + ", destination=" + destination.string() + ", buffer=" + (buffer ? "true" : "false") + ", buffer length=" + string(bufferLengthInBytes) + ", bytes sent=" + string(bytesSent) + ", would block=" + (wouldBlock? "true" : "false"))
           return (bytesSent == bufferLengthInBytes);
         } catch(ISocket::Exceptions::Unspecified &) {
@@ -837,7 +837,7 @@ namespace openpeer
           }
         } while (false);  // using as a scope rather than as a loop
 
-        return response;
+        return (bool)response;
       }
 
       //-----------------------------------------------------------------------

@@ -439,7 +439,7 @@ namespace openpeer
 
           String contactID;
           {
-            ULONG length = 0;
+            size_t length = 0;
             ElementPtr bundleAEl = sectionAEl->getParentElementChecked();
             ElementPtr canonicalBundleAEl = services::IHelper::cloneAsCanonicalJSON(bundleAEl);
             boost::shared_array<char> sectionAsString = generator->write(canonicalBundleAEl, &length);
@@ -492,7 +492,7 @@ namespace openpeer
           }
 
           {
-            ULONG length = 0;
+            size_t length = 0;
             ElementPtr canonicalSectionAEl = services::IHelper::cloneAsCanonicalJSON(sectionAEl);
             boost::shared_array<char> sectionAAsString = generator->write(canonicalSectionAEl, &length);
 

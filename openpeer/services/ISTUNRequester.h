@@ -67,7 +67,7 @@ namespace openpeer
       static bool handlePacket(
                                IPAddress fromIPAddress,
                                const BYTE *packet,
-                               ULONG packetLengthInBytes,
+                               size_t packetLengthInBytes,
                                STUNPacket::RFCs allowedRFCs
                                );
 
@@ -113,7 +113,7 @@ namespace openpeer
                                              ISTUNRequesterPtr requester,
                                              IPAddress destination,
                                              boost::shared_array<BYTE> packet,
-                                             ULONG packetLengthInBytes
+                                             size_t packetLengthInBytes
                                              ) = 0;
 
       //-----------------------------------------------------------------------
@@ -137,7 +137,7 @@ namespace openpeer
 ZS_DECLARE_PROXY_BEGIN(openpeer::services::ISTUNRequesterDelegate)
 ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::ISTUNRequesterPtr, ISTUNRequesterPtr)
 ZS_DECLARE_PROXY_TYPEDEF(openpeer::services::STUNPacketPtr, STUNPacketPtr)
-ZS_DECLARE_PROXY_METHOD_4(onSTUNRequesterSendPacket, ISTUNRequesterPtr, IPAddress, boost::shared_array<BYTE>, ULONG)
+ZS_DECLARE_PROXY_METHOD_4(onSTUNRequesterSendPacket, ISTUNRequesterPtr, IPAddress, boost::shared_array<BYTE>, size_t)
 ZS_DECLARE_PROXY_METHOD_SYNC_RETURN_3(handleSTUNRequesterResponse, bool, ISTUNRequesterPtr, IPAddress, STUNPacketPtr)
 ZS_DECLARE_PROXY_METHOD_1(onSTUNRequesterTimedOut, ISTUNRequesterPtr)
 ZS_DECLARE_PROXY_END()

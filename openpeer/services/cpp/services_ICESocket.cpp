@@ -459,7 +459,7 @@ namespace openpeer
                              const Candidate &viaLocalCandidate,
                              const IPAddress &destination,
                              const BYTE *buffer,
-                             ULONG bufferLengthInBytes,
+                             size_t bufferLengthInBytes,
                              bool isUserData
                              )
       {
@@ -518,7 +518,7 @@ namespace openpeer
             return true;
           }
 #endif //OPENPEER_SERVICES_TURNSOCKET_DEBUGGING_FORCE_USE_TURN_WITH_UDP
-          ULONG bytesSent = socket->sendTo(destination, buffer, bufferLengthInBytes, &wouldBlock);
+          size_t bytesSent = socket->sendTo(destination, buffer, bufferLengthInBytes, &wouldBlock);
           ZS_LOG_TRACE(log("sending packet") + ", candidate: " + viaLocalCandidate.toDebugString(false) + " to ip=" + destination.string() + ", buffer=" + (buffer ? "true" : "false") + ", buffer length=" + string(bufferLengthInBytes) + ", user data=" + (isUserData ? "true" : "false") + ", bytes sent=" + string(bytesSent) + ", would block=" + (wouldBlock ? "true" : "false"))
           if (ZS_IS_LOGGING(Insane)) {
             String raw = Helper::getDebugString(buffer, bytesSent);
@@ -601,7 +601,7 @@ namespace openpeer
         boost::shared_array<BYTE> buffer;
         CandidatePtr viaLocalCandidate;
         IPAddress source;
-        ULONG bytesRead = 0;
+        size_t bytesRead = 0;
         AutoRecycleBuffer recycle(*this, buffer);
 
         // scope: we are going to read the data while within the local but process it outside the lock
@@ -746,7 +746,7 @@ namespace openpeer
                                                      ITURNSocketPtr socket,
                                                      IPAddress source,
                                                      const BYTE *packet,
-                                                     ULONG packetLengthInBytes
+                                                     size_t packetLengthInBytes
                                                      )
       {
         // WARNING: This method cannot be called within a lock as it calls delegates synchronously.
@@ -774,7 +774,7 @@ namespace openpeer
                                                  ITURNSocketPtr socket,
                                                  IPAddress destination,
                                                  const BYTE *packet,
-                                                 ULONG packetLengthInBytes
+                                                 size_t packetLengthInBytes
                                                  )
       {
         AutoRecursiveLock lock(mLock);
@@ -803,7 +803,7 @@ namespace openpeer
             return true;
           }
 #endif //OPENPEER_SERVICES_TURNSOCKET_DEBUGGING_FORCE_USE_TURN_WITH_UDP
-          ULONG bytesSent = localSocket->mSocket->sendTo(destination, packet, packetLengthInBytes, &wouldBlock);
+          size_t bytesSent = localSocket->mSocket->sendTo(destination, packet, packetLengthInBytes, &wouldBlock);
           bool sent = ((!wouldBlock) && (bytesSent == packetLengthInBytes));
           if (!sent) {
             ZS_LOG_WARNING(Debug, log("unable to send data on behalf of TURN as UDP socket did not send the data") + ", would block=" + (wouldBlock ? "true" : "false") + ", bytes sent=" + string(bytesSent))
@@ -853,7 +853,7 @@ namespace openpeer
                                                 ISTUNDiscoveryPtr discovery,
                                                 IPAddress destination,
                                                 boost::shared_array<BYTE> packet,
-                                                ULONG packetLengthInBytes
+                                                size_t packetLengthInBytes
                                                 )
       {
         AutoRecursiveLock lock(mLock);
@@ -1923,7 +1923,7 @@ namespace openpeer
                                            const Candidate &viaCandidate,
                                            const IPAddress &source,
                                            const BYTE *buffer,
-                                           ULONG bufferLengthInBytes
+                                           size_t bufferLengthInBytes
                                            )
       {
         // WARNING: DO NOT CALL THIS METHOD WHILE INSIDE A LOCK AS IT COULD

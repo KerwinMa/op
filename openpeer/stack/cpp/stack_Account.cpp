@@ -408,7 +408,7 @@ namespace openpeer
                                  const String &peerURI,
                                  AccountPeerLocationPtr peerLocation,
                                  const BYTE *buffer,
-                                 ULONG bufferSizeInBytes
+                                 size_t bufferSizeInBytes
                                  ) const
       {
         ZS_THROW_INVALID_ARGUMENT_IF(!peerLocation)
@@ -1893,7 +1893,7 @@ namespace openpeer
                 DocumentPtr resultDoc = message->encode();
 
                 boost::shared_array<char> output;
-                ULONG length = 0;
+                size_t length = 0;
                 output = document->writeAsJSON(&length);
 
                 ZS_LOG_WARNING(Detail, log("sending automatic failure to relay received message because account peer location for relay was not known (yet)"))

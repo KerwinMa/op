@@ -1101,7 +1101,7 @@ namespace openpeer
         virtual bool hasResult() const
         {
           if (!isComplete()) return false;
-          return mSRVResult;
+          return (bool)mSRVResult;
         }
 
         //---------------------------------------------------------------------

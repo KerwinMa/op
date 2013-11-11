@@ -92,7 +92,7 @@ namespace openpeer
                                   const IICESocket::Candidate &viaLocalCandidate,
                                   const IPAddress &source,
                                   const BYTE *packet,
-                                  ULONG packetLengthInBytes
+                                  size_t packetLengthInBytes
                                   ) = 0;
 
         virtual void notifyLocalWriteReady(const IICESocket::Candidate &viaLocalCandidate) = 0;
@@ -207,7 +207,7 @@ namespace openpeer
 
         virtual bool sendPacket(
                                 const BYTE *packet,
-                                ULONG packetLengthInBytes
+                                size_t packetLengthInBytes
                                 );
 
         virtual ICEControls getConnectedControlState();
@@ -250,7 +250,7 @@ namespace openpeer
                                   const IICESocket::Candidate &viaLocalCandidate,
                                   const IPAddress &source,
                                   const BYTE *packet,
-                                  ULONG packetLengthInBytes
+                                  size_t packetLengthInBytes
                                   );
 
         virtual void notifyLocalWriteReady(const IICESocket::Candidate &viaLocalCandidate);
@@ -283,7 +283,7 @@ namespace openpeer
                                                ISTUNRequesterPtr requester,
                                                IPAddress destination,
                                                boost::shared_array<BYTE> packet,
-                                               ULONG packetLengthInBytes
+                                               size_t packetLengthInBytes
                                                );
 
         virtual bool handleSTUNRequesterResponse(
@@ -338,7 +338,7 @@ namespace openpeer
                     const IICESocket::Candidate &viaLocalCandidate,
                     const IPAddress &destination,
                     const BYTE *buffer,
-                    ULONG bufferLengthInBytes,
+                    size_t bufferLengthInBytes,
                     bool isUserData
                     );
 

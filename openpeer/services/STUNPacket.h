@@ -220,7 +220,7 @@ namespace openpeer
 
       static STUNPacketPtr parseIfSTUN(                                         // returns empty smart pointer if wasn't a STUN packet
                                        const BYTE *packet,               // NOTE: While this is const we have to overwrite the packet data momentarily during MESSAGE-INTEGRITY calculation
-                                       ULONG packetLengthInBytes,
+                                       size_t packetLengthInBytes,
                                        RFCs allowedRFCs,
                                        bool allowRFC3489 = true,
                                        const char *logObject = NULL,
@@ -229,9 +229,9 @@ namespace openpeer
 
       static ParseLookAheadStates parseStreamIfSTUN(
                                                     STUNPacketPtr &outSTUN,
-                                                    ULONG &outActualSizeInBytes,
+                                                    size_t &outActualSizeInBytes,
                                                     const BYTE *packet,        // NOTE: While this is const we have to overwrite the packet data momentarily during MESSAGE-INTEGRITY calculation
-                                                    ULONG streamDataAvailableInBytes,
+                                                    size_t streamDataAvailableInBytes,
                                                     RFCs allowedRFCs,
                                                     bool allowRFC3489 = false,
                                                     const char *logObject = NULL,
@@ -250,7 +250,7 @@ namespace openpeer
 
       void packetize(
                      boost::shared_array<BYTE> &outPacket,
-                     ULONG &outPacketLengthInBytes,
+                     size_t &outPacketLengthInBytes,
                      RFCs rfc
                      );
 
@@ -271,10 +271,10 @@ namespace openpeer
       bool hasAttribute(Attributes attribute) const;
       bool hasUnknownAttribute(Attributes attribute);
 
-      ULONG getTotalRoomAvailableForData(
-                                         ULONG maxPacketSizeInBytes,
-                                         RFCs rfc
-                                         ) const;
+      size_t getTotalRoomAvailableForData(
+                                          size_t maxPacketSizeInBytes,
+                                          RFCs rfc
+                                          ) const;
 
     public:
       const char *mLogObject;                                   // when output to a log, which object was responsible for this packet (never packetized or parsed)
@@ -310,7 +310,7 @@ namespace openpeer
       String mSoftware;
 
       CredentialMechanisms mCredentialMechanism;
-      ULONG mMessageIntegrityMessageLengthInBytes;              // how big is the input into the HMAC algorithm, including 20 byte header -- it is the length of the packet up to but not including the message integrity attribute or message-integrity value
+      size_t mMessageIntegrityMessageLengthInBytes;              // how big is the input into the HMAC algorithm, including 20 byte header -- it is the length of the packet up to but not including the message integrity attribute or message-integrity value
       BYTE  mMessageIntegrity[OPENPEER_STUN_MESSAGE_INTEGRITY_LENGTH_IN_BYTES];   // the message integrity of the packet
 
       bool mFingerprintIncluded;                                // should this packet include the fingerprint (or did include the fingerprint)
@@ -327,7 +327,7 @@ namespace openpeer
       IPAddress mRelayedAddress;                                // The XOR-RELAYED-ADDRESS is present in Allocate responses.
 
       const BYTE *mData;                                        // this is only valid as long as the packet/object the data was parsed from is valid
-      ULONG mDataLength;
+      size_t mDataLength;
 
       bool mEvenPortIncluded;                                   // Set this to true if the "EVEN-PORT" attribute should be included
       bool mEvenPort;                                           // This attribute allows the client to request that the port in the
@@ -370,7 +370,7 @@ namespace openpeer
       BYTE mReliabilityFlags;
 
       boost::shared_array<BYTE> mACKVector;                     // if set, points to the buffer containing the RLE ACK vector
-      ULONG mACKVectorLength;                                   // how long is the ACK vector (if non-zero then mACKVector must be set)
+      size_t mACKVectorLength;                                  // how long is the ACK vector (if non-zero then mACKVector must be set)
 
       typedef std::list<IRUDPChannel::CongestionAlgorithms> CongestionControlList;
       CongestionControlList mLocalCongestionControl;

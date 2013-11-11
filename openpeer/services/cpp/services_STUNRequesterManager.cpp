@@ -267,7 +267,7 @@ namespace openpeer
     ISTUNRequesterPtr ISTUNRequesterManager::handlePacket(
                                                           IPAddress fromIPAddress,
                                                           const BYTE *packet,
-                                                          ULONG packetLengthInBytes,
+                                                          size_t packetLengthInBytes,
                                                           STUNPacket::RFCs allowedRFCs
                                                           )
     {

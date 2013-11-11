@@ -56,7 +56,7 @@ namespace CryptoPP
       if (T_Align16 && n*sizeof(T) >= 16) {
         result = (pointer)AlignedAllocate(n*sizeof(T) + sizeof(T));
         memset(result, 0, n*sizeof(T) + sizeof(T));
-        return result
+        return result;
       }
 #endif
 

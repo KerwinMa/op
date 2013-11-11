@@ -73,7 +73,7 @@ namespace openpeer
 
     namespace internal
     {
-      String convertToHex(const BYTE *buffer, ULONG bufferLengthInBytes);
+      String convertToHex(const BYTE *buffer, size_t bufferLengthInBytes);
 
       static STUNPacket::Attributes gAttributeOrdering[] =
       {
@@ -133,7 +133,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      static bool parseSTUNString(const BYTE *data, ULONG length, ULONG maxLength, String &outValue) {
+      static bool parseSTUNString(const BYTE *data, size_t length, size_t maxLength, String &outValue) {
         char buffer[(OPENPEER_STUN_MAX_STRING*OPENPEER_STUN_MAX_UTF8_UNICODE_ENCODED_CHAR)+1];
 
         if (length > (maxLength*OPENPEER_STUN_MAX_UTF8_UNICODE_ENCODED_CHAR)) return false;
@@ -147,7 +147,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      static bool parseMappedAddress(const BYTE *dataPos, ULONG attributeLength, DWORD magicCookie, const BYTE *magicCookiePos, IPAddress &outIPAddress, bool &outHandleAsUnknownAttribute) {
+      static bool parseMappedAddress(const BYTE *dataPos, size_t attributeLength, DWORD magicCookie, const BYTE *magicCookiePos, IPAddress &outIPAddress, bool &outHandleAsUnknownAttribute) {
         outHandleAsUnknownAttribute = false;
         outIPAddress.clear();
 
@@ -219,7 +219,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      static ULONG dwordBoundary(ULONG length)
+      static size_t dwordBoundary(size_t length)
       {
         if (0 == (length % sizeof(DWORD)))
           return length;
@@ -227,7 +227,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      static ULONG getActualAttributeLength(const STUNPacket &stun, STUNPacket::Attributes attribute)
+      static size_t getActualAttributeLength(const STUNPacket &stun, STUNPacket::Attributes attribute)
       {
         switch (attribute)
         {
@@ -248,7 +248,7 @@ namespace openpeer
           case STUNPacket::Attribute_XORPeerAddress:      {
             ZS_THROW_BAD_STATE_IF(stun.mPeerAddressList.size() < 1)
 
-            ULONG total = 0;
+            size_t total = 0;
             for (STUNPacket::PeerAddressList::const_iterator iter = stun.mPeerAddressList.begin(); iter != stun.mPeerAddressList.end(); ++iter) {
               total += sizeof(DWORD) + ((*iter).isIPv4() ? (32/8) : (128/8));
             }
@@ -273,8 +273,8 @@ namespace openpeer
           case STUNPacket::Attribute_ConnectionInfo:      return stun.mConnectionInfo.length();
           case STUNPacket::Attribute_CongestionControl:   {
             bool bothPresent = (stun.mLocalCongestionControl.size() > 0) && (stun.mRemoteCongestionControl.size() > 0);
-            ULONG lengthLocal = (stun.mLocalCongestionControl.size() > 0 ? sizeof(WORD) + (sizeof(WORD)*(stun.mLocalCongestionControl.size())) : 0);
-            ULONG lengthRemote = (stun.mRemoteCongestionControl.size() > 0 ? sizeof(WORD) + (sizeof(WORD)*(stun.mRemoteCongestionControl.size())) : 0);
+            size_t lengthLocal = (stun.mLocalCongestionControl.size() > 0 ? sizeof(WORD) + (sizeof(WORD)*(stun.mLocalCongestionControl.size())) : 0);
+            size_t lengthRemote = (stun.mRemoteCongestionControl.size() > 0 ? sizeof(WORD) + (sizeof(WORD)*(stun.mRemoteCongestionControl.size())) : 0);
             // if both are present we will encode the attribute header for the second when we encode the first
             return (bothPresent ? sizeof(DWORD) : 0) + lengthLocal + lengthRemote;
             break;
@@ -1040,7 +1040,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      static ULONG packetizeAttributeLength(
+      static size_t packetizeAttributeLength(
                                             const STUNPacket &stun,
                                             STUNPacket::RFCs rfc,
                                             STUNPacket::Attributes attribute
@@ -1056,7 +1056,7 @@ namespace openpeer
         return sizeof(DWORD) + dwordBoundary(getActualAttributeLength(stun, attribute));  // the size of one header plus the attribute value size
       }
 
-      static void packetizeAttributeHeader(BYTE * &pos, STUNPacket::Attributes attribute, ULONG attributeLength) {
+      static void packetizeAttributeHeader(BYTE * &pos, STUNPacket::Attributes attribute, size_t attributeLength) {
         ((WORD *)pos)[0] = htons((WORD)attribute);
         ((WORD *)pos)[1] = htons(static_cast<WORD>(attributeLength));
         pos += sizeof(DWORD);
@@ -1097,7 +1097,7 @@ namespace openpeer
                                          )
       {
         for (STUNPacket::PeerAddressList::const_iterator iter = stun.mPeerAddressList.begin(); iter != stun.mPeerAddressList.end(); ++iter) {
-          ULONG attributeLength = sizeof(DWORD) + ((*iter).isIPv4() ? (32/8) : (128/8));
+          size_t attributeLength = sizeof(DWORD) + ((*iter).isIPv4() ? (32/8) : (128/8));
           packetizeAttributeHeader(pos, STUNPacket::Attribute_XORPeerAddress, attributeLength);    // need a new header per alternative peer addresses
 
           packetizeIPAddress(pos, (*iter), stun.mMagicCookie, cookiePos);
@@ -1118,7 +1118,7 @@ namespace openpeer
         }
       }
 
-      static void packetizeBuffer(BYTE *pos, const BYTE *buffer, ULONG length) {
+      static void packetizeBuffer(BYTE *pos, const BYTE *buffer, size_t length) {
         ZS_THROW_INVALID_USAGE_IF(!buffer)
         memcpy(pos, buffer, length);
       }
@@ -1215,7 +1215,7 @@ namespace openpeer
             memset(&(result[0]), 0, sizeof(result));
 
             // messageIntegrityMessageLengthInBytes is the length of the packet up to but not including the message integrity attribute
-            ULONG messageIntegrityMessageLengthInBytes = ((PTRNUMBER)attributeStartPos) - ((PTRNUMBER)(stun.mOriginalPacket));
+            size_t messageIntegrityMessageLengthInBytes = ((PTRNUMBER)attributeStartPos) - ((PTRNUMBER)(stun.mOriginalPacket));
 
             // remember the packet's original length
             WORD originalLength = ((WORD *)stun.mOriginalPacket)[1];
@@ -1325,7 +1325,7 @@ namespace openpeer
                                       rfc,
                                       attribute)) return;
 
-        ULONG attributeLength = getActualAttributeLength(stun, attribute);
+        size_t attributeLength = getActualAttributeLength(stun, attribute);
 
         BYTE *startPos = pos;
         const BYTE *cookiePos = (const BYTE *)(&(((DWORD *)stun.mOriginalPacket)[1]));
@@ -1755,7 +1755,7 @@ namespace openpeer
     //-------------------------------------------------------------------------
     STUNPacketPtr STUNPacket::parseIfSTUN(
                                           const BYTE *packet,
-                                          ULONG packetLengthInBytes,
+                                          size_t packetLengthInBytes,
                                           RFCs allowedRFCs,
                                           bool allowRFC3489,
                                           const char *logObject,
@@ -1805,11 +1805,11 @@ namespace openpeer
       // always zero.  This provides another way to distinguish STUN packets
       // from packets of other protocols.
       if (0 != (messageLengthInBytes & 0x3)) return STUNPacketPtr();
-      if (packetLengthInBytes < ((ULONG)OPENPEER_STUN_HEADER_SIZE_IN_BYTES) + messageLengthInBytes) return STUNPacketPtr();  // this is illegal since the size is larger than the actual packet received
+      if (packetLengthInBytes < ((size_t)OPENPEER_STUN_HEADER_SIZE_IN_BYTES) + messageLengthInBytes) return STUNPacketPtr();  // this is illegal since the size is larger than the actual packet received
 
       if (0 != (messageLengthInBytes % sizeof(DWORD))) return STUNPacketPtr(); // every attribute is aligned to a DWORD size
 
-      ULONG availableBytes = messageLengthInBytes;
+      size_t availableBytes = messageLengthInBytes;
       const BYTE *pos = packet + OPENPEER_STUN_HEADER_SIZE_IN_BYTES;  //
 
       STUNPacketPtr stun(new STUNPacket);
@@ -1848,7 +1848,7 @@ namespace openpeer
         pos += sizeof(DWORD);
         availableBytes -= sizeof(DWORD);
 
-        ULONG fullAttributeLength = internal::dwordBoundary(attributeLength);
+        size_t fullAttributeLength = internal::dwordBoundary(attributeLength);
         if (fullAttributeLength > availableBytes) return STUNPacketPtr(); // illegal attribute length?
 
         const BYTE *dataPos = pos;
@@ -2036,7 +2036,7 @@ namespace openpeer
               CongestionControlList list;
               // must be at least one congestion control profile offered added otherwise it is illegal
               dataPos += sizeof(WORD);  // skip over the header
-              ULONG length = ((attributeLength - sizeof(WORD)) / sizeof(WORD));
+              size_t length = ((attributeLength - sizeof(WORD)) / sizeof(WORD));
               for (; length > 0; --length) {
                 list.push_back(static_cast<IRUDPChannel::CongestionAlgorithms>(ntohs(((WORD *)dataPos)[0])));
                 dataPos += sizeof(WORD);
@@ -2139,9 +2139,9 @@ namespace openpeer
     //-------------------------------------------------------------------------
     STUNPacket::ParseLookAheadStates STUNPacket::parseStreamIfSTUN(
                                                                    STUNPacketPtr &outSTUN,
-                                                                   ULONG &outActualSizeInBytes,
+                                                                   size_t &outActualSizeInBytes,
                                                                    const BYTE *packet,
-                                                                   ULONG streamDataAvailableInBytes,
+                                                                   size_t streamDataAvailableInBytes,
                                                                    RFCs allowedRFC,
                                                                    bool allowRFC3489,
                                                                    const char *logObject,
@@ -2211,7 +2211,7 @@ namespace openpeer
       // All STUN messages MUST start with a 20-byte header followed by zero or more Attributes.
       if (streamDataAvailableInBytes < OPENPEER_STUN_HEADER_SIZE_IN_BYTES) return ParseLookAheadState_AppearsSTUNButPacketNotFullyAvailable;
 
-      if (streamDataAvailableInBytes < ((ULONG)OPENPEER_STUN_HEADER_SIZE_IN_BYTES) + messageLengthInBytes) return ParseLookAheadState_AppearsSTUNButPacketNotFullyAvailable;
+      if (streamDataAvailableInBytes < ((size_t)OPENPEER_STUN_HEADER_SIZE_IN_BYTES) + messageLengthInBytes) return ParseLookAheadState_AppearsSTUNButPacketNotFullyAvailable;
 
       // we not have enough data available to truly determine if this is a STUN packet and decode this STUN packet
       outSTUN = parseIfSTUN(
@@ -2458,7 +2458,7 @@ namespace openpeer
     //-------------------------------------------------------------------------
     void STUNPacket::packetize(
                                boost::shared_array<BYTE> &outPacket,
-                               ULONG &outPacketLengthInBytes,
+                               size_t &outPacketLengthInBytes,
                                RFCs rfc
                                )
     {
@@ -2682,12 +2682,12 @@ namespace openpeer
     }
 
     //-------------------------------------------------------------------------
-    ULONG STUNPacket::getTotalRoomAvailableForData(
-                                                          ULONG maxPacketSizeInBytes,
-                                                          RFCs rfc
-                                                          ) const
+    size_t STUNPacket::getTotalRoomAvailableForData(
+                                                    size_t maxPacketSizeInBytes,
+                                                    RFCs rfc
+                                                    ) const
     {
-      ULONG packetLengthInBytes = OPENPEER_STUN_HEADER_SIZE_IN_BYTES;
+      size_t packetLengthInBytes = OPENPEER_STUN_HEADER_SIZE_IN_BYTES;
 
       // count the length of all the attributes when they are packetized
       {
@@ -2704,7 +2704,7 @@ namespace openpeer
       if (packetLengthInBytes > maxPacketSizeInBytes) return 0;
 
       // make sure to account for the size of one attribute header and the alignment the data will require to the next DWORD
-      ULONG remainder = maxPacketSizeInBytes - packetLengthInBytes;
+      size_t remainder = maxPacketSizeInBytes - packetLengthInBytes;
       if (remainder < (sizeof(DWORD)*2)) return 0;
 
       // the amount of space available is knocked down by the size of the header

@@ -176,7 +176,7 @@ namespace openpeer
                                 const char *userAgent,
                                 const char *url,
                                 const BYTE *postData,
-                                ULONG postDataLengthInBytes,
+                                size_t postDataLengthInBytes,
                                 const char *postDataMimeType = NULL,
                                 Duration timeout = Duration()
                                 );
@@ -203,22 +203,22 @@ namespace openpeer
       virtual HTTPStatusCodes getStatusCode() const = 0;
       virtual long getResponseCode() const = 0;
 
-      virtual ULONG getHeaderReadSizeAvailableInBtytes() const = 0;
-      virtual ULONG readHeader(
-                               BYTE *outResultData,
-                               ULONG bytesToRead
-                               ) = 0;
+      virtual size_t getHeaderReadSizeAvailableInBytes() const = 0;
+      virtual size_t readHeader(
+                                BYTE *outResultData,
+                                size_t bytesToRead
+                                ) = 0;
 
-      virtual ULONG readHeaderAsString(String &outHeader) = 0;
+      virtual size_t readHeaderAsString(String &outHeader) = 0;
 
-      virtual ULONG getReadDataAvailableInBytes() const = 0;
+      virtual size_t getReadDataAvailableInBytes() const = 0;
 
-      virtual ULONG readData(
-                             BYTE *outResultData,
-                             ULONG bytesToRead
-                             ) = 0;
+      virtual size_t readData(
+                              BYTE *outResultData,
+                              size_t bytesToRead
+                              ) = 0;
 
-      virtual ULONG readDataAsString(String &outResultData) = 0;
+      virtual size_t readDataAsString(String &outResultData) = 0;
     };
 
     interaction IHTTPQueryDelegate
