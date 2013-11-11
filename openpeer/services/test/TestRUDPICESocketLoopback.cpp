@@ -67,13 +67,16 @@ using zsLib::ISocketPtr;
 using zsLib::IPAddress;
 using zsLib::String;
 using zsLib::string;
+using zsLib::IMessageQueue;
 using openpeer::services::IDNS;
 using openpeer::services::IDNSQuery;
 using openpeer::services::ITURNSocket;
 using openpeer::services::ITURNSocketPtr;
 using openpeer::services::ITURNSocketDelegate;
 using openpeer::services::IICESocket;
+using openpeer::services::IICESocketDelegate;
 using openpeer::services::IICESocketSession;
+using openpeer::services::IICESocketSessionDelegate;
 using openpeer::services::IICESocketPtr;
 using openpeer::services::IRUDPMessaging;
 using openpeer::services::IRUDPMessagingPtr;
@@ -93,7 +96,7 @@ namespace openpeer
       typedef boost::weak_ptr<TestRUDPICESocketLoopback> TestRUDPICESocketLoopbackWeakPtr;
 
       class TestRUDPICESocketLoopback : public zsLib::MessageQueueAssociator,
-                                        public IRUDPICESocketDelegate,
+                                        public IICESocketDelegate,
                                         public IRUDPICESocketSessionDelegate,
                                         public IRUDPMessagingDelegate,
                                         public ITransportStreamWriterDelegate,
@@ -101,7 +104,8 @@ namespace openpeer
                                         public zsLib::ITimerDelegate
       {
       protected:
-        typedef std::list<IRUDPICESocketSessionPtr> SessionList;
+        typedef std::list<IICESocketSessionPtr> ICESessionList;
+        typedef std::list<IRUDPICESocketSessionPtr> RUDPSessionList;
         typedef std::list<IRUDPMessagingPtr> MessagingList;
 
       private:
@@ -141,15 +145,27 @@ namespace openpeer
           mReceiveStreamSubscription = mReceiveStream->subscribe(mThisWeak.lock());
           mReceiveStream->notifyReaderReadyToRead();
 
-          mRUDPSocket = IRUDPICESocket::create(
-                                               getAssociatedMessageQueue(),
-                                               mThisWeak.lock(),
-                                               srvNameTURN,
-                                               gUsername,
-                                               gPassword,
-                                               srvNameSTUN,
-                                               port
-                                               );
+          IICESocket::TURNServerInfoList turnServers;
+          IICESocket::STUNServerInfoList stunServers;
+
+          IICESocket::TURNServerInfoPtr turnInfo = IICESocket::TURNServerInfo::create();
+          turnInfo->mTURNServer = srvNameTURN;
+          turnInfo->mTURNServerUsername = gUsername;
+          turnInfo->mTURNServerPassword = gPassword;
+
+          IICESocket::STUNServerInfoPtr stunInfo = IICESocket::STUNServerInfo::create();
+          stunInfo->mSTUNServer = srvNameSTUN;
+
+          turnServers.push_back(turnInfo);
+          stunServers.push_back(stunInfo);
+
+          mRUDPSocket = IICESocket::create(
+                                           getAssociatedMessageQueue(),
+                                           mThisWeak.lock(),
+                                           turnServers,
+                                           stunServers,
+                                           port
+                                           );
 
           mTimer = zsLib::Timer::create(mThisWeak.lock(), zsLib::Milliseconds(rand()%400+200));
         }
@@ -192,25 +208,26 @@ namespace openpeer
             mTimer->cancel();
             mTimer.reset();
           }
-          mSessions.clear();
+          mICESessions.clear();
+          mRUDPSessions.clear();
           mRUDPSocket.reset();
         }
 
         //---------------------------------------------------------------------
-        virtual void onRUDPICESocketStateChanged(
-                                                 IRUDPICESocketPtr socket,
-                                                 RUDPICESocketStates state
-                                                 )
+        virtual void onICESocketStateChanged(
+                                             IICESocketPtr socket,
+                                             ICESocketStates state
+                                             )
         {
           zsLib::AutoRecursiveLock lock(getLock());
           switch (state) {
-            case IRUDPICESocket::RUDPICESocketState_Ready:
+            case IICESocket::ICESocketState_Ready:
             {
               BOOST_CHECK(mExpectConnected);
               mConnected = true;
               break;
             }
-            case IRUDPICESocket::RUDPICESocketState_Shutdown:
+            case IICESocket::ICESocketState_Shutdown:
             {
               if (mShutdownCalled) {
                 BOOST_CHECK(mExpectGracefulShutdown);
@@ -227,7 +244,7 @@ namespace openpeer
         }
 
         //---------------------------------------------------------------------
-        virtual void onRUDPICESocketCandidatesChanged(IRUDPICESocketPtr socket)
+        virtual void onICESocketCandidatesChanged(IICESocketPtr socket)
         {
           zsLib::AutoRecursiveLock lock(getLock());
           TestRUDPICESocketLoopbackPtr remote = mRemote.lock();
@@ -269,8 +286,8 @@ namespace openpeer
                 }
               }
 
-              SessionList::iterator found = find(mSessions.begin(), mSessions.end(), session);
-              BOOST_CHECK(found != mSessions.end())
+              RUDPSessionList::iterator found = find(mRUDPSessions.begin(), mRUDPSessions.end(), session);
+              BOOST_CHECK(found != mRUDPSessions.end())
               break;
             }
             case IRUDPICESocketSession::RUDPICESocketSessionState_Shutdown:
@@ -278,9 +295,15 @@ namespace openpeer
               BOOST_CHECK(mExpectSessionClosed);
               mSessionClosed = true;
 
-              SessionList::iterator found = find(mSessions.begin(), mSessions.end(), session);
-              BOOST_CHECK(found != mSessions.end())
-              mSessions.erase(found);
+              RUDPSessionList::iterator found = find(mRUDPSessions.begin(), mRUDPSessions.end(), session);
+              BOOST_CHECK(found != mRUDPSessions.end())
+
+              IICESocketSessionPtr iceSession = (*found)->getICESession();
+              mRUDPSessions.erase(found);
+
+              ICESessionList::iterator iceFound = find(mICESessions.begin(), mICESessions.end(), iceSession);
+              BOOST_CHECK(iceFound != mICESessions.end())
+              mICESessions.erase(iceFound);
             }
             default: break;
           }
@@ -301,8 +324,8 @@ namespace openpeer
                                                                       );
           mMessaging.push_back(messaging);
 
-          SessionList::iterator found = find(mSessions.begin(), mSessions.end(), session);
-          BOOST_CHECK(found != mSessions.end())
+          RUDPSessionList::iterator found = find(mRUDPSessions.begin(), mRUDPSessions.end(), session);
+          BOOST_CHECK(found != mRUDPSessions.end())
         }
 
         //---------------------------------------------------------------------
@@ -392,7 +415,7 @@ namespace openpeer
             IRUDPMessagingPtr &messaging = (*iter);
             messaging->shutdown();
           }
-          for (SessionList::iterator iter = mSessions.begin(); iter != mSessions.end(); ++iter) {
+          for (RUDPSessionList::iterator iter = mRUDPSessions.begin(); iter != mRUDPSessions.end(); ++iter) {
             IRUDPICESocketSessionPtr &session = (*iter);
             session->shutdown();
           }
@@ -497,10 +520,12 @@ namespace openpeer
           IICESocket::CandidateList remoteCandidates;
           remote->getLocalCandidates(remoteCandidates);
 
-          IRUDPICESocketSessionPtr session = mRUDPSocket->createSessionFromRemoteCandidates(mThisWeak.lock(), remote->getLocalUsernameFrag(), remote->getLocalPassword(), remoteCandidates, control);
-          mSessions.push_back(session);
+          IICESocketSessionPtr session = mRUDPSocket->createSessionFromRemoteCandidates(IICESocketSessionDelegatePtr(), remote->getLocalUsernameFrag(), remote->getLocalPassword(), remoteCandidates, control);
+          mICESessions.push_back(session);
 
-          return session;
+          IRUDPICESocketSessionPtr rudpSession = IRUDPICESocketSession::listen(getAssociatedMessageQueue(), session, mThisWeak.lock());
+
+          return rudpSession;
         }
 
         //---------------------------------------------------------------------
@@ -514,9 +539,9 @@ namespace openpeer
         void updateCandidates(const IICESocket::CandidateList &candidates)
         {
           zsLib::AutoRecursiveLock lock(getLock());
-          for (SessionList::iterator iter = mSessions.begin(); iter != mSessions.end(); ++iter)
+          for (ICESessionList::iterator iter = mICESessions.begin(); iter != mICESessions.end(); ++iter)
           {
-            IRUDPICESocketSessionPtr session = (*iter);
+            IICESocketSessionPtr session = (*iter);
             session->updateRemoteCandidates(candidates);
           }
         }
@@ -525,9 +550,9 @@ namespace openpeer
         void notifyEndOfCandidates()
         {
           zsLib::AutoRecursiveLock lock(getLock());
-          for (SessionList::iterator iter = mSessions.begin(); iter != mSessions.end(); ++iter)
+          for (ICESessionList::iterator iter = mICESessions.begin(); iter != mICESessions.end(); ++iter)
           {
-            IRUDPICESocketSessionPtr session = (*iter);
+            IICESocketSessionPtr session = (*iter);
             session->endOfRemoteCandidates();
           }
         }
@@ -551,8 +576,9 @@ namespace openpeer
 
         zsLib::TimerPtr mTimer;
 
-        IRUDPICESocketPtr mRUDPSocket;
-        SessionList mSessions;
+        IICESocketPtr mRUDPSocket;
+        ICESessionList mICESessions;
+        RUDPSessionList mRUDPSessions;
         MessagingList mMessaging;
 
         bool mExpectConnected;
@@ -595,10 +621,10 @@ void doTestRUDPICESocketLoopback()
   TestRUDPICESocketLoopbackPtr testObject3;
   TestRUDPICESocketLoopbackPtr testObject4;
 
-  IRUDPICESocket::CandidateList candidates1;
-  IRUDPICESocket::CandidateList candidates2;
-  IRUDPICESocket::CandidateList candidates3;
-  IRUDPICESocket::CandidateList candidates4;
+  IICESocket::CandidateList candidates1;
+  IICESocket::CandidateList candidates2;
+  IICESocket::CandidateList candidates3;
+  IICESocket::CandidateList candidates4;
 
   ZS_LOG_BASIC("WAITING:      Waiting for ICE testing to complete (max wait is 180 seconds).");
 

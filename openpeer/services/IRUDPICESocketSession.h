@@ -81,6 +81,8 @@ namespace openpeer
 
       virtual void shutdown() = 0;
 
+      virtual IICESocketSessionPtr getICESession() const = 0;
+
       // NOTE: Will return NULL if no channel can be open at this time.
       virtual IRUDPChannelPtr openChannel(
                                           IRUDPChannelDelegatePtr delegate,

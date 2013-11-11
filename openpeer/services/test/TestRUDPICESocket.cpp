@@ -87,7 +87,7 @@ namespace openpeer
       typedef boost::weak_ptr<TestRUDPICESocketCallback> TestRUDPICESocketCallbackWeakPtr;
 
       class TestRUDPICESocketCallback : public zsLib::MessageQueueAssociator,
-                                        public IRUDPICESocketDelegate,
+                                        public IICESocketDelegate,
                                         public IRUDPICESocketSessionDelegate,
                                         public IRUDPMessagingDelegate,
                                         public ITransportStreamWriterDelegate,
@@ -117,14 +117,26 @@ namespace openpeer
           mReceiveStreamSubscription = mReceiveStream->subscribe(mThisWeak.lock());
           mReceiveStream->notifyReaderReadyToRead();
 
-          mSocket = IRUDPICESocket::create(
-                                             getAssociatedMessageQueue(),
-                                             mThisWeak.lock(),
-                                             OPENPEER_SERVICE_TEST_TURN_SERVER_DOMAIN,
-                                             gUsername,
-                                             gPassword,
-                                             OPENPEER_SERVICE_TEST_STUN_SERVER
-                                             );
+          IICESocket::TURNServerInfoList turnServers;
+          IICESocket::STUNServerInfoList stunServers;
+
+          IICESocket::TURNServerInfoPtr turnInfo = IICESocket::TURNServerInfo::create();
+          turnInfo->mTURNServer = OPENPEER_SERVICE_TEST_TURN_SERVER_DOMAIN;
+          turnInfo->mTURNServerUsername = gUsername;
+          turnInfo->mTURNServerPassword = gPassword;
+
+          IICESocket::STUNServerInfoPtr stunInfo = IICESocket::STUNServerInfo::create();
+          stunInfo->mSTUNServer = OPENPEER_SERVICE_TEST_STUN_SERVER;
+
+          turnServers.push_back(turnInfo);
+          stunServers.push_back(stunInfo);
+
+          mSocket = IICESocket::create(
+                                       getAssociatedMessageQueue(),
+                                       mThisWeak.lock(),
+                                       turnServers,
+                                       stunServers
+                                       );
         }
 
       public:
@@ -160,19 +172,19 @@ namespace openpeer
         }
 
         //---------------------------------------------------------------------
-        virtual void onRUDPICESocketStateChanged(
-                                                 IRUDPICESocketPtr socket,
-                                                 RUDPICESocketStates state
-                                                 )
+        virtual void onICESocketStateChanged(
+                                             IICESocketPtr socket,
+                                             ICESocketStates state
+                                             )
         {
           zsLib::AutoRecursiveLock lock(mLock);
           if (socket != mSocket) return;
 
           switch (state) {
-            case IRUDPICESocket::RUDPICESocketState_Ready:
+            case IICESocket::ICESocketState_Ready:
             {
-              IRUDPICESocket::CandidateList candidates;
-              IRUDPICESocket::Candidate candidate;
+              IICESocket::CandidateList candidates;
+              IICESocket::Candidate candidate;
               candidate.mType = IICESocket::Type_Local;
               candidate.mIPAddress = mServerIP;
               candidate.mPriority = 0;
@@ -181,16 +193,19 @@ namespace openpeer
               candidates.push_back(candidate);
 
               mSocketSession = mSocket->createSessionFromRemoteCandidates(
-                                                                          mThisWeak.lock(),
+                                                                          IICESocketSessionDelegatePtr(),
                                                                           "serverUsernameFrag",
                                                                           NULL,
                                                                           candidates,
                                                                           IICESocket::ICEControl_Controlling
                                                                           );
               mSocketSession->endOfRemoteCandidates();
+
+              mRUDPSocketSession = IRUDPICESocketSession::listen(getAssociatedMessageQueue(), mSocketSession, mThisWeak.lock());
+
               break;
             }
-            case IRUDPICESocket::RUDPICESocketState_Shutdown:
+            case IICESocket::ICESocketState_Shutdown:
             {
               mSocketShutdown = true;
               break;
@@ -200,7 +215,7 @@ namespace openpeer
         }
         
         //---------------------------------------------------------------------
-        virtual void onRUDPICESocketCandidatesChanged(IRUDPICESocketPtr socket)
+        virtual void onICESocketCandidatesChanged(IICESocketPtr socket)
         {
           // ignored
         }
@@ -215,7 +230,7 @@ namespace openpeer
           if (IRUDPICESocketSession::RUDPICESocketSessionState_Ready == state) {
             mMessaging = IRUDPMessaging::openChannel(
                                                      getAssociatedMessageQueue(),
-                                                     mSocketSession,
+                                                     mRUDPSocketSession,
                                                      mThisWeak.lock(),
                                                      "bogus/text-bogus",
                                                      mReceiveStream->getStream(),
@@ -303,8 +318,9 @@ namespace openpeer
         bool mMessagingShutdown;
 
         IRUDPMessagingPtr mMessaging;
-        IRUDPICESocketPtr mSocket;
-        IRUDPICESocketSessionPtr mSocketSession;
+        IICESocketPtr mSocket;
+        IICESocketSessionPtr mSocketSession;
+        IRUDPICESocketSessionPtr mRUDPSocketSession;
       };
     }
   }

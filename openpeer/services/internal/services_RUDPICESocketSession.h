@@ -113,6 +113,8 @@ namespace openpeer
 
         virtual void shutdown();
 
+        virtual IICESocketSessionPtr getICESession() const;
+
         virtual IRUDPChannelPtr openChannel(
                                             IRUDPChannelDelegatePtr delegate,
                                             const char *connectionInfo,
@@ -180,8 +182,6 @@ namespace openpeer
 
         String log(const char *message) const;
         void fix(STUNPacketPtr stun) const;
-
-        IICESocketSessionPtr getICESession() const;
 
         bool isReady() {return RUDPICESocketSessionState_Ready == mCurrentState;}
         bool isShuttingDown() const {return RUDPICESocketSessionState_ShuttingDown == mCurrentState;}

@@ -183,6 +183,13 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
+      IICESocketSessionPtr RUDPICESocketSession::getICESession() const
+      {
+        AutoRecursiveLock lock(getLock());
+        return mICESession;
+      }
+
+      //-----------------------------------------------------------------------
       IRUDPChannelPtr RUDPICESocketSession::openChannel(
                                                         IRUDPChannelDelegatePtr delegate,
                                                         const char *connectionInfo,
@@ -571,13 +578,6 @@ namespace openpeer
       {
         stun->mLogObject = "RUDPICESocketSession";
         stun->mLogObjectID = mID;
-      }
-
-      //-----------------------------------------------------------------------
-      IICESocketSessionPtr RUDPICESocketSession::getICESession() const
-      {
-        AutoRecursiveLock lock(getLock());
-        return mICESession;
       }
 
       //-----------------------------------------------------------------------

@@ -119,13 +119,25 @@ namespace openpeer
         {
           zsLib::AutoRecursiveLock lock(getLock());
 
+          IICESocket::TURNServerInfoList turnServers;
+          IICESocket::STUNServerInfoList stunServers;
+
+          IICESocket::TURNServerInfoPtr turnInfo = IICESocket::TURNServerInfo::create();
+          turnInfo->mTURNServer = srvNameTURN;
+          turnInfo->mTURNServerUsername = gUsername;
+          turnInfo->mTURNServerPassword = gPassword;
+
+          IICESocket::STUNServerInfoPtr stunInfo = IICESocket::STUNServerInfo::create();
+          stunInfo->mSTUNServer = srvNameSTUN;
+
+          turnServers.push_back(turnInfo);
+          stunServers.push_back(stunInfo);
+
           mICESocket = IICESocket::create(
                                           getAssociatedMessageQueue(),
                                           mThisWeak.lock(),
-                                          srvNameTURN,
-                                          gUsername,
-                                          gPassword,
-                                          srvNameSTUN,
+                                          turnServers,
+                                          stunServers,
                                           port
                                           );
 
