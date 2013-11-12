@@ -154,7 +154,7 @@ namespace openpeer
             case AttributeType_Context:                           return mContext.hasData();
             case AttributeType_PeerSecret:                        return mPeerSecret.hasData();
             case AttributeType_LocationInfo:                      return mLocationInfo.hasData();
-            case AttributeType_PeerFiles:                         return mPeerFiles;
+            case AttributeType_PeerFiles:                         return (bool)mPeerFiles;
             default:
               break;
           }

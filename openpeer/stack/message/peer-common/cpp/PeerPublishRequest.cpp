@@ -91,7 +91,7 @@ namespace openpeer
         bool PeerPublishRequest::hasAttribute(AttributeTypes type) const
         {
           switch (type) {
-            case AttributeType_Publication:       return mPublication;
+            case AttributeType_Publication:       return (bool)mPublication;
           }
           return false;
         }

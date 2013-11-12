@@ -243,14 +243,14 @@ namespace openpeer
           switch (type)
           {
             case AttributeType_RequestfindProofBundleDigestValue: return mRequestfindProofBundleDigestValue.hasData();
-            case AttributeType_FindPeer:                          return mFindPeer;
+            case AttributeType_FindPeer:                          return (bool)mFindPeer;
             case AttributeType_Context:                           return mContext.hasData();
             case AttributeType_PeerSecret:                        return mPeerSecret.hasData();
             case AttributeType_ICEUsernameFrag:                   return mICEUsernameFrag.hasData();
             case AttributeType_ICEPassword:                       return mICEPassword.hasData();
             case AttributeType_LocationInfo:                      return mLocationInfo.hasData();
             case AttributeType_ExcludedLocations:                 return (mExcludedLocations.size() > 0);
-            case AttributeType_PeerFiles:                         return mPeerFiles;
+            case AttributeType_PeerFiles:                         return (bool)mPeerFiles;
             default:                                              break;
           }
           return false;

@@ -42,7 +42,6 @@
 
 #include <openpeer/stack/IMessageMonitor.h>
 
-#include <openpeer/services/IRUDPICESocket.h>
 #include <openpeer/services/ITransportStream.h>
 
 #include <zsLib/MessageQueueAssociator.h>

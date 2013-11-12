@@ -180,8 +180,8 @@ namespace openpeer
           {
             case AttributeType_LocationInfo:    return mLocationInfo.hasData();
             case AttributeType_FindSecret:      return (!mFindSecret.isEmpty());
-            case AttributeType_PeerFilePublic:  return mPeerFilePublic;
-            case AttributeType_PeerFiles:       return mPeerFiles;
+            case AttributeType_PeerFilePublic:  return (bool)mPeerFilePublic;
+            case AttributeType_PeerFiles:       return (bool)mPeerFiles;
             default:                            break;
           }
           return false;

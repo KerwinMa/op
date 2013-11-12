@@ -37,7 +37,6 @@
 #include <openpeer/stack/IAccount.h>
 #include <openpeer/stack/ILocation.h>
 
-#include <openpeer/services/IRUDPICESocket.h>
 #include <openpeer/services/IRUDPICESocketSession.h>
 #include <openpeer/services/IRUDPMessaging.h>
 #include <openpeer/services/ITransportStream.h>

@@ -450,7 +450,7 @@ namespace openpeer
                                               bool viaRelay
                                               )
       {
-        bool hasPeerFile = mPeer->forAccount().getPeerFilePublic();
+        bool hasPeerFile = (bool)mPeer->forAccount().getPeerFilePublic();
 
         // this is something new/incoming from the remote server...
         AccountPtr outer = mOuter.lock();

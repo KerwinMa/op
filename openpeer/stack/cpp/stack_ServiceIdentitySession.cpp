@@ -956,7 +956,7 @@ namespace openpeer
       bool ServiceIdentitySession::isAssociated() const
       {
         AutoRecursiveLock lock(getLock());
-        return mAssociatedLockbox.lock();
+        return (bool)mAssociatedLockbox.lock();
       }
 
       //-----------------------------------------------------------------------

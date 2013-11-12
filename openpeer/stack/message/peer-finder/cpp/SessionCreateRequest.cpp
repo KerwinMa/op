@@ -86,7 +86,7 @@ namespace openpeer
           {
             case AttributeType_FinderID:      return (!mFinderID.isEmpty());
             case AttributeType_LocationInfo:  return (mLocationInfo.hasData());
-            case AttributeType_PeerFiles:     return mPeerFiles;
+            case AttributeType_PeerFiles:     return (bool)mPeerFiles;
             default:                          break;
           }
           return false;

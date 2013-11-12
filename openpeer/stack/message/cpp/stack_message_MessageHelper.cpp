@@ -1601,8 +1601,8 @@ namespace openpeer
 
           if (componentEl) {
             try {
-              ret.mComponentID = Numeric<typeof(ret.mComponentID)>(IMessageHelper::getElementText(componentEl));
-            } catch(Numeric<typeof(ret.mComponentID)>::ValueOutOfRange &) {
+              ret.mComponentID = Numeric<decltype(ret.mComponentID)>(IMessageHelper::getElementText(componentEl));
+            } catch(Numeric<decltype(ret.mComponentID)>::ValueOutOfRange &) {
             }
           }
 
@@ -1627,7 +1627,7 @@ namespace openpeer
 
           if (priorityEl) {
             try {
-              ret.mPriority = Numeric<typeof(ret.mPriority)>(IMessageHelper::getElementText(priorityEl));
+              ret.mPriority = Numeric<decltype(ret.mPriority)>(IMessageHelper::getElementText(priorityEl));
             } catch(Numeric<DWORD>::ValueOutOfRange &) {
             }
           }

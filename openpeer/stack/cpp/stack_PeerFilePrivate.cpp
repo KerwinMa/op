@@ -374,7 +374,7 @@ namespace openpeer
         outPeerFilePublic = IPeerFilePublicForPeerFilePrivate::createFromPublicKey(peerFiles, publicDoc, publicKey, pThis->mPeerURI);
         outPeerFilePrivate = pThis;
 
-        return peerFiles;
+        return (bool)peerFiles;
       }
 
       //-----------------------------------------------------------------------
@@ -400,7 +400,7 @@ namespace openpeer
         bool loaded = pThis->loadFromElement(peerFileRootElement, publicDoc);
         if (!loaded) {
           ZS_LOG_ERROR(Basic, pThis->log("failed to load private peer file"))
-          return PeerFilesPtr();
+          return false;
         }
 
         PeerFilePublicPtr peerFilePublic = IPeerFilePublicForPeerFilePrivate::loadFromElement(peerFiles, publicDoc);
@@ -417,7 +417,7 @@ namespace openpeer
         outPeerFilePublic = peerFilePublic;
         outPeerFilePrivate = pThis;
 
-        return peerFiles;
+        return (bool)peerFiles;
       }
 
       //-----------------------------------------------------------------------

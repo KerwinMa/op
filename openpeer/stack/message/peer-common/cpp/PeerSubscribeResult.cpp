@@ -87,7 +87,7 @@ namespace openpeer
         {
           switch (type)
           {
-            case AttributeType_PublicationMetaData: return mPublicationMetaData;
+            case AttributeType_PublicationMetaData: return (bool)mPublicationMetaData;
           }
           return MessageResult::hasAttribute((MessageResult::AttributeTypes)type);
         }

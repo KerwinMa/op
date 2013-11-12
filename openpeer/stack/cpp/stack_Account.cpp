@@ -59,7 +59,6 @@
 #include <openpeer/stack/IPublicationRepository.h>
 
 #include <openpeer/services/IHelper.h>
-#include <openpeer/services/IRUDPICESocket.h>
 
 #include <zsLib/Log.h>
 #include <zsLib/helpers.h>

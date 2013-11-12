@@ -80,7 +80,7 @@ namespace openpeer
           switch (type)
           {
             case AttributeType_RolodexInfo:                   return mRolodexInfo.hasData();
-            case AttributeType_NamespaceGrantChallengeBundle: return (mNamespaceGrantChallengeBundle);
+            case AttributeType_NamespaceGrantChallengeBundle: return (bool)(mNamespaceGrantChallengeBundle);
             default:                                          break;
           }
           return false;

@@ -84,7 +84,7 @@ namespace openpeer
         bool PeerDeleteRequest::hasAttribute(AttributeTypes type) const
         {
           switch (type) {
-            case AttributeType_PublicationMetaData: return mPublicationMetaData;
+            case AttributeType_PublicationMetaData: return (bool)mPublicationMetaData;
           }
           return false;
         }
