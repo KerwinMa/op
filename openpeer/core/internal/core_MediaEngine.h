@@ -97,16 +97,16 @@ namespace openpeer
 
         virtual int registerVoiceExternalTransport(Transport &transport) = 0;
         virtual int deregisterVoiceExternalTransport() = 0;
-        virtual int receivedVoiceRTPPacket(const void *data, unsigned int length) = 0;
-        virtual int receivedVoiceRTCPPacket(const void *data, unsigned int length) = 0;
+        virtual int receivedVoiceRTPPacket(const void *data, size_t length) = 0;
+        virtual int receivedVoiceRTCPPacket(const void *data, size_t length) = 0;
         
         virtual void startVideoChannel() = 0;
         virtual void stopVideoChannel() = 0;
 
         virtual int registerVideoExternalTransport(Transport &transport) = 0;
         virtual int deregisterVideoExternalTransport() = 0;
-        virtual int receivedVideoRTPPacket(const void *data, const int length) = 0;
-        virtual int receivedVideoRTCPPacket(const void *data, const int length) = 0;
+        virtual int receivedVideoRTPPacket(const void *data, size_t length) = 0;
+        virtual int receivedVideoRTCPPacket(const void *data, size_t length) = 0;
       };
 
       //-----------------------------------------------------------------------
@@ -241,13 +241,13 @@ namespace openpeer
 
         virtual int registerVoiceExternalTransport(Transport &transport);
         virtual int deregisterVoiceExternalTransport();
-        virtual int receivedVoiceRTPPacket(const void *data, unsigned int length);
-        virtual int receivedVoiceRTCPPacket(const void *data, unsigned int length);
+        virtual int receivedVoiceRTPPacket(const void *data, size_t length);
+        virtual int receivedVoiceRTCPPacket(const void *data, size_t length);
 
         virtual int registerVideoExternalTransport(Transport &transport);
         virtual int deregisterVideoExternalTransport();
-        virtual int receivedVideoRTPPacket(const void *data, const int length);
-        virtual int receivedVideoRTCPPacket(const void *data, const int length);
+        virtual int receivedVideoRTPPacket(const void *data, size_t length);
+        virtual int receivedVideoRTCPPacket(const void *data, size_t length);
 
         //---------------------------------------------------------------------
         #pragma mark

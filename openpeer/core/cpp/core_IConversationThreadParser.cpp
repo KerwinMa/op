@@ -1093,7 +1093,7 @@ namespace openpeer
             description->mVersion = getVersion(descriptionEl);
 
             ElementPtr ssrcEl = descriptionEl->findFirstChildElementChecked("ssrc");
-            description->mSSRC = Numeric<typeof(description->mSSRC)>(ssrcEl->getText());
+            description->mSSRC = Numeric<decltype(description->mSSRC)>(ssrcEl->getText());
 
             ElementPtr securityEl = descriptionEl->findFirstChildElementChecked("security");
             ElementPtr secretEl = securityEl->findFirstChildElementChecked("secret");
@@ -1109,11 +1109,11 @@ namespace openpeer
             while (codecEl)
             {
               Codec codec;
-              codec.mCodecID = Numeric<typeof(codec.mCodecID)>(codecEl->getAttributeValue("id"));
+              codec.mCodecID = Numeric<decltype(codec.mCodecID)>(codecEl->getAttributeValue("id"));
               codec.mName = codecEl->findFirstChildElementChecked("name")->getText();
-              codec.mPTime = Numeric<typeof(codec.mPTime)>(codecEl->findFirstChildElementChecked("ptime")->getText());
-              codec.mRate = Numeric<typeof(codec.mRate)>(codecEl->findFirstChildElementChecked("rate")->getText());
-              codec.mChannels = Numeric<typeof(codec.mChannels)>(codecEl->findFirstChildElementChecked("channels")->getText());
+              codec.mPTime = Numeric<decltype(codec.mPTime)>(codecEl->findFirstChildElementChecked("ptime")->getText());
+              codec.mRate = Numeric<decltype(codec.mRate)>(codecEl->findFirstChildElementChecked("rate")->getText());
+              codec.mChannels = Numeric<decltype(codec.mChannels)>(codecEl->findFirstChildElementChecked("channels")->getText());
               description->mCodecs.push_back(codec);
             }
 
@@ -1634,7 +1634,7 @@ namespace openpeer
               MessagePtr message = Message::create(messageBundleEl);
               if (!message) {
                 ZS_LOG_ERROR(Detail, log("unable to parse message bundle"))
-                return ThreadPtr();
+                return false;
               }
 
               messages.push_back(message);
@@ -1690,10 +1690,10 @@ namespace openpeer
           }
         } catch (zsLib::XML::Exceptions::CheckFailed &) {
           ZS_LOG_ERROR(Detail, log("failed to update document as parsing failed"))
-          return ThreadPtr();
+          return false;
         } catch (Numeric<UINT>::ValueOutOfRange &) {
           ZS_LOG_ERROR(Detail, log("failed to update document as value out of range"))
-          return ThreadPtr();
+          return false;
         }
 
         if (details) {

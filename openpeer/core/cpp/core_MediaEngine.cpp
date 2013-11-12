@@ -1109,7 +1109,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      int MediaEngine::receivedVoiceRTPPacket(const void *data, unsigned int length)
+      int MediaEngine::receivedVoiceRTPPacket(const void *data, size_t length)
       {
 #ifndef ANDROID
         int channel = OPENPEER_MEDIA_ENGINE_INVALID_CHANNEL;
@@ -1134,7 +1134,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      int MediaEngine::receivedVoiceRTCPPacket(const void* data, unsigned int length)
+      int MediaEngine::receivedVoiceRTCPPacket(const void* data, size_t length)
       {
 #ifndef ANDROID
         int channel = OPENPEER_MEDIA_ENGINE_INVALID_CHANNEL;
@@ -1183,7 +1183,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      int MediaEngine::receivedVideoRTPPacket(const void *data, const int length)
+      int MediaEngine::receivedVideoRTPPacket(const void *data, size_t length)
       {
 #ifndef ANDROID
         int channel = OPENPEER_MEDIA_ENGINE_INVALID_CHANNEL;
@@ -1208,7 +1208,7 @@ namespace openpeer
       }
 
       //-----------------------------------------------------------------------
-      int MediaEngine::receivedVideoRTCPPacket(const void *data, const int length)
+      int MediaEngine::receivedVideoRTCPPacket(const void *data, size_t length)
       {
 #ifndef ANDROID
         int channel = OPENPEER_MEDIA_ENGINE_INVALID_CHANNEL;

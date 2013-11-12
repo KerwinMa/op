@@ -32,6 +32,8 @@
 #import "ServiceIdentitySessionDelegateWrapper.h"
 #import "ProvisioningManager.h"
 
+#if 0
+
 ServiceIdentitySessionDelegateWrapperPtr ServiceIdentitySessionDelegateWrapper::create()
 {
   return ServiceIdentitySessionDelegateWrapperPtr (new ServiceIdentitySessionDelegateWrapper());
@@ -57,3 +59,5 @@ void ServiceIdentitySessionDelegateWrapper::onServiceIdentitySessionPendingMessa
                    [[ProvisioningManager getInstance] onServiceIdentitySessionPendingMessageForInnerBrowserWindowFrame:session];
                  });
 }
+
+#endif //0

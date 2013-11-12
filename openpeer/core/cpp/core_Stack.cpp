@@ -83,6 +83,8 @@ namespace openpeer
 
     namespace internal
     {
+      using zsLib::IMessageQueue;
+
       class ShutdownCheckAgain;
       typedef boost::shared_ptr<ShutdownCheckAgain> ShutdownCheckAgainPtr;
       typedef boost::weak_ptr<ShutdownCheckAgain> ShutdownCheckAgainWeakPtr;

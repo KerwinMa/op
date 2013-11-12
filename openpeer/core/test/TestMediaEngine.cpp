@@ -155,13 +155,13 @@ namespace openpeer
       }
       
       //-----------------------------------------------------------------------
-      int TestMediaEngine::receivedVoiceRTPPacket(const void *data, unsigned int length)
+      int TestMediaEngine::receivedVoiceRTPPacket(const void *data, size_t length)
       {
         ZS_THROW_INVALID_USAGE("external transport is disabled - cannot receive data")
       }
       
       //-----------------------------------------------------------------------
-      int TestMediaEngine::receivedVoiceRTCPPacket(const void* data, unsigned int length)
+      int TestMediaEngine::receivedVoiceRTCPPacket(const void* data, size_t length)
       {
         ZS_THROW_INVALID_USAGE("external transport is disabled - cannot receive data")
       }
@@ -179,13 +179,13 @@ namespace openpeer
       }
       
       //-----------------------------------------------------------------------
-      int TestMediaEngine::receivedVideoRTPPacket(const void *data, const int length)
+      int TestMediaEngine::receivedVideoRTPPacket(const void *data, size_t length)
       {
         ZS_THROW_INVALID_USAGE("external transport is disabled - cannot receive data")
       }
       
       //-----------------------------------------------------------------------
-      int TestMediaEngine::receivedVideoRTCPPacket(const void *data, const int length)
+      int TestMediaEngine::receivedVideoRTCPPacket(const void *data, size_t length)
       {
         ZS_THROW_INVALID_USAGE("external transport is disabled - cannot receive data")
       }
