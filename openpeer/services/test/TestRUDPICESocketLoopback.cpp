@@ -365,7 +365,7 @@ namespace openpeer
           SecureByteBlockPtr buffer = mReceiveStream->read();
           if (!buffer) return;
 
-          size_t size = buffer->SizeInBytes() - sizeof(char);
+          size_t size = buffer->SizeInBytes();
 
           ZS_LOG_BASIC("---------------------------------------------------------------");
           ZS_LOG_BASIC("---------------------------------------------------------------");
@@ -520,10 +520,11 @@ namespace openpeer
           IICESocket::CandidateList remoteCandidates;
           remote->getLocalCandidates(remoteCandidates);
 
-          IICESocketSessionPtr session = mRUDPSocket->createSessionFromRemoteCandidates(IICESocketSessionDelegatePtr(), remote->getLocalUsernameFrag(), remote->getLocalPassword(), remoteCandidates, control);
-          mICESessions.push_back(session);
+          IICESocketSessionPtr iceSession = mRUDPSocket->createSessionFromRemoteCandidates(IICESocketSessionDelegatePtr(), remote->getLocalUsernameFrag(), remote->getLocalPassword(), remoteCandidates, control);
+          mICESessions.push_back(iceSession);
 
-          IRUDPICESocketSessionPtr rudpSession = IRUDPICESocketSession::listen(getAssociatedMessageQueue(), session, mThisWeak.lock());
+          IRUDPICESocketSessionPtr rudpSession = IRUDPICESocketSession::listen(getAssociatedMessageQueue(), iceSession, mThisWeak.lock());
+          mRUDPSessions.push_back(rudpSession);
 
           return rudpSession;
         }

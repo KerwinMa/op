@@ -127,6 +127,7 @@ namespace openpeer
       //-----------------------------------------------------------------------
       static void sortSRV(IDNS::SRVResultPtr result)
       {
+        if (!result) return;
         sortSRV(*(result.get()));
       }
 

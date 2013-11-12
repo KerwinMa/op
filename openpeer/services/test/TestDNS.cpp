@@ -445,8 +445,8 @@ void doTestDNS()
   const char *first = "stun." OPENPEER_SERVICE_TEST_DNS_ZONE;
   const char *second = "stun." OPENPEER_SERVICE_TEST_DNS_ZONE;
 
-  const char *firstWIP = "216.93.246.14:3478";
-  const char *secondWIP = "216.93.246.16:3478";
+  const char *firstWIP = "54.242.132.131:3478";
+  const char *secondWIP = "174.129.96.12:3478";
 
   if (srv3->mRecords.size() > 0) {
     if (srv3->mRecords.front().mAResult) {

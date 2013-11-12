@@ -195,10 +195,10 @@ namespace openpeer
         (includeCommaPrefix ? String(", ") : String()) +
         "local candidate: [" + mLocal.toDebugString(false) +
         "], remote candidate: [" + mRemote.toDebugString(false) + "]" +
-        Helper::getDebugValue("received request", mReceivedRequest ? string("true") : String(), firstTime) +
-        Helper::getDebugValue("received response", mReceivedResponse ? string("true") : String(), firstTime) +
-        Helper::getDebugValue("failed", mFailed ? string("true") : String(), firstTime) +
-        Helper::getDebugValue("requester", mRequester ? string("true") : String(), firstTime);
+        Helper::getDebugValue("received request", mReceivedRequest ? String("true") : String(), firstTime) +
+        Helper::getDebugValue("received response", mReceivedResponse ? String("true") : String(), firstTime) +
+        Helper::getDebugValue("failed", mFailed ? String("true") : String(), firstTime) +
+        Helper::getDebugValue("requester", mRequester ? String("true") : String(), firstTime);
       }
 
       //-----------------------------------------------------------------------
