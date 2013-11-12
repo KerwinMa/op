@@ -460,7 +460,7 @@ namespace openpeer
       vectorEncoderFinalize(ioVectorState, xorParity, vectorLengthInBytes);
 
       setFlag(Flag_VP_VectorParity, xorParity);
-      mVectorLengthInBytes = static_cast<BYTE>(vectorLengthInBytes);
+      mVectorLengthInBytes = static_cast<decltype(mVectorLengthInBytes)>(vectorLengthInBytes);
     }
 
     //-------------------------------------------------------------------------

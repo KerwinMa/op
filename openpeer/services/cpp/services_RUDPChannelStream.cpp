@@ -1284,7 +1284,7 @@ namespace openpeer
 
               size_t bytesRead = getFromWriteBuffer(&(temp[0]), availableBytes);
               newPacket->mData = &(temp[0]);
-              newPacket->mDataLengthInBytes = static_cast<WORD>(bytesRead);
+              newPacket->mDataLengthInBytes = static_cast<decltype(newPacket->mDataLengthInBytes)>(bytesRead);
 
               if ((mSendStream->getTotalReadBuffersAvailable() < 1) ||
                   (1 == packetsToSend)) {

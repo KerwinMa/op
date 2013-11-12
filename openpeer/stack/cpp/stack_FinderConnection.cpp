@@ -766,7 +766,7 @@ namespace openpeer
         ZS_LOG_DEBUG(log("send buffer called") + ", channel number=" + string(channelNumber) + ", buffer size=" + string(buffer->SizeInBytes()))
 
         ChannelHeaderPtr header(new ChannelHeader);
-        header->mChannelID = channelNumber;
+        header->mChannelID = static_cast<decltype(header->mChannelID)>(channelNumber);
 
         mWireSendStream->write(buffer, header);
       }
@@ -983,7 +983,7 @@ namespace openpeer
 
             // notify remote party of channel closure
             ChannelHeaderPtr header(new ChannelHeader);
-            header->mChannelID = channelNumber;
+            header->mChannelID = static_cast<decltype(header->mChannelID)>(channelNumber);
 
             SecureByteBlockPtr buffer(new SecureByteBlock);
 
@@ -1106,7 +1106,7 @@ namespace openpeer
 
         ChannelMapRequestPtr request = ChannelMapRequest::create();
         request->domain(info.mRelayDomain);
-        request->channelNumber(channelNumber);
+        request->channelNumber(static_cast<ChannelMapRequest::ChannelNumber>(channelNumber));
         request->localContextID(info.mLocalContextID);
         request->remoteContextID(info.mRemoteContextID);
         request->relayAccessToken(info.mRelayAccessToken);
