@@ -1045,8 +1045,8 @@ namespace openpeer
                                                                     const char *inMethod
                                                                     ) const
       {
-        String serviceType(inServiceType ? String(inServiceType) : String());
-        String method(inMethod ? String(inMethod) : String());
+        String serviceType(inServiceType);
+        String method(inMethod);
 
         if ((serviceType.isEmpty()) ||
             (method.isEmpty())) {
@@ -1061,7 +1061,7 @@ namespace openpeer
         }
 
         const ServiceMap &serviceMap = (*found).second;
-        if (!serviceMap.size() < 1) {
+        if (serviceMap.size() < 1) {
           ZS_LOG_WARNING(Debug, log("service method not found") + ", type=" + serviceType + ", method=" + method)
           return NULL;
         }
