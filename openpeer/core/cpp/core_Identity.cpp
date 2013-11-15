@@ -381,6 +381,8 @@ namespace openpeer
       void Identity::cancel()
       {
         ZS_LOG_DEBUG(log("cancel called"))
+        if (!mSession) return;  // can happen if exception is thrown before pThis is fully constructed
+
         mSession->cancel();
       }
 
