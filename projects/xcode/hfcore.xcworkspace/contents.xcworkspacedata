@@ -2,63 +2,63 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:hfcoreTest_ios/hfcoreTest_ios.xcodeproj">
+      location = "group:../../libs/op-core-cpp/projects/xcode/hfcoreTest_ios/hfcoreTest_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfcoreTest/hfcoreTest.xcodeproj">
+      location = "group:../../libs/op-core-cpp/projects/xcode/hfcoreTest/hfcoreTest.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfcore_ios/hfcore_ios.xcodeproj">
+      location = "group:../../libs/op-core-cpp/projects/xcode/hfcore_ios/hfcore_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfcore/hfcore.xcodeproj">
+      location = "group:../../libs/op-core-cpp/projects/xcode/hfcore/hfcore.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfstackTest_ios/hfstackTest_ios.xcodeproj">
+      location = "group:../../libs/op-stack-cpp/projects/xcode/hfstackTest_ios/hfstackTest_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfstackTest/hfstackTest.xcodeproj">
+      location = "group:../../libs/op-stack-cpp/projects/xcode/hfstackTest/hfstackTest.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfstack_ios/hfstack_ios.xcodeproj">
+      location = "group:../../libs/op-stack-cpp/projects/xcode/hfstack_ios/hfstack_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfstack/hfstack.xcodeproj">
+      location = "group:../../libs/op-stack-cpp/projects/xcode/hfstack/hfstack.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfservicesTest_ios/hfservicesTest_ios.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/op-services-cpp/projects/xcode/hfservicesTest_ios/hfservicesTest_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfservicesTest/hfservicesTest.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/op-services-cpp/projects/xcode/hfservicesTest/hfservicesTest.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfservices_ios/hfservices_ios.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/op-services-cpp/projects/xcode/hfservices_ios/hfservices_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:hfservices/hfservices.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/op-services-cpp/projects/xcode/hfservices/hfservices.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../libs/cryptopp/projects/xcode/cryptopp_ios/cryptopp_ios.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/cryptopp/projects/xcode/cryptopp_ios/cryptopp_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../libs/cryptopp/projects/xcode/cryptopp/cryptopp.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/cryptopp/projects/xcode/cryptopp/cryptopp.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../libs/udns/projects/xcode/udns_ios/udns_ios.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/udns/projects/xcode/udns_ios/udns_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../libs/udns/projects/xcode/udns/udns.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/udns/projects/xcode/udns/udns.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../libs/zsLib/projects/xcode/zsLibTest_ios/zsLibTest_ios.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/zsLib/projects/xcode/zsLibTest_ios/zsLibTest_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../libs/zsLib/projects/xcode/zsLibTest/zsLibTest.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/zsLib/projects/xcode/zsLibTest/zsLibTest.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../libs/zsLib/projects/xcode/zsLib_ios/zsLib_ios.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/zsLib/projects/xcode/zsLib_ios/zsLib_ios.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../libs/zsLib/projects/xcode/zsLib/zsLib.xcodeproj">
+      location = "group:../../libs/ortc-lib/libs/zsLib/projects/xcode/zsLib/zsLib.xcodeproj">
    </FileRef>
 </Workspace>

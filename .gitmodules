@@ -16,3 +16,12 @@
 [submodule "libs/zsLib"]
 	path = libs/zsLib
 	url = https://github.com/openpeer/zsLib.git
+[submodule "libs/ortc-lib"]
+	path = libs/ortc-lib
+	url = https://github.com/openpeer/ortc-lib.git
+[submodule "libs/op-stack-cpp"]
+	path = libs/op-stack-cpp
+	url = https://github.com/openpeer/op-stack-cpp.git
+[submodule "libs/op-core-cpp"]
+	path = libs/op-core-cpp
+	url = https://github.com/openpeer/op-core-cpp.git
