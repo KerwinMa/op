@@ -22,3 +22,6 @@
 [submodule "libs/op-core-cpp"]
 	path = libs/op-core-cpp
 	url = https://github.com/openpeer/op-core-cpp.git
+[submodule "libs/sqlite"]
+	path = libs/sqlite
+	url = https://github.com/openpeer/sqlite.git
