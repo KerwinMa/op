@@ -25,3 +25,6 @@
 [submodule "libs/sqlite"]
 	path = libs/sqlite
 	url = https://github.com/openpeer/sqlite.git
+[submodule "libs/easysqlite"]
+	path = libs/easysqlite
+	url = https://github.com/openpeer/easysqlite.git
