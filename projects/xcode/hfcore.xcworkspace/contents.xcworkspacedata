@@ -56,6 +56,12 @@
       location = "group:../../libs/ortc-lib/libs/cryptopp/projects/xcode/cryptopp/cryptopp.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:../../libs/ortc-lib/libs/idnkit/projects/xcode/idnkit_ios.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../libs/ortc-lib/libs/idnkit/projects/xcode/idnkit.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:../../libs/ortc-lib/libs/udns/projects/xcode/udns_ios/udns_ios.xcodeproj">
    </FileRef>
    <FileRef
